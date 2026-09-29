@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MagnaSync – Dashboard de Telemetria Hospitalar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./dashboard.css" />
+  <script src="./dashboard.js" defer></script>
+</head>
+<body>
+  <div class="dashboard-app">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="dash-sidebar">
+      <a href="landing.html" class="sidebar-logo" title="Voltar para a página inicial">
+        <img src="./logo.png" alt="Logo MagnaSync" class="logo-img" />
+        <span>Magna<span>Sync</span></span>
+      </a>
+
+      <nav class="sidebar-nav" aria-label="Navegação do Dashboard">
+        <a href="#overview" class="nav-link active">Visão Geral</a>
+        <a href="#sensores" class="nav-link">Hardware &amp; CPU</a>
+        <a href="#memoria" class="nav-link">Memória RAM</a>
+        <a href="#armazenamento" class="nav-link">Discos NVMe</a>
+        <a href="#rede" class="nav-link">Rede &amp; PACS</a>
+        <a href="#alertas" class="nav-link">Alertas</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">EC</div>
+          <div class="user-info">
+            <span class="user-name">Eng. Lucas Silva</span>
+            <span class="user-role">Engenharia Clínica</span>
+          </div>
+        </div>
+        <a href="landing.html" class="button-exit">Voltar para o Site</a>
+      </div>
+    </aside>
+    <!-- ===================== /SIDEBAR ===================== -->
+
+    <!-- ===================== CONTEÚDO PRINCIPAL ===================== -->
+    <main class="dash-main">
+
+      <!-- ===================== BARRA SUPERIOR ===================== -->
+      <header class="dash-topbar">
+        <div class="unit-badge">
+          <div>
+            <small>Console Monitorado</small>
+            <div><strong>Hospital Central &middot; RM 01</strong></div>
+          </div>
+          <span class="live-indicator"><i></i> Sistema Online</span>
+        </div>
+
+        <div class="topbar-actions">
+          <select class="select-unit" id="unit-selector" aria-label="Selecionar Equipamento">
+            <option value="rm-01">Console RM 01 – Principal</option>
+            <option value="rm-02">Console RM 02 – Cardiologia</option>
+            <option value="rm-03">Console RM 03 – Neurologia</option>
+          </select>
+          <a href="landing.html" class="topbar-button">Página Inicial</a>
+        </div>
+      </header>
+      <!-- ===================== /BARRA SUPERIOR ===================== -->
+
+      <!-- ===================== CORPO DO DASHBOARD ===================== -->
+      <div class="dash-content">
+        <div class="content-header">
+          <div>
+            <h1>Telemetria de Hardware em Tempo Real</h1>
+            <p>Monitoramento contínuo de processador, memória, armazenamento e tráfego DICOM.</p>
+          </div>
+          <div class="time-filter">
+            <button class="time-btn" data-time="15">15 min</button>
+            <button class="time-btn active" data-time="60">60 min</button>
+            <button class="time-btn" data-time="1440">24h</button>
+          </div>
+        </div>
+
+        <!-- ===================== KPIs ===================== -->
+        <section class="kpi-grid">
+          <div class="kpi-card">
+            <span>Disponibilidade</span>
+            <div class="kpi-row">
+              <strong>99,98%</strong>
+              <span class="kpi-badge up">+0,12%</span>
+            </div>
+            <div class="kpi-meta">Meta operacional mantida</div>
+          </div>
+
+          <div class="kpi-card">
+            <span>Alertas Ativos</span>
+            <div class="kpi-row">
+              <strong>02</strong>
+              <span class="kpi-badge warn">Atenção</span>
+            </div>
+            <div class="kpi-meta">RAM em 68% e pico de CPU</div>
+          </div>
+
+          <div class="kpi-card">
+            <span>Última Coleta</span>
+            <div class="kpi-row">
+              <strong id="live-timer">4s</strong>
+              <span class="kpi-badge up">Ao Vivo</span>
+            </div>
+            <div class="kpi-meta">Agente de telemetria ativo</div>
+          </div>
+
+          <div class="kpi-card">
+            <span>Latência PACS</span>
+            <div class="kpi-row">
+              <strong>12 ms</strong>
+              <span class="kpi-badge normal">Excelente</span>
+            </div>
+            <div class="kpi-meta">Comunicação DICOM estável</div>
+          </div>
+        </section>
+        <!-- ===================== /KPIs ===================== -->
+
+        <!-- ===================== GRADE DE TELEMETRIA ===================== -->
+        <section class="telemetry-grid">
+          <article class="dash-card">
+            <div class="card-title">
+              <h2>Performance do Console Computacional</h2>
+              <small>Janela: últimos 60 minutos</small>
+            </div>
+
+            <div class="chart-block">
+              <div class="chart-meta">
+                <b>Uso de CPU</b>
+                <div><strong>42%</strong><small>14 núcleos ativos</small></div>
+              </div>
+            </div>
+
+            <div class="chart-block">
+              <div class="chart-meta">
+                <b>Uso de Memória RAM</b>
+                <div><strong>68%</strong><small>6,4 GB de 16 GB</small></div>
+              </div>
+            </div>
+
+            <div class="chart-block">
+              <div class="chart-meta">
+                <b>Tráfego de Rede PACS</b>
+                <div><strong>12 ms</strong><small>Taxa: 450 MB/s</small></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="dash-card">
+            <div class="card-title">
+              <h2>Saúde Global do Sistema</h2>
+              <small>Índice de integridade</small>
+            </div>
+
+            <div class="gauge-wrapper">
+              <div class="gauge-score">98<small>%</small></div>
+              <span class="gauge-label">Operação Saudável</span>
+            </div>
+
+            <div class="health-status-list">
+              <div class="status-item">
+                <div class="status-item-left">
+                  <i class="status-dot emerald"></i>
+                  <span>Armazenamento NVMe</span>
+                </div>
+                <span class="status-value">Normal (98%)</span>
+              </div>
+              <div class="status-item">
+                <div class="status-item-left">
+                  <i class="status-dot emerald"></i>
+                  <span>Rede Local PACS/DICOM</span>
+                </div>
+                <span class="status-value">12 ms (Estável)</span>
+              </div>
+              <div class="status-item">
+                <div class="status-item-left">
+                  <i class="status-dot amber"></i>
+                  <span>Alocação de Memória RAM</span>
+                </div>
+                <span class="status-value">68% (Atenção)</span>
+              </div>
+              <div class="status-item">
+                <div class="status-item-left">
+                  <i class="status-dot emerald"></i>
+                  <span>Temperatura da CPU</span>
+                </div>
+                <span class="status-value">42°C (Ideal)</span>
+              </div>
+            </div>
+          </article>
+        </section>
+        <!-- ===================== /GRADE DE TELEMETRIA ===================== -->
+
+        <!-- ===================== EVENTOS & ESPECIFICAÇÕES ===================== -->
+        <section class="bottom-grid">
+          <article class="dash-card">
+            <div class="card-title">
+              <h2>Eventos &amp; Alertas Recentes</h2>
+              <small>Log em tempo real</small>
+            </div>
+            <div class="events-list">
+              <div class="event-item">
+                <span class="event-badge attention">Atenção</span>
+                <div class="event-desc">
+                  <span>Pico de memória RAM acima de 65% na reconstrução axial T2.</span>
+                  <small>Há 8 minutos &middot; RM 01</small>
+                </div>
+              </div>
+              <div class="event-item">
+                <span class="event-badge normal">Normal</span>
+                <div class="event-desc">
+                  <span>Sincronização de 1.420 imagens DICOM concluída com sucesso.</span>
+                  <small>Há 22 minutos &middot; RM 01</small>
+                </div>
+              </div>
+              <div class="event-item">
+                <span class="event-badge normal">Normal</span>
+                <div class="event-desc">
+                  <span>Varredura preventiva de integridade NVMe sem setores corrompidos.</span>
+                  <small>Há 1 hora &middot; Rotina Automática</small>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="dash-card">
+            <div class="card-title">
+              <h2>Especificações do Console</h2>
+              <small>Hardware identificado</small>
+            </div>
+            <div class="spec-list">
+              <div class="spec-box">
+                <small>Processador</small>
+                <strong>Intel Xeon 14 Cores</strong>
+              </div>
+              <div class="spec-box">
+                <small>Memória RAM</small>
+                <strong>16 GB DDR4 ECC</strong>
+              </div>
+              <div class="spec-box">
+                <small>Armazenamento</small>
+                <strong>2x 1 TB NVMe RAID 1</strong>
+              </div>
+              <div class="spec-box">
+                <small>Interface de Rede</small>
+                <strong>10 GbE SFP+ DICOM</strong>
+              </div>
+            </div>
+          </article>
+        </section>
+        <!-- ===================== /EVENTOS & ESPECIFICAÇÕES ===================== -->
+
+      </div>
+      <!-- ===================== /CORPO DO DASHBOARD ===================== -->
+
+    </main>
+    <!-- ===================== /CONTEÚDO PRINCIPAL ===================== -->
+
+  </div>
+</body>
+</html>

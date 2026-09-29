@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MagnaSync – Monitoramento de Hardware Hospitalar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <div id="home" class="app-shell">
+
+    <!-- ===================== HEADER & NAVEGAÇÃO ===================== -->
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="#home" class="logo" aria-label="MagnaSync, início">
+          <img src="./logo.png" alt="Logo MagnaSync" class="logo-img" />
+          <span>Magna<span>Sync</span></span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="Navegação principal">
+          <a href="#overview">Visão Geral</a>
+          <a href="#metrics">Métricas &amp; Sensores</a>
+          <a href="#roles">Para Quem É</a>
+          <a href="#differentials">Contexto Técnico</a>
+          <a href="#faq">Documentação</a>
+        </nav>
+
+        <div class="header-actions">
+          <a href="dashboard.html" class="button button-ghost">Acessar Plataforma</a>
+          <a href="#contact" class="button button-primary">Solicitar Demonstração</a>
+        </div>
+
+        <button class="menu-button" id="menu-btn" aria-label="Abrir menu"></button>
+      </div>
+
+      <nav class="mobile-nav" id="mobile-nav" aria-label="Navegação mobile">
+        <a href="#overview">Visão Geral</a>
+        <a href="#metrics">Métricas &amp; Sensores</a>
+        <a href="#roles">Para Quem É</a>
+        <a href="#differentials">Contexto Técnico</a>
+        <a href="#faq">Documentação</a>
+        <a href="dashboard.html" class="button button-ghost">Acessar Plataforma</a>
+        <a href="#contact" class="button button-primary">Solicitar Demonstração</a>
+      </nav>
+    </header>
+    <!-- ===================== /HEADER & NAVEGAÇÃO ===================== -->
+
+    <main>
+
+      <!-- ===================== HERO ===================== -->
+      <section class="hero" id="overview">
+        <div class="container hero-grid">
+
+          <div class="hero-copy">
+            <span class="section-kicker">Telemetria de Hardware Hospitalar</span>
+            <h1>Observabilidade técnica para consoles de Ressonância Magnética.</h1>
+            <p>Telemetria em tempo real de CPU, memória, armazenamento e rede das estações de trabalho de RM. Identifique comportamentos anômalos antes que comprometam a disponibilidade do equipamento.</p>
+            <div class="hero-actions">
+              <a href="#metrics" class="button button-primary button-lg">Ver a Plataforma</a>
+              <a href="dashboard.html" class="button button-outline button-lg">Dashboard Interativo</a>
+            </div>
+          </div>
+
+          <div class="hero-media">
+            <div class="hero-image-frame">
+              <img src="./hero-image.png" alt="Console de Ressonância Magnética MagnaSync" class="hero-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="hero-image-placeholder">
+                <span class="placeholder-tag">CONSOLE RM &middot; HARDWARE</span>
+                <p>Insira sua imagem aqui</p>
+                <small>Nome do arquivo: <code>hero-image.png</code> ou edite o <code>src</code></small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+      <!-- ===================== /HERO ===================== -->
+
+      <!-- ===================== CONTEXTO OPERACIONAL ===================== -->
+      <section class="section context-section" id="differentials">
+        <div class="container">
+          <div class="section-heading centered">
+            <span class="section-kicker">Contexto operacional</span>
+            <h2>Monitoramento preditivo para a continuidade dos exames de imagem.</h2>
+            <p>Consoles de RM operam em fluxos clínicos de alta demanda. O MagnaSync fornece a camada técnica de observabilidade necessária para antecipar falhas e manter a disponibilidade do equipamento.</p>
+          </div>
+
+          <div class="context-grid">
+            <div class="context-col challenge-col">
+              <h3>Desafios identificados na operação</h3>
+              <ul>
+                <li>Falhas de hardware identificadas somente durante o exame em andamento</li>
+                <li>Diagnóstico fragmentado e sem histórico técnico centralizado</li>
+                <li>Saturação de memória em sessões prolongadas de reconstrução de imagens</li>
+                <li>Quedas de rede comprometendo a transferência DICOM e o acesso ao PACS</li>
+                <li>Ausência de base técnica para manutenção preditiva do parque de RM</li>
+              </ul>
+            </div>
+            <div class="context-col capability-col">
+              <h3>Capacidades do MagnaSync</h3>
+              <ul>
+                <li>Telemetria contínua de CPU, RAM, disco e rede com coleta a cada 5 segundos</li>
+                <li>Detecção de anomalias com limites de tolerância parametrizáveis por equipamento</li>
+                <li>Histórico técnico estruturado para análise de tendências e incidentes</li>
+                <li>Visão centralizada no modelo NOC para múltiplos consoles simultâneos</li>
+                <li>Notificações antecipadas antes da indisponibilidade do console</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ===================== /CONTEXTO OPERACIONAL ===================== -->
+
+      <!-- ===================== MÉTRICAS & SENSORES ===================== -->
+      <section class="section metrics-section" id="metrics">
+        <div class="container">
+          <div class="section-heading split-heading">
+            <div>
+              <span class="section-kicker">Métricas &amp; sensores</span>
+              <h2>Os sinais vitais do console, <span>monitorados continuamente.</span></h2>
+            </div>
+            <p>Uma camada objetiva de observabilidade para os componentes que sustentam a estação de trabalho de RM.</p>
+          </div>
+
+          <div class="features-grid">
+            <article class="feature-card">
+              <div class="feature-head">
+                <span class="feature-tag">CPU</span>
+                <span class="live-dot"><i></i> AO VIVO</span>
+              </div>
+              <h3>Monitoramento de CPU</h3>
+              <p>Detecção de picos de processamento durante a reconstrução de imagens e análise de carga por núcleo.</p>
+              <div class="feature-stat">
+                <div><span class="stat-number">42%</span><span>carga atual</span></div>
+              </div>
+              <a href="dashboard.html">Ver telemetria</a>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-head">
+                <span class="feature-tag">RAM</span>
+                <span class="live-dot"><i></i> AO VIVO</span>
+              </div>
+              <h3>Gestão de Memória RAM</h3>
+              <p>Identificação de vazamentos de memória e pressão de alocação em sessões clínicas prolongadas.</p>
+              <div class="feature-stat">
+                <div><span class="stat-number">6,4 GB</span><span>de 16 GB</span></div>
+              </div>
+              <a href="dashboard.html">Ver telemetria</a>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-head">
+                <span class="feature-tag">SSD</span>
+                <span class="live-dot"><i></i> AO VIVO</span>
+              </div>
+              <h3>Saúde do Armazenamento</h3>
+              <p>Alerta precoce de degradação de disco, setores defeituosos e saturação do armazenamento local.</p>
+              <div class="feature-stat">
+                <div><span class="stat-number">98%</span><span>saúde do disco</span></div>
+              </div>
+              <a href="dashboard.html">Ver telemetria</a>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-head">
+                <span class="feature-tag">NET</span>
+                <span class="live-dot"><i></i> AO VIVO</span>
+              </div>
+              <h3>Conectividade de Rede</h3>
+              <p>Latência, integridade de conexão e continuidade da comunicação PACS/DICOM em tempo real.</p>
+              <div class="feature-stat">
+                <div><span class="stat-number">12 ms</span><span>latência PACS</span></div>
+              </div>
+              <a href="dashboard.html">Ver telemetria</a>
+            </article>
+          </div>
+        </div>
+      </section>
+      <!-- ===================== /MÉTRICAS & SENSORES ===================== -->
+
+      <!-- ===================== PERFIS DE ACESSO (RBAC) ===================== -->
+      <section class="section roles-section" id="roles">
+        <div class="container">
+          <div class="section-heading centered">
+            <span class="section-kicker light">Perfis de acesso</span>
+            <h2>Acesso estruturado por responsabilidade técnica.</h2>
+            <p>Governança clara, acesso controlado e interfaces adequadas a cada nível de atuação.</p>
+          </div>
+
+          <div class="roles-grid">
+            <article class="role-card featured">
+              <div class="role-top">
+                <span class="role-tag">ENG</span>
+                <span>Operação</span>
+              </div>
+              <h3>Engenheiro Clínico / Técnico</h3>
+              <p>Resposta ágil e contexto técnico completo para diagnóstico e resolução de incidentes.</p>
+              <ul>
+                <li>Telemetria em tempo real</li>
+                <li>Diagnóstico rápido de hardware</li>
+                <li>Histórico de incidentes e tendências</li>
+              </ul>
+              <a href="dashboard.html">Conhecer perfil</a>
+            </article>
+
+            <article class="role-card">
+              <div class="role-top">
+                <span class="role-tag">DIR</span>
+                <span>Estratégico</span>
+              </div>
+              <h3>Gestor Hospitalar</h3>
+              <p>Indicadores de disponibilidade para suporte a decisões operacionais e de investimento.</p>
+              <ul>
+                <li>Relatórios de uptime por console</li>
+                <li>Visão agregada do parque de RM</li>
+                <li>Indicadores executivos de disponibilidade</li>
+              </ul>
+              <a href="dashboard.html">Conhecer perfil</a>
+            </article>
+
+            <article class="role-card">
+              <div class="role-top">
+                <span class="role-tag">ADM</span>
+                <span>Governança</span>
+              </div>
+              <h3>Administrador de TI</h3>
+              <p>Controle centralizado da operação, integrações e configuração de limites de alerta.</p>
+              <ul>
+                <li>Gestão de acessos e permissões</li>
+                <li>Configuração de limites de alerta</li>
+                <li>Integração com sistemas hospitalares</li>
+              </ul>
+              <a href="dashboard.html">Conhecer perfil</a>
+            </article>
+          </div>
+
+          <div class="governance-note">
+            <span>Controle de acesso baseado em função (RBAC) &mdash; Cada usuário visualiza apenas os dados e ações necessários para sua responsabilidade.</span>
+          </div>
+        </div>
+      </section>
+      <!-- ===================== /PERFIS DE ACESSO (RBAC) ===================== -->
+
+      <!-- ===================== DASHBOARD SHOWCASE ===================== -->
+      <section class="section dashboard-section" id="dashboard">
+        <div class="container dashboard-showcase">
+          <div class="dashboard-copy">
+            <span class="section-kicker">Interface de operação</span>
+            <h2>Clareza técnica para decisão e ação imediata.</h2>
+            <p>Visualize tendências, compare janelas de tempo e identifique desvios com contexto de severidade e histórico operacional.</p>
+            <div class="severity-list">
+              <div>
+                <span class="severity-icon critical">!</span>
+                <div><span>Crítico</span><small>Intervenção imediata necessária</small></div>
+              </div>
+              <div>
+                <span class="severity-icon attention">!</span>
+                <div><span>Atenção</span><small>Comportamento fora dos limites configurados</small></div>
+              </div>
+              <div>
+                <span class="severity-icon normal">&#10003;</span>
+                <div><span>Normal</span><small>Operação dentro dos parâmetros estabelecidos</small></div>
+              </div>
+            </div>
+            <a href="dashboard.html" class="text-link">Explorar o dashboard</a>
+          </div>
+
+          <div class="dashboard-frame">
+            <div class="frame-placeholder">
+              <span class="frame-label">Visualização do Dashboard</span>
+              <p>Interface completa de telemetria disponível na plataforma interativa.</p>
+              <a href="dashboard.html" class="button button-primary">Acessar Dashboard</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="container transparency">
+          <div class="transparency-tag">ISO</div>
+          <div>
+            <span class="section-kicker">Transparência técnica</span>
+            <h3>Escopo preciso. Operação segura.</h3>
+            <p>Foco dedicado exclusivamente aos componentes de hardware do console computacional de RM, garantindo leveza e segurança sem interferência no sistema proprietário do fabricante.</p>
+          </div>
+          <div class="scope-tags">
+            <span>&#10003; Sem acesso ao magneto</span>
+            <span>&#10003; Baixo consumo de recursos</span>
+            <span>&#10003; Somente leitura</span>
+          </div>
+        </div>
+      </section>
+      <!-- ===================== /DASHBOARD SHOWCASE ===================== -->
+
+      <!-- ===================== FAQ ===================== -->
+      <section class="section faq-section" id="faq">
+        <div class="container faq-grid">
+          <div class="faq-intro">
+            <span class="section-kicker">Escopo &amp; dúvidas</span>
+            <h2>Escopo técnico e transparência operacional.</h2>
+            <p>Respostas objetivas sobre arquitetura, segurança e funcionamento do MagnaSync.</p>
+            <a href="#contact" class="support-card">
+              <span class="support-badge">?</span>
+              <div>
+                <span>Ainda tem dúvidas?</span>
+                <small>Fale com nossa equipe técnica</small>
+              </div>
+            </a>
+          </div>
+
+          <div class="accordion">
+            <div class="faq-item open">
+              <button aria-expanded="true">
+                <span>01</span>
+                <span>O que o MagnaSync monitora?</span>
+              </button>
+              <div class="faq-answer">
+                O hardware do console computacional de RM: processador, memória RAM, discos de armazenamento e conexões de rede, com telemetria contínua e histórico estruturado para análise técnica.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button aria-expanded="false">
+                <span>02</span>
+                <span>O sistema interfere nos parâmetros criogênicos ou no magneto?</span>
+              </button>
+              <div class="faq-answer">
+                Não. O MagnaSync monitora exclusivamente o console computacional de suporte, sem acessar ou interferir nos parâmetros criogênicos, no campo magnético ou no software proprietário do fabricante do equipamento.
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button aria-expanded="false">
+                <span>03</span>
+                <span>Como funcionam as notificações de anomalia?</span>
+              </button>
+              <div class="faq-answer">
+                Alertas são disparados automaticamente quando uma métrica ultrapassa as faixas de tolerância configuradas. Os limites são parametrizáveis por perfil de usuário, tipo de equipamento e nível de criticidade operacional.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ===================== /FAQ ===================== -->
+
+      <!-- ===================== CTA ===================== -->
+      <section class="cta-section" id="contact">
+        <div class="container cta-inner">
+          <div class="cta-copy">
+            <span class="section-kicker light">Demonstração técnica</span>
+            <h2>Eleve a disponibilidade dos seus equipamentos de imagem médica.</h2>
+            <p>Descubra como o MagnaSync pode apoiar a continuidade operacional do seu parque de Ressonância Magnética.</p>
+          </div>
+
+          <div id="cta-form-area">
+            <form class="cta-form" id="cta-form">
+              <label for="cta-email">E-mail corporativo institucional</label>
+              <div>
+                <input id="cta-email" type="email" required placeholder="nome@hospital.com.br" />
+                <button class="button button-accent" type="submit">
+                  Agendar Apresentação Técnica
+                </button>
+              </div>
+              <small>Seus dados estão protegidos. Sem spam.</small>
+            </form>
+          </div>
+        </div>
+      </section>
+      <!-- ===================== /CTA ===================== -->
+
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer>
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <a href="#home" class="logo" aria-label="MagnaSync, início">
+            <img src="./logo.png" alt="Logo MagnaSync" class="logo-img" />
+            <span class="text-white">Magna<span>Sync</span></span>
+          </a>
+          <p>Monitoramento contínuo para a disponibilidade da imagem médica.</p>
+          <div class="footer-status"><i></i> Todos os sistemas operacionais</div>
+        </div>
+        <div>
+          <h4>Produto</h4>
+          <a href="#overview">Visão geral</a>
+          <a href="#metrics">Métricas</a>
+          <a href="#roles">Perfis de acesso</a>
+          <a href="dashboard.html">Dashboard</a>
+        </div>
+        <div>
+          <h4>Arquitetura Técnica</h4>
+          <a href="#differentials">Contexto técnico</a>
+          <a href="#faq">Escopo de atuação</a>
+          <a href="#faq">Integrações</a>
+          <a href="#faq">Documentação</a>
+        </div>
+        <div>
+          <h4>Equipe Acadêmica</h4>
+          <p>Projeto desenvolvido na São Paulo Tech School.</p>
+          <a href="#contact">Conheça o projeto</a>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>&copy; 2026 MagnaSync &mdash; Monitoramento Contínuo de Hardware Hospitalar.</span>
+        <div>
+          <a href="#faq">Privacidade</a>
+          <a href="#faq">Termos de uso</a>
+          <a href="#faq">Cookies</a>
+        </div>
+      </div>
+    </footer>
+    <!-- ===================== /FOOTER ===================== -->
+
+  </div>
+</body>
+</html>

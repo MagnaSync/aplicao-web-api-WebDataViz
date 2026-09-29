@@ -1,0 +1,712 @@
+/* ==========================================================================
+   MagnaSync — Dashboard de Telemetria de Hardware Hospitalar
+   Arquivo: dashboard.css
+   Paleta: #0B192C | #1A4A87 | #273E63 | #F2F7FC | #FFFFFF
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+/* --------------------------------------------------------------------------
+   Reset & Base
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: 'Inter', sans-serif;
+  color: #0B192C;
+  font-synthesis: none;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background-color: #F2F7FC;
+  color: #0B192C;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Layout: App Container (Sidebar + Main)
+   -------------------------------------------------------------------------- */
+.dashboard-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar
+   -------------------------------------------------------------------------- */
+.dash-sidebar {
+  width: 250px;
+  background-color: #0B192C;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid #273E63;
+  padding: 24px 16px;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #273E63;
+}
+
+.sidebar-logo span span {
+  color: #1A4A87;
+}
+
+.sidebar-logo .logo-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: block;
+}
+
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 24px;
+  flex: 1;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #8a9dbf;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  background-color: #273E63;
+  color: #ffffff;
+}
+
+.nav-link.active {
+  background-color: #1A4A87;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(26, 74, 135, 0.35);
+}
+
+.sidebar-footer {
+  padding-top: 20px;
+  border-top: 1px solid #273E63;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1A4A87, #273E63);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #ffffff;
+  border: 2px solid #273E63;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.user-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f0f4f8;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.user-role {
+  font-size: 10px;
+  color: #8a9dbf;
+}
+
+.button-exit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #273E63;
+  border-radius: 6px;
+  color: #8a9dbf;
+  font-size: 11px;
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.button-exit:hover {
+  background-color: #273E63;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   Main Content Area
+   -------------------------------------------------------------------------- */
+.dash-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: #F2F7FC;
+}
+
+/* --------------------------------------------------------------------------
+   Top Bar
+   -------------------------------------------------------------------------- */
+.dash-topbar {
+  height: 68px;
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(39, 62, 99, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+
+.unit-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.unit-badge small {
+  font-size: 10px;
+  color: #273E63;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.unit-badge strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  color: #0B192C;
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.live-indicator i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  display: inline-block;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.select-unit {
+  padding: 7px 12px;
+  border: 1px solid rgba(39, 62, 99, 0.25);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #273E63;
+  background-color: #ffffff;
+  cursor: pointer;
+  outline: none;
+  max-width: 220px;
+  text-overflow: ellipsis;
+}
+
+.topbar-button {
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border: 1px solid rgba(39, 62, 99, 0.25);
+  background-color: #ffffff;
+  color: #273E63;
+  transition: all 0.2s;
+}
+
+.topbar-button:hover {
+  background-color: #F2F7FC;
+}
+
+/* --------------------------------------------------------------------------
+   Dashboard Body Content
+   -------------------------------------------------------------------------- */
+.dash-content {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+.content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.content-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0B192C;
+}
+
+.content-header p {
+  font-size: 13px;
+  color: #273E63;
+  margin: 4px 0 0;
+}
+
+.time-filter {
+  display: inline-flex;
+  border: 1px solid rgba(39, 62, 99, 0.15);
+  border-radius: 8px;
+  background-color: #ffffff;
+  padding: 3px;
+}
+
+.time-btn {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #273E63;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.time-btn.active {
+  background-color: #1A4A87;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   KPI Summary Cards
+   -------------------------------------------------------------------------- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.kpi-card {
+  padding: 18px 20px;
+  background-color: #ffffff;
+  border: 1px solid rgba(39, 62, 99, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(11, 25, 44, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpi-card span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #273E63;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.kpi-card strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 26px;
+  color: #0B192C;
+}
+
+.kpi-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+}
+
+.kpi-badge.up {
+  color: #059669;
+  background-color: #ecfdf5;
+}
+
+.kpi-badge.warn {
+  color: #d97706;
+  background-color: #fffbeb;
+}
+
+.kpi-badge.normal {
+  color: #1A4A87;
+  background-color: rgba(26, 74, 135, 0.1);
+}
+
+.kpi-meta {
+  font-size: 11px;
+  color: #8a9dbf;
+}
+
+/* --------------------------------------------------------------------------
+   Main Telemetry Grid (Charts + Health Panel)
+   -------------------------------------------------------------------------- */
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+}
+
+.dash-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(39, 62, 99, 0.12);
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 4px 12px rgba(11, 25, 44, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0B192C;
+}
+
+.card-title small {
+  font-size: 11px;
+  color: #8a9dbf;
+}
+
+/* Telemetry Charts inside Card */
+.chart-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F2F7FC;
+}
+
+.chart-block:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.chart-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.chart-meta b {
+  font-size: 13px;
+  color: #273E63;
+}
+
+.chart-meta strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  color: #0B192C;
+}
+
+.chart-meta small {
+  font-size: 11px;
+  color: #273E63;
+  margin-left: 6px;
+}
+
+/* Health Gauge */
+.gauge-wrapper {
+  position: relative;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.gauge-score {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  color: #0B192C;
+  line-height: 1;
+}
+
+.gauge-score small {
+  font-size: 20px;
+  color: #273E63;
+}
+
+.gauge-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #059669;
+  margin-top: 4px;
+}
+
+/* Health Status Checklist */
+.health-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: #F2F7FC;
+  border: 1px solid rgba(39, 62, 99, 0.08);
+  font-size: 12px;
+}
+
+.status-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #273E63;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.emerald {
+  background-color: #10b981;
+}
+
+.status-dot.amber {
+  background-color: #f59e0b;
+}
+
+.status-value {
+  font-weight: 700;
+  color: #0B192C;
+}
+
+/* --------------------------------------------------------------------------
+   Events & Hardware Info Grid (Bottom row)
+   -------------------------------------------------------------------------- */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.event-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: #F2F7FC;
+  border: 1px solid rgba(39, 62, 99, 0.08);
+}
+
+.event-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.event-badge.attention {
+  color: #d97706;
+  background-color: #fffbeb;
+}
+
+.event-badge.normal {
+  color: #059669;
+  background-color: #ecfdf5;
+}
+
+.event-desc {
+  font-size: 12px;
+  color: #273E63;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.event-desc small {
+  font-size: 10px;
+  color: #8a9dbf;
+}
+
+.spec-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.spec-box {
+  padding: 12px;
+  background-color: #F2F7FC;
+  border: 1px solid rgba(39, 62, 99, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.spec-box small {
+  font-size: 10px;
+  color: #273E63;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.spec-box strong {
+  font-size: 13px;
+  color: #0B192C;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Media Queries
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .telemetry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .dashboard-app {
+    flex-direction: column;
+  }
+
+  .dash-sidebar {
+    width: 100%;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .dash-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .spec-list {
+    grid-template-columns: 1fr;
+  }
+}
