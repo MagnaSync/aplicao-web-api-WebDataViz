@@ -22,11 +22,9 @@
 
       <nav class="sidebar-nav" aria-label="Navegação do Dashboard">
         <a href="#overview" class="nav-link active">Visão Geral</a>
-        <a href="#sensores" class="nav-link">Hardware &amp; CPU</a>
-        <a href="#memoria" class="nav-link">Memória RAM</a>
-        <a href="#armazenamento" class="nav-link">Discos NVMe</a>
-        <a href="#rede" class="nav-link">Rede &amp; PACS</a>
-        <a href="#alertas" class="nav-link">Alertas</a>
+        <a href="#relatorio" class="nav-link">Relatório</a>
+        <a href="#suporte" class="nav-link">Suporte</a>
+        <a href="#cadastro" class="nav-link">Cadastro</a>
       </nav>
 
       <div class="sidebar-footer">
@@ -37,7 +35,6 @@
             <span class="user-role">Engenharia Clínica</span>
           </div>
         </div>
-        <a href="../index.html" class="button-exit">Voltar para o Site</a>
       </div>
     </aside>
     <!-- ===================== /SIDEBAR ===================== -->
@@ -52,7 +49,6 @@
             <small>Console Monitorado</small>
             <div><strong>Hospital Central &middot; RM 01</strong></div>
           </div>
-          <span class="live-indicator"><i></i> Sistema Online</span>
         </div>
 
         <div class="topbar-actions">
@@ -71,51 +67,41 @@
         <div class="content-header">
           <div>
             <h1>Telemetria de Hardware em Tempo Real</h1>
-            <p>Monitoramento contínuo de processador, memória, armazenamento e tráfego DICOM.</p>
-          </div>
-          <div class="time-filter">
-            <button class="time-btn" data-time="15">15 min</button>
-            <button class="time-btn active" data-time="60">60 min</button>
-            <button class="time-btn" data-time="1440">24h</button>
+            <p>Monitoramento contínuo de processador, memória, armazenamento e tráfego de rede.</p>
           </div>
         </div>
 
         <!-- ===================== KPIs ===================== -->
         <section class="kpi-grid">
           <div class="kpi-card">
-            <span>Disponibilidade</span>
+            <span>Número de exames por dia</span>
             <div class="kpi-row">
-              <strong>99,98%</strong>
-              <span class="kpi-badge up">+0,12%</span>
+              <strong>24</strong>
             </div>
-            <div class="kpi-meta">Meta operacional mantida</div>
           </div>
 
           <div class="kpi-card">
-            <span>Alertas Ativos</span>
+            <span>Último incidente foi em:</span>
             <div class="kpi-row">
-              <strong>02</strong>
-              <span class="kpi-badge warn">Atenção</span>
+              <strong>02/04/2026</strong>
+              <span class="kpi-badge warn">CPU</span>
             </div>
-            <div class="kpi-meta">RAM em 68% e pico de CPU</div>
           </div>
 
           <div class="kpi-card">
-            <span>Última Coleta</span>
+            <span>Quantidade de alertas </span>
             <div class="kpi-row">
-              <strong id="live-timer">4s</strong>
-              <span class="kpi-badge up">Ao Vivo</span>
+              <strong id="live-timer">4</strong>
+              <span class="kpi-badge up">Semana</span>
             </div>
-            <div class="kpi-meta">Agente de telemetria ativo</div>
           </div>
 
           <div class="kpi-card">
-            <span>Latência PACS</span>
+            <span>Tempo médio de reparo</span>
             <div class="kpi-row">
-              <strong>12 ms</strong>
+              <strong>5 min</strong>
               <span class="kpi-badge normal">Excelente</span>
             </div>
-            <div class="kpi-meta">Comunicação DICOM estável</div>
           </div>
         </section>
         <!-- ===================== /KPIs ===================== -->
@@ -124,7 +110,7 @@
         <section class="telemetry-grid">
           <article class="dash-card">
             <div class="card-title">
-              <h2>Performance do Console Computacional</h2>
+              <h2>Performance do Console</h2>
               <small>Janela: últimos 60 minutos</small>
             </div>
 
@@ -144,7 +130,14 @@
 
             <div class="chart-block">
               <div class="chart-meta">
-                <b>Tráfego de Rede PACS</b>
+                <b>Uso de disco</b>
+                <div><strong>63%</strong><small>630GB de 1000 GB</small></div>
+              </div>
+            </div>
+
+            <div class="chart-block">
+              <div class="chart-meta">
+                <b>Tráfego de rede</b>
                 <div><strong>12 ms</strong><small>Taxa: 450 MB/s</small></div>
               </div>
             </div>
@@ -178,13 +171,6 @@
               </div>
               <div class="status-item">
                 <div class="status-item-left">
-                  <i class="status-dot amber"></i>
-                  <span>Alocação de Memória RAM</span>
-                </div>
-                <span class="status-value">68% (Atenção)</span>
-              </div>
-              <div class="status-item">
-                <div class="status-item-left">
                   <i class="status-dot emerald"></i>
                   <span>Temperatura da CPU</span>
                 </div>
@@ -194,65 +180,6 @@
           </article>
         </section>
         <!-- ===================== /GRADE DE TELEMETRIA ===================== -->
-
-        <!-- ===================== EVENTOS & ESPECIFICAÇÕES ===================== -->
-        <section class="bottom-grid">
-          <!-- <article class="dash-card">
-            <div class="card-title">
-              <h2>Eventos &amp; Alertas Recentes</h2>
-              <small>Log em tempo real</small>
-            </div>
-            <div class="events-list">
-              <div class="event-item">
-                <span class="event-badge attention">Atenção</span>
-                <div class="event-desc">
-                  <span>Pico de memória RAM acima de 65% na reconstrução axial T2.</span>
-                  <small>Há 8 minutos &middot; RM 01</small>
-                </div>
-              </div>
-              <div class="event-item">
-                <span class="event-badge normal">Normal</span>
-                <div class="event-desc">
-                  <span>Sincronização de 1.420 imagens DICOM concluída com sucesso.</span>
-                  <small>Há 22 minutos &middot; RM 01</small>
-                </div>
-              </div>
-              <div class="event-item">
-                <span class="event-badge normal">Normal</span>
-                <div class="event-desc">
-                  <span>Varredura preventiva de integridade NVMe sem setores corrompidos.</span>
-                  <small>Há 1 hora &middot; Rotina Automática</small>
-                </div>
-              </div>
-            </div>
-          </article> -->
-
-          <!-- <article class="dash-card">
-            <div class="card-title">
-              <h2>Especificações do Console</h2>
-              <small>Hardware identificado</small>
-            </div>
-            <div class="spec-list">
-              <div class="spec-box">
-                <small>Processador</small>
-                <strong>Intel Xeon 14 Cores</strong>
-              </div>
-              <div class="spec-box">
-                <small>Memória RAM</small>
-                <strong>16 GB DDR4 ECC</strong>
-              </div>
-              <div class="spec-box">
-                <small>Armazenamento</small>
-                <strong>2x 1 TB NVMe RAID 1</strong>
-              </div>
-              <div class="spec-box">
-                <small>Interface de Rede</small>
-                <strong>10 GbE SFP+ DICOM</strong>
-              </div>
-            </div>
-          </article>
-        </section> -->
-        <!-- ===================== /EVENTOS & ESPECIFICAÇÕES ===================== -->
 
       </div>
       <!-- ===================== /CORPO DO DASHBOARD ===================== -->

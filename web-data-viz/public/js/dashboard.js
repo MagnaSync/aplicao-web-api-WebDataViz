@@ -12,17 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Simulated live counter for telemetry collection
-  const liveTimer = document.getElementById('live-timer');
-  let seconds = 4;
-
-  if (liveTimer) {
-    setInterval(() => {
-      seconds = (seconds % 5) + 1;
-      liveTimer.textContent = `${seconds}s`;
-    }, 1000);
-  }
-
   // Equipment selector notification
   const unitSelector = document.getElementById('unit-selector');
   if (unitSelector) {
