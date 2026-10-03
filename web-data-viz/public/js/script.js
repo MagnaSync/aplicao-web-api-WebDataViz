@@ -1,68 +1,66 @@
-/**
- * MagnaSync — Scripts da Plataforma
- * Gerencia menu mobile, acordeão de dúvidas (FAQ) e envio de contato.
- * Totalmente livre de dependências de SVG externas ou injetadas.
- */
-
 document.addEventListener('DOMContentLoaded', () => {
-  // --- Menu Mobile de Navegação ---
-  const menuButton = document.getElementById('menu-btn');
-  const mobileNav = document.getElementById('mobile-nav');
+  // --- Menu: destaca (negrito) a seção atual ---
+  const linksMenu = Array.from(document.querySelectorAll('.menu-navegacao a[href^="#"]'));
+  const secoesMenu = linksMenu
+    .map((link) => document.querySelector(link.getAttribute('href')))
+    .filter(Boolean);
 
-  let isMenuOpen = false;
-
-  if (menuButton && mobileNav) {
-    menuButton.addEventListener('click', () => {
-      isMenuOpen = !isMenuOpen;
-      mobileNav.classList.toggle('open', isMenuOpen);
-      menuButton.classList.toggle('is-open', isMenuOpen);
-      menuButton.setAttribute('aria-label', isMenuOpen ? 'Fechar menu' : 'Abrir menu');
+  function atualizarMenuAtivo() {
+    const referencia = window.scrollY + 120;
+    let atual = secoesMenu[0];
+    secoesMenu.forEach((secao) => {
+      if (secao.getBoundingClientRect().top + window.scrollY <= referencia) atual = secao;
     });
 
-    // Fecha o menu ao clicar em qualquer link
-    const navLinks = mobileNav.querySelectorAll('a');
-    navLinks.forEach((link) => {
-      link.addEventListener('click', () => {
-        isMenuOpen = false;
-        mobileNav.classList.remove('open');
-        menuButton.classList.remove('is-open');
-        menuButton.setAttribute('aria-label', 'Abrir menu');
-      });
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+      atual = secoesMenu[secoesMenu.length - 1];
+    }
+    linksMenu.forEach((link) => {
+      const ativo = atual && link.getAttribute('href') === '#' + atual.id;
+      link.classList.toggle('ativo', ativo);
+      if (ativo) link.setAttribute('aria-current', 'true');
+      else link.removeAttribute('aria-current');
     });
   }
 
-  // --- Accordion FAQ ---
-  const faqItems = Array.from(document.querySelectorAll('.faq-item'));
-  let activeFaqIndex = 0; // Primeiro item aberto por padrão
+  if (secoesMenu.length) {
+    window.addEventListener('scroll', atualizarMenuAtivo, { passive: true });
+    window.addEventListener('resize', atualizarMenuAtivo);
+    atualizarMenuAtivo();
+  }
 
-  faqItems.forEach((item, index) => {
-    const toggleButton = item.querySelector('button');
-    if (!toggleButton) return;
+  // --- Acordeão de Dúvidas (FAQ) ---
+  const itensDuvida = Array.from(document.querySelectorAll('.item-duvida'));
+  let indiceAtivo = 0;
 
-    toggleButton.addEventListener('click', () => {
-      activeFaqIndex = activeFaqIndex === index ? -1 : index;
+  itensDuvida.forEach((item, index) => {
+    const botaoToggle = item.querySelector('button');
+    if (!botaoToggle) return;
 
-      faqItems.forEach((faqItem, i) => {
-        const isOpen = i === activeFaqIndex;
-        faqItem.classList.toggle('open', isOpen);
-        const button = faqItem.querySelector('button');
-        if (button) {
-          button.setAttribute('aria-expanded', String(isOpen));
+    botaoToggle.addEventListener('click', () => {
+      indiceAtivo = indiceAtivo === index ? -1 : index;
+
+      itensDuvida.forEach((itemDuvida, i) => {
+        const estaAberto = i === indiceAtivo;
+        itemDuvida.classList.toggle('open', estaAberto);
+        const botao = itemDuvida.querySelector('button');
+        if (botao) {
+          botao.setAttribute('aria-expanded', String(estaAberto));
         }
       });
     });
   });
 
   // --- Formulário de Solicitação de Demonstração ---
-  const ctaForm = document.getElementById('cta-form');
-  const ctaFormArea = document.getElementById('cta-form-area');
+  const formulario = document.getElementById('formulario-contato');
+  const areaFormulario = document.getElementById('area-formulario');
 
-  if (ctaForm && ctaFormArea) {
-    ctaForm.addEventListener('submit', (event) => {
+  if (formulario && areaFormulario) {
+    formulario.addEventListener('submit', (event) => {
       event.preventDefault();
-      ctaFormArea.innerHTML = `
-        <div class="form-success">
-          <span class="success-icon">&#10003;</span>
+      areaFormulario.innerHTML = `
+        <div class="formulario-sucesso">
+          <span class="icone-sucesso">&#10003;</span>
           <div>
             <span>Solicitação recebida com sucesso.</span>
             <small>Nossa equipe técnica especializada entrará em contato em breve.</small>
