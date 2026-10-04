@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../js/dashboard.js" defer></script>
 </head>
 <body>
@@ -114,33 +115,58 @@
               <small>Janela: últimos 60 minutos</small>
             </div>
 
-            <div class="chart-block">
-              <div class="chart-meta">
-                <b>Uso de CPU</b>
-                <div><strong>42%</strong><small>14 núcleos ativos</small></div>
+            <!-- Mini-KPIs de Telemetria Compactas -->
+            <div class="telemetry-mini-kpis">
+              <div class="mini-kpi-item">
+                <div class="mini-kpi-header">
+                  <span class="mini-kpi-dot cpu"></span>
+                  <span class="mini-kpi-title">Uso de CPU</span>
+                </div>
+                <div class="mini-kpi-body">
+                  <strong id="kpi-cpu-val">24%</strong>
+                  <span class="kpi-badge normal" id="kpi-cpu-badge">Normal</span>
+                </div>
+              </div>
+
+              <div class="mini-kpi-item">
+                <div class="mini-kpi-header">
+                  <span class="mini-kpi-dot ram"></span>
+                  <span class="mini-kpi-title">Memória RAM</span>
+                </div>
+                <div class="mini-kpi-body">
+                  <strong id="kpi-ram-val">64%</strong>
+                  <span class="kpi-badge warn" id="kpi-ram-badge">Atenção</span>
+                </div>
+              </div>
+
+              <div class="mini-kpi-item">
+                <div class="mini-kpi-header">
+                  <span class="mini-kpi-dot disco"></span>
+                  <span class="mini-kpi-title">Uso de Disco</span>
+                </div>
+                <div class="mini-kpi-body">
+                  <strong id="kpi-disco-val">63%</strong>
+                  <span class="kpi-badge up" id="kpi-disco-badge">Estável</span>
+                </div>
+              </div>
+
+              <div class="mini-kpi-item">
+                <div class="mini-kpi-header">
+                  <span class="mini-kpi-dot rede"></span>
+                  <span class="mini-kpi-title">Tráfego de Rede</span>
+                </div>
+                <div class="mini-kpi-body">
+                  <strong id="kpi-rede-val">450 MB/s</strong>
+                  <span class="kpi-badge normal" id="kpi-rede-badge">Excelente</span>
+                </div>
               </div>
             </div>
 
-            <div class="chart-block">
-              <div class="chart-meta">
-                <b>Uso de Memória RAM</b>
-                <div><strong>68%</strong><small>6,4 GB de 16 GB</small></div>
-              </div>
+            <!-- Gráfico de Performance com Chart.js -->
+            <div class="chart-wrapper">
+              <canvas id="chartPerformance"></canvas>
             </div>
 
-            <div class="chart-block">
-              <div class="chart-meta">
-                <b>Uso de disco</b>
-                <div><strong>63%</strong><small>630GB de 1000 GB</small></div>
-              </div>
-            </div>
-
-            <div class="chart-block">
-              <div class="chart-meta">
-                <b>Tráfego de rede</b>
-                <div><strong>12 ms</strong><small>Taxa: 450 MB/s</small></div>
-              </div>
-            </div>
           </article>
 
           <article class="dash-card">
