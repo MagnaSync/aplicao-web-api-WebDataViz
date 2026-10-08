@@ -116,13 +116,37 @@ body {
 
 .loading-div {
   display: none;
+  align-items: center;
   justify-content: center;
-  margin-top: 16px;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background-color: rgba(26, 74, 135, 0.2);
+  border: 1px solid rgba(126, 168, 216, 0.28);
 }
 
-.loading-div img {
-  width: 40px;
-  height: 40px;
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(126, 168, 216, 0.25);
+  border-top-color: var(--cor-destaque);
+  border-radius: 50%;
+  animation: spinLoading 0.75s linear infinite;
+}
+
+.loading-div span {
+  font-family: var(--fonte-principal);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cor-texto-claro);
+  letter-spacing: 0.02em;
+}
+
+@keyframes spinLoading {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 #div_erros_login {
