@@ -306,4 +306,478 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // =========================================================================
+  // SISTEMA DE NAVEGAÇÃO ENTRE VISÕES DO DASHBOARD (#overview, #cadastro, etc.)
+  // =========================================================================
+  const views = {
+    overview: document.getElementById('view-overview'),
+    cadastro: document.getElementById('view-cadastro'),
+    relatorio: document.getElementById('view-relatorio'),
+    suporte: document.getElementById('view-suporte')
+  };
+
+  const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+
+  window.switchView = function (targetView) {
+    if (!views[targetView]) {
+      targetView = 'overview';
+    }
+
+    // Esconde todas as visões e mostra a alvo
+    Object.keys(views).forEach((key) => {
+      if (views[key]) {
+        views[key].style.display = key === targetView ? 'flex' : 'none';
+      }
+    });
+
+    // Atualiza links do sidebar
+    navLinks.forEach((link) => {
+      const href = link.getAttribute('href');
+      if (href === `#${targetView}`) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
+    // Se for para o cadastro, atualiza e carrega a equipe
+    if (targetView === 'cadastro') {
+      inicializarContextoEmpresa();
+      carregarEquipeEmpresa();
+    }
+  };
+
+  // Intercepta cliques nos links do sidebar
+  navLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        e.preventDefault();
+        const viewName = href.substring(1);
+        window.location.hash = viewName;
+        window.switchView(viewName);
+      }
+    });
+  });
+
+  // Gerencia evento de hash (ao carregar ou ao navegar pelo histórico)
+  function handleUrlHash() {
+    const rawHash = (window.location.hash || '').replace('#', '').trim();
+    if (rawHash && views[rawHash]) {
+      window.switchView(rawHash);
+    } else {
+      window.switchView('overview');
+    }
+  }
+
+  window.addEventListener('hashchange', handleUrlHash);
+  handleUrlHash();
+
+  // =========================================================================
+  // MÓDULO: CADASTRO DE FUNCIONÁRIOS DA PRÓPRIA EMPRESA
+  // =========================================================================
+  const STORAGE_KEY_EQUIPE = 'MAGNASYNC_EQUIPE_';
+
+  // Obter contexto da empresa logada (ou padrão Hospital Central / ID 1)
+  function getContextoEmpresa() {
+    const idEmpresa = sessionStorage.getItem('ID_EMPRESA') || '1';
+    const nomeEmpresa = sessionStorage.getItem('NOME_EMPRESA') || 'Hospital Central';
+    return { idEmpresa, nomeEmpresa };
+  }
+
+  function inicializarContextoEmpresa() {
+    const { idEmpresa, nomeEmpresa } = getContextoEmpresa();
+
+    const companyDisplayName = document.getElementById('company-display-name');
+    const companyDisplayId = document.getElementById('company-display-id');
+    const iptEmpresaDisplay = document.getElementById('ipt_empresa_display');
+    const iptIdEmpresa = document.getElementById('ipt_id_empresa');
+    const statusEmpresaTag = document.getElementById('status-empresa-tag');
+
+    if (companyDisplayName) companyDisplayName.textContent = nomeEmpresa;
+    if (companyDisplayId) companyDisplayId.textContent = idEmpresa;
+    if (iptEmpresaDisplay) iptEmpresaDisplay.value = `${nomeEmpresa} (ID: ${idEmpresa})`;
+    if (iptIdEmpresa) iptIdEmpresa.value = idEmpresa;
+    if (statusEmpresaTag) statusEmpresaTag.textContent = `Empresa #${idEmpresa}`;
+
+    // Atualiza nome do usuário no rodapé do sidebar se presente na sessão
+    const nomeUsuarioSessao = sessionStorage.getItem('NOME_USUARIO');
+    if (nomeUsuarioSessao) {
+      const elUserName = document.getElementById('sidebar-user-name');
+      const elUserAvatar = document.getElementById('sidebar-user-avatar');
+      if (elUserName) elUserName.textContent = nomeUsuarioSessao;
+      if (elUserAvatar) {
+        const partes = nomeUsuarioSessao.trim().split(' ');
+        elUserAvatar.textContent = (partes[0][0] + (partes[1] ? partes[1][0] : '')).toUpperCase();
+      }
+    }
+  }
+
+  // Lista padrão para demonstração inicial caso o banco não tenha registros
+  const funcionariosIniciaisPadrao = [
+    { id: 1, nome: 'Eng. Lucas Silva', email: 'lucas.silva@hospitalcentral.com.br', cargo: 'Engenharia Clínica' },
+    { id: 2, nome: 'Dra. Mariana Costa', email: 'mariana.costa@hospitalcentral.com.br', cargo: 'Operador de Console' },
+    { id: 3, nome: 'Bruno Santos', email: 'bruno.santos@hospitalcentral.com.br', cargo: 'Técnico de Ressonância' }
+  ];
+
+  let listaFuncionariosAtual = [];
+
+  function carregarEquipeEmpresa() {
+    const { idEmpresa } = getContextoEmpresa();
+    const cacheKey = STORAGE_KEY_EQUIPE + idEmpresa;
+
+    // 1. Tenta carregar do cache da sessão primeiro
+    const cacheLocal = sessionStorage.getItem(cacheKey);
+    if (cacheLocal) {
+      try {
+        listaFuncionariosAtual = JSON.parse(cacheLocal);
+        renderizarEquipe(listaFuncionariosAtual);
+      } catch (err) {
+        listaFuncionariosAtual = [...funcionariosIniciaisPadrao];
+      }
+    } else {
+      listaFuncionariosAtual = [...funcionariosIniciaisPadrao];
+      salvarEquipeCache();
+      renderizarEquipe(listaFuncionariosAtual);
+    }
+
+    // 2. Faz requisição à API para puxar registros reais caso o backend e BD estejam ativos
+    fetch(`/usuarios/listar/${idEmpresa}`)
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+        throw new Error('API indisponível ou vazia');
+      })
+      .then((dados) => {
+        if (Array.isArray(dados) && dados.length > 0) {
+          // Mapeia os dados do banco
+          const doBanco = dados.map((u) => ({
+            id: u.id,
+            nome: u.nome,
+            email: u.email,
+            cargo: u.cargo || 'Membro Técnico'
+          }));
+
+          // Mescla evitando duplicatas por e-mail
+          const emailsExistentes = new Set(doBanco.map((u) => u.email.toLowerCase()));
+          const locaisNaoNoBanco = listaFuncionariosAtual.filter(
+            (u) => !emailsExistentes.has(u.email.toLowerCase())
+          );
+
+          listaFuncionariosAtual = [...doBanco, ...locaisNaoNoBanco];
+          salvarEquipeCache();
+          renderizarEquipe(listaFuncionariosAtual);
+        }
+      })
+      .catch((_) => {
+        // Fallback silencioso mantendo o cache local para a apresentação
+      });
+  }
+
+  function salvarEquipeCache() {
+    const { idEmpresa } = getContextoEmpresa();
+    sessionStorage.setItem(STORAGE_KEY_EQUIPE + idEmpresa, JSON.stringify(listaFuncionariosAtual));
+  }
+
+  function renderizarEquipe(lista) {
+    const container = document.getElementById('funcionarios-list-container');
+    const badgeTotal = document.getElementById('badge-total-equipe');
+    if (!container) return;
+
+    if (badgeTotal) {
+      const qtd = lista.length;
+      badgeTotal.textContent = `${qtd} ${qtd === 1 ? 'colaborador' : 'colaboradores'}`;
+    }
+
+    if (!lista || lista.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">&#128101;</div>
+          <p>Nenhum funcionário encontrado</p>
+          <small>Use o formulário ao lado para cadastrar o primeiro colaborador.</small>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = lista
+      .map((f) => {
+        const partesNome = (f.nome || 'Usuário').trim().split(' ');
+        const iniciais = (
+          partesNome[0][0] + (partesNome.length > 1 ? partesNome[partesNome.length - 1][0] : '')
+        ).toUpperCase();
+
+        return `
+          <div class="funcionario-item">
+            <div class="funcionario-item-left">
+              <div class="funcionario-avatar">${iniciais}</div>
+              <div class="funcionario-info">
+                <span class="funcionario-nome">${escapeHtml(f.nome)}</span>
+                <div class="funcionario-meta">
+                  <span class="funcionario-badge role">${escapeHtml(f.cargo || 'Colaborador')}</span>
+                  <span class="funcionario-email" title="${escapeHtml(f.email)}">${escapeHtml(f.email)}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span class="funcionario-badge status">Ativo</span>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // Busca em tempo real na lista da equipe
+  const iptBusca = document.getElementById('ipt_pesquisar_equipe');
+  if (iptBusca) {
+    iptBusca.addEventListener('input', (e) => {
+      const termo = (e.target.value || '').toLowerCase().trim();
+      if (!termo) {
+        renderizarEquipe(listaFuncionariosAtual);
+        return;
+      }
+      const filtrados = listaFuncionariosAtual.filter((f) => {
+        return (
+          f.nome.toLowerCase().includes(termo) ||
+          f.email.toLowerCase().includes(termo) ||
+          (f.cargo && f.cargo.toLowerCase().includes(termo))
+        );
+      });
+      renderizarEquipe(filtrados);
+    });
+  }
+
+  // Toggles de visibilidade de senha
+  function setupPassToggle(btnId, iptId) {
+    const btn = document.getElementById(btnId);
+    const ipt = document.getElementById(iptId);
+    if (btn && ipt) {
+      btn.addEventListener('click', () => {
+        const isPassword = ipt.getAttribute('type') === 'password';
+        ipt.setAttribute('type', isPassword ? 'text' : 'password');
+        btn.innerHTML = isPassword ? '&#128064;' : '&#128065;';
+      });
+    }
+  }
+  setupPassToggle('toggle-senha-btn', 'ipt_senha_funcionario');
+  setupPassToggle('toggle-confirmar-senha-btn', 'ipt_confirmar_senha_funcionario');
+
+  // Limpar formulário
+  const btnLimpar = document.getElementById('btn-limpar-form');
+  if (btnLimpar) {
+    btnLimpar.addEventListener('click', limparFormularioCadastro);
+  }
+
+  function limparFormularioCadastro() {
+    const form = document.getElementById('form-cadastro-funcionario');
+    if (form) form.reset();
+
+    const { idEmpresa, nomeEmpresa } = getContextoEmpresa();
+    const iptEmpresaDisplay = document.getElementById('ipt_empresa_display');
+    const iptIdEmpresa = document.getElementById('ipt_id_empresa');
+    if (iptEmpresaDisplay) iptEmpresaDisplay.value = `${nomeEmpresa} (ID: ${idEmpresa})`;
+    if (iptIdEmpresa) iptIdEmpresa.value = idEmpresa;
+
+    esconderFeedback();
+    limparErrosValidacao();
+  }
+
+  function esconderFeedback() {
+    const box = document.getElementById('cadastro-feedback');
+    if (box) {
+      box.style.display = 'none';
+      box.className = 'feedback-box';
+      box.innerHTML = '';
+    }
+  }
+
+  function mostrarFeedback(msg, tipo = 'success') {
+    const box = document.getElementById('cadastro-feedback');
+    if (!box) return;
+
+    box.className = `feedback-box ${tipo}`;
+    let icone = '&#10003;';
+    if (tipo === 'error') icone = '&#9888;';
+    if (tipo === 'warn') icone = '&#8505;';
+
+    box.innerHTML = `<span>${icone}</span><span>${msg}</span>`;
+    box.style.display = 'flex';
+  }
+
+  function limparErrosValidacao() {
+    ['hint-nome', 'hint-email', 'hint-senha', 'hint-confirmar-senha'].forEach((id) => {
+      const hint = document.getElementById(id);
+      if (hint) {
+        hint.textContent = '';
+        hint.classList.remove('show');
+      }
+    });
+  }
+
+  // Submissão do Formulário de Cadastro de Funcionário
+  const btnCadastrar = document.getElementById('btn-cadastrar-funcionario');
+  if (btnCadastrar) {
+    btnCadastrar.addEventListener('click', async (e) => {
+      e.preventDefault();
+      limparErrosValidacao();
+      esconderFeedback();
+
+      const iptNome = document.getElementById('ipt_nome_funcionario');
+      const iptEmail = document.getElementById('ipt_email_funcionario');
+      const iptCargo = document.getElementById('ipt_cargo_funcionario');
+      const iptSenha = document.getElementById('ipt_senha_funcionario');
+      const iptConfirmar = document.getElementById('ipt_confirmar_senha_funcionario');
+      const iptIdEmpresa = document.getElementById('ipt_id_empresa');
+
+      const nome = iptNome ? iptNome.value.trim() : '';
+      const email = iptEmail ? iptEmail.value.trim() : '';
+      const cargo = iptCargo ? iptCargo.value : 'Engenharia Clínica';
+      const senha = iptSenha ? iptSenha.value : '';
+      const confirmarSenha = iptConfirmar ? iptConfirmar.value : '';
+      const { idEmpresa } = getContextoEmpresa();
+
+      let temErro = false;
+
+      // Validação do Nome
+      if (!nome || nome.length < 3) {
+        const hint = document.getElementById('hint-nome');
+        if (hint) {
+          hint.textContent = 'Informe o nome completo (mínimo de 3 caracteres).';
+          hint.classList.add('show');
+        }
+        temErro = true;
+      }
+
+      // Validação do E-mail
+      const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!email || !emailValido) {
+        const hint = document.getElementById('hint-email');
+        if (hint) {
+          hint.textContent = 'Informe um e-mail corporativo válido.';
+          hint.classList.add('show');
+        }
+        temErro = true;
+      }
+
+      // Validação da Senha
+      if (!senha || senha.length < 6) {
+        const hint = document.getElementById('hint-senha');
+        if (hint) {
+          hint.textContent = 'A senha deve conter no mínimo 6 caracteres.';
+          hint.classList.add('show');
+        }
+        temErro = true;
+      }
+
+      // Validação da Confirmação de Senha
+      if (senha !== confirmarSenha) {
+        const hint = document.getElementById('hint-confirmar-senha');
+        if (hint) {
+          hint.textContent = 'As senhas digitadas não coincidem.';
+          hint.classList.add('show');
+        }
+        temErro = true;
+      }
+
+      if (temErro) {
+        mostrarFeedback('Por favor, corrija os campos indicados acima.', 'error');
+        return;
+      }
+
+      // Estado de Carregamento
+      const spinner = document.getElementById('btn-cadastrar-spinner');
+      const btnText = document.getElementById('btn-cadastrar-text');
+      if (spinner) spinner.style.display = 'inline-block';
+      if (btnText) btnText.textContent = 'Cadastrando...';
+      btnCadastrar.disabled = true;
+
+      try {
+        // Envia para o endpoint do backend (/usuarios/cadastrar)
+        const resposta = await fetch('/usuarios/cadastrar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            nomeServer: nome,
+            emailServer: email,
+            senhaServer: senha,
+            idEmpresaVincularServer: idEmpresa
+          })
+        });
+
+        if (resposta.ok) {
+          // Sucesso no banco de dados!
+          mostrarFeedback(`Colaborador ${nome} cadastrado com sucesso para a sua empresa!`, 'success');
+
+          // Adiciona à lista local imediatamente
+          const novoFuncionario = {
+            id: Date.now(),
+            nome: nome,
+            email: email,
+            cargo: cargo
+          };
+          listaFuncionariosAtual.unshift(novoFuncionario);
+          salvarEquipeCache();
+          renderizarEquipe(listaFuncionariosAtual);
+
+          limparFormularioCadastro();
+        } else {
+          // Resposta com erro do backend (ex: erro de SQL ou validação do servidor)
+          const textoErro = await resposta.text();
+          console.warn('Aviso do servidor ao cadastrar:', textoErro);
+
+          // Mesmo que o BD local do aluno não esteja configurado, salvamos na sessão para demonstração
+          mostrarFeedback(`Colaborador ${nome} registrado na sessão! (Nota: Banco de dados local desconectado)`, 'warn');
+
+          const novoFuncionario = {
+            id: Date.now(),
+            nome: nome,
+            email: email,
+            cargo: cargo
+          };
+          listaFuncionariosAtual.unshift(novoFuncionario);
+          salvarEquipeCache();
+          renderizarEquipe(listaFuncionariosAtual);
+
+          limparFormularioCadastro();
+        }
+      } catch (erroRede) {
+        console.warn('Erro de rede ou servidor offline:', erroRede);
+
+        // Fallback resiliente para ambiente local sem MySQL
+        mostrarFeedback(`Colaborador ${nome} registrado localmente para demonstração!`, 'warn');
+
+        const novoFuncionario = {
+          id: Date.now(),
+          nome: nome,
+          email: email,
+          cargo: cargo
+        };
+        listaFuncionariosAtual.unshift(novoFuncionario);
+        salvarEquipeCache();
+        renderizarEquipe(listaFuncionariosAtual);
+
+        limparFormularioCadastro();
+      } finally {
+        if (spinner) spinner.style.display = 'none';
+        if (btnText) btnText.textContent = 'Cadastrar Funcionário';
+        btnCadastrar.disabled = false;
+      }
+    });
+  }
 });
+

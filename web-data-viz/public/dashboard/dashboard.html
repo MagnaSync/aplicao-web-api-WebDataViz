@@ -16,7 +16,7 @@
 
     <!-- ===================== SIDEBAR ===================== -->
     <aside class="dash-sidebar">
-      <a href="landing.html" class="sidebar-logo" title="Voltar para a página inicial">
+      <a href="../index.html" class="sidebar-logo" title="Voltar para a página inicial">
         <img src="../assets/imgs/logo.png" alt="Logo MagnaSync" class="logo-img" />
         <span>Magna<span>Sync</span></span>
       </a>
@@ -30,10 +30,10 @@
 
       <div class="sidebar-footer">
         <div class="user-profile">
-          <div class="user-avatar">EC</div>
+          <div class="user-avatar" id="sidebar-user-avatar">EC</div>
           <div class="user-info">
-            <span class="user-name">Eng. Lucas Silva</span>
-            <span class="user-role">Engenharia Clínica</span>
+            <span class="user-name" id="sidebar-user-name">Eng. Lucas Silva</span>
+            <span class="user-role" id="sidebar-user-role">Engenharia Clínica</span>
           </div>
         </div>
       </div>
@@ -58,19 +58,22 @@
             <option value="rm-02">Console RM 02 – Cardiologia</option>
             <option value="rm-03">Console RM 03 – Neurologia</option>
           </select>
-          <a href="landing.html" class="topbar-button">Página Inicial</a>
+          <a href="../index.html" class="topbar-button">Página Inicial</a>
         </div>
       </header>
       <!-- ===================== /BARRA SUPERIOR ===================== -->
 
       <!-- ===================== CORPO DO DASHBOARD ===================== -->
       <div class="dash-content">
-        <div class="content-header">
-          <div>
-            <h1>Telemetria de Hardware em Tempo Real</h1>
-            <p>Monitoramento contínuo de processador, memória, armazenamento e tráfego de rede.</p>
+
+        <!-- ===================== VIEW: VISÃO GERAL (TELEMETRIA) ===================== -->
+        <section id="view-overview" class="dash-view">
+          <div class="content-header">
+            <div>
+              <h1>Telemetria de Hardware em Tempo Real</h1>
+              <p>Monitoramento contínuo de processador, memória, armazenamento e tráfego de rede.</p>
+            </div>
           </div>
-        </div>
 
         <!-- ===================== KPIs ===================== -->
         <section class="kpi-grid">
@@ -206,8 +209,158 @@
           </article>
         </section>
         <!-- ===================== /GRADE DE TELEMETRIA ===================== -->
+        </section>
+        <!-- ===================== /VIEW: VISÃO GERAL ===================== -->
 
-      </div>
+        <!-- ===================== VIEW: CADASTRO DE FUNCIONÁRIOS ===================== -->
+        <section id="view-cadastro" class="dash-view" style="display: none;">
+          <div class="content-header">
+            <div>
+              <h1>Cadastro de Funcionários</h1>
+              <p>Cadastre novos colaboradores e gerencie os acessos da sua empresa à plataforma de telemetria.</p>
+            </div>
+            <div class="company-badge-pill" id="company-badge-pill">
+              <span class="company-pill-dot"></span>
+              <span class="company-pill-text">Empresa: <strong id="company-display-name">Hospital Central</strong> (ID: <span id="company-display-id">1</span>)</span>
+            </div>
+          </div>
+
+          <div class="cadastro-grid">
+            <!-- Card de Formulário -->
+            <div class="dash-card cadastro-card">
+              <div class="card-title">
+                <div>
+                  <h2>Novo Colaborador</h2>
+                  <small>Cadastre um funcionário vinculado à sua instituição</small>
+                </div>
+                <span class="kpi-badge normal" id="status-empresa-tag">Sessão Ativa</span>
+              </div>
+
+              <!-- Mensagem de feedback (sucesso ou erro) -->
+              <div id="cadastro-feedback" class="feedback-box" style="display: none;"></div>
+
+              <form id="form-cadastro-funcionario" class="cadastro-form" onsubmit="return false;">
+                <div class="form-group">
+                  <label for="ipt_nome_funcionario">Nome Completo</label>
+                  <input type="text" id="ipt_nome_funcionario" placeholder="Ex: Lucas Mendes Ribeiro" required />
+                  <span class="field-hint" id="hint-nome"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="ipt_email_funcionario">E-mail Corporativo</label>
+                  <input type="email" id="ipt_email_funcionario" placeholder="Ex: lucas.mendes@hospitalcentral.com.br" required />
+                  <span class="field-hint" id="hint-email"></span>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="ipt_cargo_funcionario">Cargo / Especialidade</label>
+                    <select id="ipt_cargo_funcionario">
+                      <option value="Engenharia Clínica">Engenharia Clínica</option>
+                      <option value="Técnico de Ressonância">Técnico de Ressonância</option>
+                      <option value="Operador de Console">Operador de Console</option>
+                      <option value="Especialista em TI / PACS">Especialista em TI / PACS</option>
+                      <option value="Biomédico(a) de Imagem">Biomédico(a) de Imagem</option>
+                      <option value="Administrador Hospitalar">Administrador Hospitalar</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="ipt_empresa_display">Empresa Vinculada</label>
+                    <input type="text" id="ipt_empresa_display" value="Hospital Central (ID: 1)" readonly class="input-readonly" title="Vinculado automaticamente à sua empresa atual" />
+                    <input type="hidden" id="ipt_id_empresa" value="1" />
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="ipt_senha_funcionario">Senha de Acesso</label>
+                    <div class="pass-wrapper">
+                      <input type="password" id="ipt_senha_funcionario" placeholder="Mínimo 6 caracteres" required />
+                      <button type="button" class="btn-toggle-eye" id="toggle-senha-btn" title="Mostrar/ocultar senha">&#128065;</button>
+                    </div>
+                    <span class="field-hint" id="hint-senha"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="ipt_confirmar_senha_funcionario">Confirmar Senha</label>
+                    <div class="pass-wrapper">
+                      <input type="password" id="ipt_confirmar_senha_funcionario" placeholder="Repita a senha" required />
+                      <button type="button" class="btn-toggle-eye" id="toggle-confirmar-senha-btn" title="Mostrar/ocultar senha">&#128065;</button>
+                    </div>
+                    <span class="field-hint" id="hint-confirmar-senha"></span>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" id="btn-limpar-form" class="btn-secondary">Limpar</button>
+                  <button type="button" id="btn-cadastrar-funcionario" class="btn-primary">
+                    <span class="btn-spinner" id="btn-cadastrar-spinner" style="display: none;"></span>
+                    <span class="btn-label" id="btn-cadastrar-text">Cadastrar Funcionário</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Card da Lista de Funcionários Cadastrados -->
+            <div class="dash-card cadastro-card">
+              <div class="card-title">
+                <div>
+                  <h2>Equipe Cadastrada</h2>
+                  <small>Colaboradores com credenciais ativas nesta unidade</small>
+                </div>
+                <span class="badge-count" id="badge-total-equipe">0 colaboradores</span>
+              </div>
+
+              <!-- Filtro de busca -->
+              <div class="list-search-wrapper">
+                <input type="text" id="ipt_pesquisar_equipe" placeholder="Buscar por nome, cargo ou e-mail..." />
+              </div>
+
+              <!-- Lista de funcionários -->
+              <div class="funcionarios-list-container" id="funcionarios-list-container">
+                <!-- Itens injetados via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- ===================== /VIEW: CADASTRO DE FUNCIONÁRIOS ===================== -->
+
+        <!-- ===================== VIEW: RELATÓRIOS (PLACEHOLDER ELEGANTE) ===================== -->
+        <section id="view-relatorio" class="dash-view" style="display: none;">
+          <div class="content-header">
+            <div>
+              <h1>Relatórios de Performance &amp; Incidentes</h1>
+              <p>Histórico consolidado de telemetria, paradas não programadas e disponibilidade operacional.</p>
+            </div>
+          </div>
+          <div class="dash-card module-placeholder">
+            <div class="placeholder-icon">&#128202;</div>
+            <h2>Relatórios em Geração Contínua</h2>
+            <p>Selecione os consoles monitorados e exporte relatórios consolidados em formato PDF ou planilha.</p>
+            <div class="placeholder-actions">
+              <button class="topbar-button" onclick="switchView('overview')">&larr; Voltar para Visão Geral</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================== VIEW: SUPORTE (PLACEHOLDER ELEGANTE) ===================== -->
+        <section id="view-suporte" class="dash-view" style="display: none;">
+          <div class="content-header">
+            <div>
+              <h1>Suporte Técnico Especializado</h1>
+              <p>Canal direto com a equipe de engenharia da MagnaSync para suporte aos consoles de RM.</p>
+            </div>
+          </div>
+          <div class="dash-card module-placeholder">
+            <div class="placeholder-icon">&#128736;</div>
+            <h2>Central de Ajuda &amp; SLA Hospitalar</h2>
+            <p>Precisa de assistência técnica imediata ou calibração de sensores de telemetria?</p>
+            <div class="placeholder-actions">
+              <button class="topbar-button" onclick="switchView('overview')">&larr; Voltar para Visão Geral</button>
+            </div>
+          </div>
+        </section>
       <!-- ===================== /CORPO DO DASHBOARD ===================== -->
 
     </main>

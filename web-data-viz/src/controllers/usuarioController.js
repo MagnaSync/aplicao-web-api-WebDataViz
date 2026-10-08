@@ -88,7 +88,32 @@ function cadastrar(req, res) {
     }
 }
 
+function listarPorEmpresa(req, res) {
+    var idEmpresa = req.params.idEmpresa;
+
+    if (idEmpresa == undefined) {
+        res.status(400).send("Seu idEmpresa está undefined!");
+    } else {
+        usuarioModel.listarPorEmpresa(idEmpresa)
+            .then(
+                function (resultado) {
+                    res.json(resultado);
+                }
+            ).catch(
+                function (erro) {
+                    console.log(erro);
+                    console.log(
+                        "\nHouve um erro ao buscar os funcionários! Erro: ",
+                        erro.sqlMessage
+                    );
+                    res.status(500).json(erro.sqlMessage);
+                }
+            );
+    }
+}
+
 module.exports = {
     autenticar,
-    cadastrar
+    cadastrar,
+    listarPorEmpresa
 }
