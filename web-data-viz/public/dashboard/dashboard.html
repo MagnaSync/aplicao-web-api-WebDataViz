@@ -54,9 +54,9 @@
 
         <div class="topbar-actions">
           <select class="select-unit" id="unit-selector" aria-label="Selecionar Equipamento">
-            <option value="rm-01">Console RM 01 – Principal</option>
-            <option value="rm-02">Console RM 02 – Cardiologia</option>
-            <option value="rm-03">Console RM 03 – Neurologia</option>
+            <option value="rm-01">Console RM 01 – Ressonância 1.5T</option>
+            <option value="rm-02">Console RM 02 – Ressonância 3.0T</option>
+            <option value="rm-03">Console RM 03 – Ressonância Aberta</option>
           </select>
           <a href="../index.html" class="topbar-button">Página Inicial</a>
         </div>
@@ -217,11 +217,6 @@
           <div class="content-header">
             <div>
               <h1>Cadastro de Funcionários</h1>
-              <p>Cadastre novos colaboradores e gerencie os acessos da sua empresa à plataforma de telemetria.</p>
-            </div>
-            <div class="company-badge-pill" id="company-badge-pill">
-              <span class="company-pill-dot"></span>
-              <span class="company-pill-text">Empresa: <strong id="company-display-name">Hospital Central</strong> (ID: <span id="company-display-id">1</span>)</span>
             </div>
           </div>
 
@@ -231,9 +226,7 @@
               <div class="card-title">
                 <div>
                   <h2>Novo Colaborador</h2>
-                  <small>Cadastre um funcionário vinculado à sua instituição</small>
                 </div>
-                <span class="kpi-badge normal" id="status-empresa-tag">Sessão Ativa</span>
               </div>
 
               <!-- Mensagem de feedback (sucesso ou erro) -->
@@ -307,7 +300,6 @@
               <div class="card-title">
                 <div>
                   <h2>Equipe Cadastrada</h2>
-                  <small>Colaboradores com credenciais ativas nesta unidade</small>
                 </div>
                 <span class="badge-count" id="badge-total-equipe">0 colaboradores</span>
               </div>
