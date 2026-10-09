@@ -42,6 +42,7 @@ function cadastrar(req, res) {
     var nome = req.body.nomeServer;
     var email = req.body.emailServer;
     var senha = req.body.senhaServer;
+    var cargo_id = req.body.cargoServer;
     var hospital_id = req.body.idHospitalVincularServer;
 
     // Faça as validações dos valores

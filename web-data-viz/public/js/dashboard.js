@@ -628,156 +628,156 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Submissão do Formulário de Cadastro de Funcionário
-  const btnCadastrar = document.getElementById('btn-cadastrar-funcionario');
-  if (btnCadastrar) {
-    btnCadastrar.addEventListener('click', async (e) => {
-      e.preventDefault();
-      limparErrosValidacao();
-      esconderFeedback();
+  // const btnCadastrar = document.getElementById('btn-cadastrar-funcionario');
+  // if (btnCadastrar) {
+  //   btnCadastrar.addEventListener('click', async (e) => {
+  //     e.preventDefault();
+  //     limparErrosValidacao();
+  //     esconderFeedback();
 
-      const iptNome = document.getElementById('ipt_nome_funcionario');
-      const iptEmail = document.getElementById('ipt_email_funcionario');
-      const iptCargo = document.getElementById('ipt_cargo_funcionario');
-      const iptSenha = document.getElementById('ipt_senha_funcionario');
-      const iptConfirmar = document.getElementById('ipt_confirmar_senha_funcionario');
-      const iptIdEmpresa = document.getElementById('ipt_id_empresa');
+  //     const iptNome = document.getElementById('ipt_nome_funcionario');
+  //     const iptEmail = document.getElementById('ipt_email_funcionario');
+  //     const iptCargo = document.getElementById('ipt_cargo_funcionario');
+  //     const iptSenha = document.getElementById('ipt_senha_funcionario');
+  //     const iptConfirmar = document.getElementById('ipt_confirmar_senha_funcionario');
+  //     const iptIdEmpresa = document.getElementById('ipt_id_empresa');
 
-      const nome = iptNome ? iptNome.value.trim() : '';
-      const email = iptEmail ? iptEmail.value.trim() : '';
-      const cargo = iptCargo ? iptCargo.value : 'Engenharia Clínica';
-      const senha = iptSenha ? iptSenha.value : '';
-      const confirmarSenha = iptConfirmar ? iptConfirmar.value : '';
-      const { idEmpresa } = getContextoEmpresa();
+  //     const nome = iptNome ? iptNome.value.trim() : '';
+  //     const email = iptEmail ? iptEmail.value.trim() : '';
+  //     const cargo = iptCargo ? iptCargo.value : 'Engenharia Clínica';
+  //     const senha = iptSenha ? iptSenha.value : '';
+  //     const confirmarSenha = iptConfirmar ? iptConfirmar.value : '';
+  //     const { idEmpresa } = getContextoEmpresa();
 
-      let temErro = false;
+  //     let temErro = false;
 
-      // Validação do Nome
-      if (!nome || nome.length < 3) {
-        const hint = document.getElementById('hint-nome');
-        if (hint) {
-          hint.textContent = 'Informe o nome completo (mínimo de 3 caracteres).';
-          hint.classList.add('show');
-        }
-        temErro = true;
-      }
+  //     // Validação do Nome
+  //     if (!nome || nome.length < 3) {
+  //       const hint = document.getElementById('hint-nome');
+  //       if (hint) {
+  //         hint.textContent = 'Informe o nome completo (mínimo de 3 caracteres).';
+  //         hint.classList.add('show');
+  //       }
+  //       temErro = true;
+  //     }
 
-      // Validação do E-mail
-      const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      if (!email || !emailValido) {
-        const hint = document.getElementById('hint-email');
-        if (hint) {
-          hint.textContent = 'Informe um e-mail corporativo válido.';
-          hint.classList.add('show');
-        }
-        temErro = true;
-      }
+  //     // Validação do E-mail
+  //     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  //     if (!email || !emailValido) {
+  //       const hint = document.getElementById('hint-email');
+  //       if (hint) {
+  //         hint.textContent = 'Informe um e-mail corporativo válido.';
+  //         hint.classList.add('show');
+  //       }
+  //       temErro = true;
+  //     }
 
-      // Validação da Senha
-      if (!senha || senha.length < 6) {
-        const hint = document.getElementById('hint-senha');
-        if (hint) {
-          hint.textContent = 'A senha deve conter no mínimo 6 caracteres.';
-          hint.classList.add('show');
-        }
-        temErro = true;
-      }
+  //     // Validação da Senha
+  //     if (!senha || senha.length < 6) {
+  //       const hint = document.getElementById('hint-senha');
+  //       if (hint) {
+  //         hint.textContent = 'A senha deve conter no mínimo 6 caracteres.';
+  //         hint.classList.add('show');
+  //       }
+  //       temErro = true;
+  //     }
 
-      // Validação da Confirmação de Senha
-      if (senha !== confirmarSenha) {
-        const hint = document.getElementById('hint-confirmar-senha');
-        if (hint) {
-          hint.textContent = 'As senhas digitadas não coincidem.';
-          hint.classList.add('show');
-        }
-        temErro = true;
-      }
+  //     // Validação da Confirmação de Senha
+  //     if (senha !== confirmarSenha) {
+  //       const hint = document.getElementById('hint-confirmar-senha');
+  //       if (hint) {
+  //         hint.textContent = 'As senhas digitadas não coincidem.';
+  //         hint.classList.add('show');
+  //       }
+  //       temErro = true;
+  //     }
 
-      if (temErro) {
-        mostrarFeedback('Por favor, corrija os campos indicados acima.', 'error');
-        return;
-      }
+  //     if (temErro) {
+  //       mostrarFeedback('Por favor, corrija os campos indicados acima.', 'error');
+  //       return;
+  //     }
 
-      // Estado de Carregamento
-      const spinner = document.getElementById('btn-cadastrar-spinner');
-      const btnText = document.getElementById('btn-cadastrar-text');
-      if (spinner) spinner.style.display = 'inline-block';
-      if (btnText) btnText.textContent = 'Cadastrando...';
-      btnCadastrar.disabled = true;
+  //     // Estado de Carregamento
+  //     const spinner = document.getElementById('btn-cadastrar-spinner');
+  //     const btnText = document.getElementById('btn-cadastrar-text');
+  //     if (spinner) spinner.style.display = 'inline-block';
+  //     if (btnText) btnText.textContent = 'Cadastrando...';
+  //     btnCadastrar.disabled = true;
 
-      try {
-        // Envia para o endpoint do backend (/usuarios/cadastrar)
-        const resposta = await fetch('/usuarios/cadastrar', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            nomeServer: nome,
-            emailServer: email,
-            senhaServer: senha,
-            idEmpresaVincularServer: idEmpresa
-          })
-        });
+  //     try {
+  //       // Envia para o endpoint do backend (/usuarios/cadastrar)
+  //       const resposta = await fetch('/usuarios/cadastrar', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json'
+  //         },
+  //         body: JSON.stringify({
+  //           nomeServer: nome,
+  //           emailServer: email,
+  //           senhaServer: senha,
+  //           idEmpresaVincularServer: idEmpresa
+  //         })
+  //       });
 
-        if (resposta.ok) {
-          // Sucesso no banco de dados!
-          mostrarFeedback(`Colaborador ${nome} cadastrado com sucesso para a sua empresa!`, 'success');
+  //       if (resposta.ok) {
+  //         // Sucesso no banco de dados!
+  //         mostrarFeedback(`Colaborador ${nome} cadastrado com sucesso para a sua empresa!`, 'success');
 
-          // Adiciona à lista local imediatamente
-          const novoFuncionario = {
-            id: Date.now(),
-            nome: nome,
-            email: email,
-            cargo: cargo
-          };
-          listaFuncionariosAtual.unshift(novoFuncionario);
-          salvarEquipeCache();
-          renderizarEquipe(listaFuncionariosAtual);
+  //         // Adiciona à lista local imediatamente
+  //         const novoFuncionario = {
+  //           id: Date.now(),
+  //           nome: nome,
+  //           email: email,
+  //           cargo: cargo
+  //         };
+  //         listaFuncionariosAtual.unshift(novoFuncionario);
+  //         salvarEquipeCache();
+  //         renderizarEquipe(listaFuncionariosAtual);
 
-          limparFormularioCadastro();
-        } else {
-          // Resposta com erro do backend (ex: erro de SQL ou validação do servidor)
-          const textoErro = await resposta.text();
-          console.warn('Aviso do servidor ao cadastrar:', textoErro);
+  //         limparFormularioCadastro();
+  //       } else {
+  //         // Resposta com erro do backend (ex: erro de SQL ou validação do servidor)
+  //         const textoErro = await resposta.text();
+  //         console.warn('Aviso do servidor ao cadastrar:', textoErro);
 
-          // Mesmo que o BD local do aluno não esteja configurado, salvamos na sessão para demonstração
-          mostrarFeedback(`Colaborador ${nome} registrado na sessão! (Nota: Banco de dados local desconectado)`, 'warn');
+  //         // Mesmo que o BD local do aluno não esteja configurado, salvamos na sessão para demonstração
+  //         mostrarFeedback(`Colaborador ${nome} registrado na sessão! (Nota: Banco de dados local desconectado)`, 'warn');
 
-          const novoFuncionario = {
-            id: Date.now(),
-            nome: nome,
-            email: email,
-            cargo: cargo
-          };
-          listaFuncionariosAtual.unshift(novoFuncionario);
-          salvarEquipeCache();
-          renderizarEquipe(listaFuncionariosAtual);
+  //         const novoFuncionario = {
+  //           id: Date.now(),
+  //           nome: nome,
+  //           email: email,
+  //           cargo: cargo
+  //         };
+  //         listaFuncionariosAtual.unshift(novoFuncionario);
+  //         salvarEquipeCache();
+  //         renderizarEquipe(listaFuncionariosAtual);
 
-          limparFormularioCadastro();
-        }
-      } catch (erroRede) {
-        console.warn('Erro de rede ou servidor offline:', erroRede);
+  //         limparFormularioCadastro();
+  //       }
+  //     } catch (erroRede) {
+  //       console.warn('Erro de rede ou servidor offline:', erroRede);
 
-        // Fallback resiliente para ambiente local sem MySQL
-        mostrarFeedback(`Colaborador ${nome} registrado localmente para demonstração!`, 'warn');
+  //       // Fallback resiliente para ambiente local sem MySQL
+  //       mostrarFeedback(`Colaborador ${nome} registrado localmente para demonstração!`, 'warn');
 
-        const novoFuncionario = {
-          id: Date.now(),
-          nome: nome,
-          email: email,
-          cargo: cargo
-        };
-        listaFuncionariosAtual.unshift(novoFuncionario);
-        salvarEquipeCache();
-        renderizarEquipe(listaFuncionariosAtual);
+  //       const novoFuncionario = {
+  //         id: Date.now(),
+  //         nome: nome,
+  //         email: email,
+  //         cargo: cargo
+  //       };
+  //       listaFuncionariosAtual.unshift(novoFuncionario);
+  //       salvarEquipeCache();
+  //       renderizarEquipe(listaFuncionariosAtual);
 
-        limparFormularioCadastro();
-      } finally {
-        if (spinner) spinner.style.display = 'none';
-        if (btnText) btnText.textContent = 'Cadastrar Funcionário';
-        btnCadastrar.disabled = false;
-      }
-    });
-  }
+  //       limparFormularioCadastro();
+  //     } finally {
+  //       if (spinner) spinner.style.display = 'none';
+  //       if (btnText) btnText.textContent = 'Cadastrar Funcionário';
+  //       btnCadastrar.disabled = false;
+  //     }
+  //   });
+  // }
 });
 

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../css/dashboard.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../js/dashboard.js" defer></script>
+  <script src="../js/cadastro.js" defer></script>
 </head>
 <body>
   <div class="dashboard-app">
@@ -235,32 +236,32 @@
               <form id="form-cadastro-funcionario" class="cadastro-form" onsubmit="return false;">
                 <div class="form-group">
                   <label for="ipt_nome_funcionario">Nome Completo</label>
-                  <input type="text" id="ipt_nome_funcionario" placeholder="Ex: Lucas Mendes Ribeiro" required />
+                  <input type="text" id="nome_input" placeholder="Ex: Lucas Mendes Ribeiro" required />
                   <span class="field-hint" id="hint-nome"></span>
                 </div>
 
                 <div class="form-group">
                   <label for="ipt_email_funcionario">E-mail Corporativo</label>
-                  <input type="email" id="ipt_email_funcionario" placeholder="Ex: lucas.mendes@hospitalcentral.com.br" required />
+                  <input type="email" id="email_input" placeholder="Ex: lucas.mendes@hospitalcentral.com.br" required />
                   <span class="field-hint" id="hint-email"></span>
                 </div>
 
                 <div class="form-row-2">
                   <div class="form-group">
                     <label for="ipt_cargo_funcionario">Cargo / Especialidade</label>
-                    <select id="ipt_cargo_funcionario">
-                      <option value="Engenharia Clínica">Engenharia Clínica</option>
-                      <option value="Técnico de Ressonância">Técnico de Ressonância</option>
-                      <option value="Operador de Console">Operador de Console</option>
-                      <option value="Especialista em TI / PACS">Especialista em TI / PACS</option>
-                      <option value="Biomédico(a) de Imagem">Biomédico(a) de Imagem</option>
-                      <option value="Administrador Hospitalar">Administrador Hospitalar</option>
+                    <select id="cargo_select" required>
+                      <option value="1">Engenharia Clínica</option>
+                      <option value="2">Técnico de Ressonância</option>
+                      <option value="3">Operador de Console</option>
+                      <option value="4">Especialista em TI / PACS</option>
+                      <option value="5">Biomédico(a) de Imagem</option>
+                      <option value="6">Administrador Hospitalar</option>
                     </select>
                   </div>
 
                   <div class="form-group">
                     <label for="ipt_empresa_display">Empresa Vinculada</label>
-                    <input type="text" id="ipt_empresa_display" value="Hospital Central (ID: 1)" readonly class="input-readonly" title="Vinculado automaticamente à sua empresa atual" />
+                    <input type="text" id="hospital_input" value="Hospital Central (ID: 1)" readonly class="input-readonly" title="Vinculado automaticamente à sua empresa atual" />
                     <input type="hidden" id="ipt_id_empresa" value="1" />
                   </div>
                 </div>
@@ -269,7 +270,7 @@
                   <div class="form-group">
                     <label for="ipt_senha_funcionario">Senha de Acesso</label>
                     <div class="pass-wrapper">
-                      <input type="password" id="ipt_senha_funcionario" placeholder="Mínimo 6 caracteres" required />
+                      <input type="password" id="senha_input" placeholder="Mínimo 6 caracteres" required />
                       <button type="button" class="btn-toggle-eye" id="toggle-senha-btn" title="Mostrar/ocultar senha">&#128065;</button>
                     </div>
                     <span class="field-hint" id="hint-senha"></span>
@@ -278,7 +279,7 @@
                   <div class="form-group">
                     <label for="ipt_confirmar_senha_funcionario">Confirmar Senha</label>
                     <div class="pass-wrapper">
-                      <input type="password" id="ipt_confirmar_senha_funcionario" placeholder="Repita a senha" required />
+                      <input type="password" id="confirmacao_senha_input" placeholder="Repita a senha" required />
                       <button type="button" class="btn-toggle-eye" id="toggle-confirmar-senha-btn" title="Mostrar/ocultar senha">&#128065;</button>
                     </div>
                     <span class="field-hint" id="hint-confirmar-senha"></span>
@@ -287,7 +288,7 @@
 
                 <div class="form-actions">
                   <button type="button" id="btn-limpar-form" class="btn-secondary">Limpar</button>
-                  <button type="button" id="btn-cadastrar-funcionario" class="btn-primary">
+                  <button type="button" id="btn-cadastrar-funcionario" class="btn-primary" onclick="cadastrar()">
                     <span class="btn-spinner" id="btn-cadastrar-spinner" style="display: none;"></span>
                     <span class="btn-label" id="btn-cadastrar-text">Cadastrar Funcionário</span>
                   </button>
