@@ -12,4 +12,8 @@ router.post("/autenticar", function (req, res) {
     usuarioController.autenticar(req, res);
 });
 
+router.get("/listarCargos", function (req, res) {
+    usuarioController.listarCargos(req, res);
+});
+
 module.exports = router;

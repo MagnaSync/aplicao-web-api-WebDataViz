@@ -12,7 +12,7 @@
   <script src="../js/dashboard.js" defer></script>
   <script src="../js/cadastro.js" defer></script>
 </head>
-<body>
+<body onload="listarCargos()">
   <div class="dashboard-app">
 
     <!-- ===================== SIDEBAR ===================== -->
@@ -250,12 +250,7 @@
                   <div class="form-group">
                     <label for="ipt_cargo_funcionario">Cargo / Especialidade</label>
                     <select id="cargo_select" required>
-                      <option value="1">Engenharia Clínica</option>
-                      <option value="2">Técnico de Ressonância</option>
-                      <option value="3">Operador de Console</option>
-                      <option value="4">Especialista em TI / PACS</option>
-                      <option value="5">Biomédico(a) de Imagem</option>
-                      <option value="6">Administrador Hospitalar</option>
+                      <option value="null">Selecione um cargo...</option>
                     </select>
                   </div>
 

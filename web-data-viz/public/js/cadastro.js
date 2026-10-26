@@ -25,6 +25,11 @@ function cadastrar() {
 
       finalizarAguardar();
       return false;
+    } else if(cargoVar == "null") {
+      cardErro.style.display = "block";
+      mensagem_erro.innerHTML = "(Mensagem de erro para cargo não selecionado)";
+      finalizarAguardar();
+      return false;
     } else {
       setInterval(sumirMensagem, 5000);
     }
@@ -84,6 +89,25 @@ function cadastrar() {
 
     return false;
   }
+
+function listarCargos() {
+  const cargo_select = document.getElementById("cargo_select");
+
+  fetch("/usuarios/listarCargos", {
+        method: "GET"
+    })
+    .then(resposta => resposta.json())
+    .then(cargos => {
+        console.log("Cargos recebidos:", cargos);
+        console.log("Select encontrado:", cargo_select);
+
+        cargos.forEach(cargo => {
+            cargo_select.innerHTML +=
+                `<option value="${cargo.id}">${cargo.funcao}</option>`;
+        });
+    })
+    .catch(erro => console.log("#ERRO:", erro));
+}
 
   // Listando empresas cadastradas 
 //   function listar() {
