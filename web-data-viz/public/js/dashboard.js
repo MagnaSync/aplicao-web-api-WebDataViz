@@ -560,49 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Toggles de visibilidade de senha
-  function setupPassToggle(btnId, iptId) {
-    const btn = document.getElementById(btnId);
-    const ipt = document.getElementById(iptId);
-    if (btn && ipt) {
-      btn.addEventListener('click', () => {
-        const isPassword = ipt.getAttribute('type') === 'password';
-        ipt.setAttribute('type', isPassword ? 'text' : 'password');
-        btn.innerHTML = isPassword ? '&#128064;' : '&#128065;';
-      });
-    }
-  }
-  setupPassToggle('toggle-senha-btn', 'ipt_senha_funcionario');
-  setupPassToggle('toggle-confirmar-senha-btn', 'ipt_confirmar_senha_funcionario');
 
-  // Limpar formulário
-  const btnLimpar = document.getElementById('btn-limpar-form');
-  if (btnLimpar) {
-    btnLimpar.addEventListener('click', limparFormularioCadastro);
-  }
-
-  function limparFormularioCadastro() {
-    const form = document.getElementById('form-cadastro-funcionario');
-    if (form) form.reset();
-
-    const { idEmpresa, nomeEmpresa } = getContextoEmpresa();
-    const iptEmpresaDisplay = document.getElementById('ipt_empresa_display');
-    const iptIdEmpresa = document.getElementById('ipt_id_empresa');
-    if (iptEmpresaDisplay) iptEmpresaDisplay.value = `${nomeEmpresa} (ID: ${idEmpresa})`;
-    if (iptIdEmpresa) iptIdEmpresa.value = idEmpresa;
-
-    esconderFeedback();
-    limparErrosValidacao();
-  }
-
-  function esconderFeedback() {
-    const box = document.getElementById('cadastro-feedback');
-    if (box) {
-      box.style.display = 'none';
-      box.className = 'feedback-box';
-      box.innerHTML = '';
-    }
-  }
 
   function mostrarFeedback(msg, tipo = 'success') {
     const box = document.getElementById('cadastro-feedback');

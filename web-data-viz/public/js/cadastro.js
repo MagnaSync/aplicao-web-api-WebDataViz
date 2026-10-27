@@ -234,6 +234,50 @@ function filtrarFuncionarios() {
 // 4. Evento que escuta a digitação
 document.getElementById("ipt_pesquisar_equipe").addEventListener("input", filtrarFuncionarios);
 
+  // Toggles de visibilidade de senha
+function configurarToggleSenha(botaoId, inputId) {
+    const botao = document.getElementById(botaoId);
+    const input = document.getElementById(inputId);
+
+    botao.addEventListener("click", function () {
+        // Se for password, muda pra text. Se for text, muda pra password
+        const tipoAtual = input.getAttribute("type");
+        const novoTipo = tipoAtual === "password" ? "text" : "password";
+        
+        input.setAttribute("type", novoTipo);
+
+        // Opcional: Muda o ícone (👁️ para aberto, 🙈 para fechado)
+        this.innerHTML = novoTipo === "password" ? "&#128065;" : "&#128584;";
+    });
+}
+
+// Configura os dois campos
+configurarToggleSenha("toggle-senha-btn", "senha_input");
+configurarToggleSenha("toggle-confirmar-senha-btn", "confirmacao_senha_input");
+
+  // Limpar formulário
+  const btnLimpar = document.getElementById('btn-limpar-form');
+  if (btnLimpar) {
+    btnLimpar.addEventListener('click', limparFormularioCadastro);
+  }
+
+  function limparFormularioCadastro() {
+    const form = document.getElementById('form-cadastro-funcionario');
+    if (form) form.reset();
+
+    esconderFeedback();
+    limparErrosValidacao();
+  }
+
+  function esconderFeedback() {
+    const box = document.getElementById('cadastro-feedback');
+    if (box) {
+      box.style.display = 'none';
+      box.className = 'feedback-box';
+      box.innerHTML = '';
+    }
+  }
+
   function sumirMensagem() {
     cardErro.style.display = "none";
   }
