@@ -84,7 +84,7 @@ function cadastrar() {
       })
       .catch(function (resposta) {
         console.log(`#ERRO: ${resposta}`);
-        finalizarAguardar();
+      
       });
 
     return false;
@@ -150,60 +150,90 @@ function listarCargos() {
 //     .catch(erro => console.log("#ERRO:", erro));
 // }
 
+// Variável global para guardar os funcionários
+let listaFuncionariosGlobal = [];
+
+// 1. Busca os dados do servidor
 function listarFuncionarios() {
   const container = document.getElementById("funcionarios-list-container");
-
-  function obterIniciais(nomeCompleto) {
-      if (!nomeCompleto) return "";
-      const partes = nomeCompleto.trim().split(" ");
-      if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
-      return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
-  }
 
   fetch("/usuarios/listarFuncionarios", { method: "GET" })
     .then(resposta => resposta.json())
     .then(funcionarios => {
-        container.innerHTML = "";
-
-        // Validação: Se a lista estiver vazia, mostra a mensagem
-        if (!funcionarios || funcionarios.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">👥</div>
-                    <p>Não há nenhum funcionário cadastrado</p>
-                </div>
-            `;
-            document.getElementById("badge-total-equipe").innerText = "0 colaboradores";
-            return; // Para a execução aqui
-        }
-
-        funcionarios.forEach(funcionario => {
-            const nome = funcionario["Nome do funcionário"];
-            const iniciais = obterIniciais(nome);
-
-            const item = document.createElement("div");
-            item.className = "funcionario-item";
-
-            item.innerHTML = `
-                <div class="funcionario-item-left">
-                    <div class="funcionario-avatar">${iniciais}</div>
-                    <div class="funcionario-info">
-                        <span class="funcionario-nome">${nome}</span>
-                        <div class="funcionario-meta">
-                            <span>${funcionario["Nome do Hospital"]}</span>
-                        </div>
-                    </div>
-                </div>
-                <span class="funcionario-badge role">${funcionario["Função"]}</span>
-            `;
-
-            container.appendChild(item);
-        });
-
-        document.getElementById("badge-total-equipe").innerText = `${funcionarios.length} colaboradores`;
+        listaFuncionariosGlobal = funcionarios; // Salva globalmente
+        renderizarFuncionarios(funcionarios);   // Desenha na tela
     })
     .catch(erro => console.log("#ERRO:", erro));
 }
+
+// 2. Desenha os funcionários na tela (HTML)
+function renderizarFuncionarios(funcionarios) {
+    const container = document.getElementById("funcionarios-list-container");
+    container.innerHTML = "";
+
+    function obterIniciais(nomeCompleto) {
+        if (!nomeCompleto) return "";
+        const partes = nomeCompleto.trim().split(" ");
+        if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
+        return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
+    }
+
+    if (!funcionarios || funcionarios.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">👥</div>
+                <p>Nenhum funcionário encontrado</p>
+            </div>
+        `;
+        document.getElementById("badge-total-equipe").innerText = "0 colaboradores";
+        return;
+    }
+
+    funcionarios.forEach(funcionario => {
+        const nome = funcionario["Nome do funcionário"];
+        const iniciais = obterIniciais(nome);
+
+        const item = document.createElement("div");
+        item.className = "funcionario-item";
+
+        item.innerHTML = `
+            <div class="funcionario-item-left">
+                <div class="funcionario-avatar">${iniciais}</div>
+                <div class="funcionario-info">
+                    <span class="funcionario-nome">${nome}</span>
+                    <div class="funcionario-meta">
+                        <span>${funcionario["Nome do Hospital"]}</span>
+                    </div>
+                </div>
+            </div>
+            <span class="funcionario-badge role">${funcionario["Função"]}</span>
+        `;
+
+        container.appendChild(item);
+    });
+
+    document.getElementById("badge-total-equipe").innerText = `${funcionarios.length} colaboradores`;
+}
+
+// 3. Função separada para filtrar
+function filtrarFuncionarios() {
+    const inputBusca = document.getElementById("ipt_pesquisar_equipe");
+    const termoBusca = inputBusca.value.toLowerCase().trim();
+
+    const funcionariosFiltrados = listaFuncionariosGlobal.filter(funcionario => {
+        const nome = funcionario["Nome do funcionário"] ? funcionario["Nome do funcionário"].toLowerCase() : "";
+        const funcao = funcionario["Função"] ? funcionario["Função"].toLowerCase() : "";
+        const email = funcionario["Email"] ? funcionario["Email"].toLowerCase() : ""; 
+        
+        return nome.includes(termoBusca) || funcao.includes(termoBusca) || email.includes(termoBusca);
+    });
+
+    renderizarFuncionarios(funcionariosFiltrados);
+}
+
+// 4. Evento que escuta a digitação
+document.getElementById("ipt_pesquisar_equipe").addEventListener("input", filtrarFuncionarios);
+
   function sumirMensagem() {
     cardErro.style.display = "none";
   }
