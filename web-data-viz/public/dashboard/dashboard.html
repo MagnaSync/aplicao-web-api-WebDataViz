@@ -215,7 +215,13 @@
 
         <!-- ===================== VIEW: CADASTRO DE FUNCIONÁRIOS ===================== -->
         <section id="view-cadastro" class="dash-view" style="display: none;">
-          <div class="content-header">
+
+          <div class="alerta_erro">
+      <div class="card_erro" id="cardErro">
+        <span id="mensagem_erro"></span>
+      </div>
+    </div>
+          <div class="content-header">  
             <div>
               <h1>Cadastro de Funcionários</h1>
             </div>
@@ -287,8 +293,11 @@
                     <span class="btn-spinner" id="btn-cadastrar-spinner" style="display: none;"></span>
                     <span class="btn-label" id="btn-cadastrar-text">Cadastrar Funcionário</span>
                   </button>
+                  
                 </div>
+                
               </form>
+              
             </div>
 
             <!-- Card da Lista de Funcionários Cadastrados -->
@@ -311,6 +320,8 @@
               </div>
             </div>
           </div>
+
+          <div id="div_erros_login"></div>
         </section>
         <!-- ===================== /VIEW: CADASTRO DE FUNCIONÁRIOS ===================== -->
 

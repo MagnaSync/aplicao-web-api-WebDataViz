@@ -70,11 +70,7 @@ function cadastrar() {
           cardErro.style.display = "block";
 
           mensagem_erro.innerHTML =
-            "Cadastro realizado com sucesso! Redirecionando para tela de Login...";
-
-          setTimeout(() => {
-            window.location = "login.html";
-          }, "2000");
+            "Cadastro realizado com sucesso!";
 
           limparFormulario();
           finalizarAguardar();
