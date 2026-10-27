@@ -119,9 +119,28 @@ function listarCargos(req, res) {
         );
 }
 
+function listarFuncionarios(req, res) {
+    usuarioModel.listarFuncionarios()
+        .then(
+            function (resultado) {
+                res.json(resultado);
+            }
+        ).catch(
+            function (erro) {
+                console.log(erro);
+                console.log(
+                    "\nHouve um erro ao buscar os funcionários! Erro: ",
+                    erro.sqlMessage
+                );
+                res.status(500).json(erro.sqlMessage);
+            }
+        );
+}
+
 module.exports = {
     autenticar,
     listarCargos,
+    listarFuncionarios,
     cadastrar
     
 }

@@ -16,4 +16,8 @@ router.get("/listarCargos", function (req, res) {
     usuarioController.listarCargos(req, res);
 });
 
+router.get("/listarFuncionarios", function (req, res) {
+    usuarioController.listarFuncionarios(req, res);
+});
+
 module.exports = router;

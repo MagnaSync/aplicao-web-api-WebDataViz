@@ -8,6 +8,7 @@ function cadastrar() {
     var nomeVar = nome_input.value;
     var emailVar = email_input.value;
     var senhaVar = senha_input.value;
+    var confirmarSenhaVar = confirmacao_senha_input.value;
     var cargoVar = cargo_select.value;
     var hospitalIdVar = ipt_id_empresa.value;
 
@@ -30,8 +31,11 @@ function cadastrar() {
       mensagem_erro.innerHTML = "(Mensagem de erro para cargo não selecionado)";
       finalizarAguardar();
       return false;
-    } else {
-      setInterval(sumirMensagem, 5000);
+    } else if (senhaVar != confirmarSenhaVar) {
+      cardErro.style.display = "block";
+      mensagem_erro.innerHTML = "(Mensagem de erro para senha não correspondente)";
+      finalizarAguardar();
+      return false;
     }
 
     // Verificando se o código de ativação é de alguma empresa cadastrada
@@ -72,8 +76,8 @@ function cadastrar() {
           mensagem_erro.innerHTML =
             "Cadastro realizado com sucesso!";
 
-          limparFormulario();
-          finalizarAguardar();
+         
+          window.location.reload();
         } else {
           throw "Houve um erro ao tentar realizar o cadastro!";
         }
@@ -125,6 +129,81 @@ function listarCargos() {
 //       });
 //   }
 
+// function listarFuncionarios() {
+//   const tabelaFuncionarios = document.getElementById("tabelaFuncionarios");
+
+//   fetch("/usuarios/listarFuncionarios", {
+//         method: "GET"
+//     })
+//     .then(resposta => resposta.json())
+//     .then(funcionarios => {
+//         console.log("Funcionários recebidos:", funcionarios);
+//         console.log("Tabela encontrada:", tabelaFuncionarios);
+
+//         funcionarios.forEach(funcionario => {
+//             const row = tabelaFuncionarios.insertRow();
+//             row.insertCell(0).innerText = funcionario["Nome do funcionário"];
+//             row.insertCell(1).innerText = funcionario["Nome do Hospital"];
+//             row.insertCell(2).innerText = funcionario["Função"];
+//         });
+//     })
+//     .catch(erro => console.log("#ERRO:", erro));
+// }
+
+function listarFuncionarios() {
+  const container = document.getElementById("funcionarios-list-container");
+
+  function obterIniciais(nomeCompleto) {
+      if (!nomeCompleto) return "";
+      const partes = nomeCompleto.trim().split(" ");
+      if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
+      return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
+  }
+
+  fetch("/usuarios/listarFuncionarios", { method: "GET" })
+    .then(resposta => resposta.json())
+    .then(funcionarios => {
+        container.innerHTML = "";
+
+        // Validação: Se a lista estiver vazia, mostra a mensagem
+        if (!funcionarios || funcionarios.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <p>Não há nenhum funcionário cadastrado</p>
+                </div>
+            `;
+            document.getElementById("badge-total-equipe").innerText = "0 colaboradores";
+            return; // Para a execução aqui
+        }
+
+        funcionarios.forEach(funcionario => {
+            const nome = funcionario["Nome do funcionário"];
+            const iniciais = obterIniciais(nome);
+
+            const item = document.createElement("div");
+            item.className = "funcionario-item";
+
+            item.innerHTML = `
+                <div class="funcionario-item-left">
+                    <div class="funcionario-avatar">${iniciais}</div>
+                    <div class="funcionario-info">
+                        <span class="funcionario-nome">${nome}</span>
+                        <div class="funcionario-meta">
+                            <span>${funcionario["Nome do Hospital"]}</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="funcionario-badge role">${funcionario["Função"]}</span>
+            `;
+
+            container.appendChild(item);
+        });
+
+        document.getElementById("badge-total-equipe").innerText = `${funcionarios.length} colaboradores`;
+    })
+    .catch(erro => console.log("#ERRO:", erro));
+}
   function sumirMensagem() {
     cardErro.style.display = "none";
   }

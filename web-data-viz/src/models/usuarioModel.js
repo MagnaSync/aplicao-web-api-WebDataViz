@@ -32,8 +32,28 @@ function listarCargos() {
     return database.executar(instrucaoSql);
 }   
 
+function listarFuncionarios() {
+    console.log("ACESSEI O USUARIO MODEL \n \n\t\t >> Se aqui der erro de 'Error: connect ECONNREFUSED',\n \t\t >> verifique suas credenciais de acesso ao banco\n \t\t >> e se o servidor de seu BD está rodando corretamente. \n\n function listarFuncionarios()");
+    
+    var instrucaoSql = `
+        SELECT 
+    f.nome AS "Nome do funcionário", 
+    h.nome AS "Nome do Hospital", 
+    c.funcao AS "Função"
+FROM 
+    funcionario AS f
+JOIN 
+    cargo AS c ON f.cargo_id = c.id
+JOIN 
+    hospital AS h ON f.hospital_id = h.id;
+    `;
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql);
+}
+
 module.exports = {
     autenticar,
     listarCargos,
+    listarFuncionarios,
     cadastrar
 };
