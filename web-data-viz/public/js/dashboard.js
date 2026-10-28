@@ -402,11 +402,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statusEmpresaTag) statusEmpresaTag.textContent = `Empresa #${idEmpresa}`;
 
     // Atualiza nome do usuário no rodapé do sidebar se presente na sessão
-    const nomeUsuarioSessao = sessionStorage.getItem('NOME_USUARIO');
+ const nomeUsuarioSessao = sessionStorage.getItem('NOME_USUARIO');
+ const cargoUsuarioSessao = sessionStorage.getItem('CARGO_USUARIO'); // Recupera o cargo
+
     if (nomeUsuarioSessao) {
       const elUserName = document.getElementById('sidebar-user-name');
+      const elUserRole = document.getElementById('sidebar-user-role'); // Elemento do cargo
       const elUserAvatar = document.getElementById('sidebar-user-avatar');
+      
       if (elUserName) elUserName.textContent = nomeUsuarioSessao;
+      
+      // Atualiza o cargo se ele existir na sessão
+      if (elUserRole && cargoUsuarioSessao) {
+        elUserRole.textContent = cargoUsuarioSessao;
+      }
+
       if (elUserAvatar) {
         const partes = nomeUsuarioSessao.trim().split(' ');
         elUserAvatar.textContent = (partes[0][0] + (partes[1] ? partes[1][0] : '')).toUpperCase();
