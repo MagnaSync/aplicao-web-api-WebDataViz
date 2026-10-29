@@ -13,7 +13,7 @@
   <script src="../js/cadastro.js" defer></script>
 </head>
 <body onload="listarCargos(), listarFuncionarios()">
-  <div class="dashboard-app">
+  <div class="dashboard-app"> 
 
     <!-- ===================== SIDEBAR ===================== -->
     <aside class="dash-sidebar">
@@ -112,6 +112,24 @@
 
         <!-- ===================== GRADE DE TELEMETRIA ===================== -->
         <section class="telemetry-grid">
+          <!-- Gráfico de Donut: alertas enviados por tipo -->
+          <article class="dash-card donut-card">
+            <div class="card-title">
+              <h2>Alertas Enviados</h2>
+              <small>Por tipo &middot; últimos 7 dias</small>
+            </div>
+            <div class="donut-layout">
+              <div class="donut-wrapper">
+                <canvas id="chartAlertasDonut"></canvas>
+                <div class="donut-center">
+                  <strong id="donut-total">0</strong>
+                  <small>alertas</small>
+                </div>
+              </div>
+              <ul class="donut-legend" id="donut-legend"></ul>
+            </div>
+          </article>
+
           <article class="dash-card">
             <div class="card-title">
               <h2>Performance do Console</h2>

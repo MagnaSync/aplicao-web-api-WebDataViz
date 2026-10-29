@@ -246,7 +246,64 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Gráfico de Donut: alertas enviados por tipo (dados simulados por console)
+  const alertasPorConsole = {
+    'rm-01': { 'CPU': 2, 'RAM': 3, 'Disco': 1, 'Rede': 1 },
+    'rm-02': { 'CPU': 1, 'RAM': 1, 'Disco': 0, 'Rede': 2 },
+    'rm-03': { 'CPU': 4, 'RAM': 5, 'Disco': 2, 'Rede': 1 }
+  };
+  const coresAlertas = { 'CPU': '#1A4A87', 'RAM': '#f59e0b', 'Disco': '#10b981', 'Rede': '#6366f1' };
+  let alertasChart = null;
+
+  function atualizarDonutAlertas(consoleId) {
+    const dados = alertasPorConsole[consoleId] || alertasPorConsole['rm-01'];
+    const tipos = Object.keys(dados);
+    const valores = tipos.map((t) => dados[t]);
+    const total = valores.reduce((a, b) => a + b, 0);
+
+    const elTotal = document.getElementById('donut-total');
+    if (elTotal) elTotal.textContent = total;
+
+    const legenda = document.getElementById('donut-legend');
+    if (legenda) {
+      legenda.innerHTML = tipos
+        .map((t) => `<li><span><i style="background:${coresAlertas[t]}"></i>${t}</span><b>${dados[t]}</b></li>`)
+        .join('');
+    }
+
+    if (alertasChart) {
+      alertasChart.data.labels = tipos;
+      alertasChart.data.datasets[0].data = valores;
+      alertasChart.update();
+    }
+  }
+
+  const canvasDonut = document.getElementById('chartAlertasDonut');
+  if (canvasDonut && typeof Chart !== 'undefined') {
+    alertasChart = new Chart(canvasDonut.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(alertasPorConsole['rm-01']),
+        datasets: [{
+          data: Object.values(alertasPorConsole['rm-01']),
+          backgroundColor: Object.keys(alertasPorConsole['rm-01']).map((t) => coresAlertas[t]),
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+  atualizarDonutAlertas('rm-01');
+
   // Seletor de Equipamento (atualiza KPIs do card e dados do gráfico)
+
   const unitSelector = document.getElementById('unit-selector');
   if (unitSelector) {
     unitSelector.addEventListener('change', (e) => {
@@ -261,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Atualiza as Mini-KPIs dentro do dash-card
       const data = consolesData[selectedId];
+      atualizarDonutAlertas(selectedId);
       if (data) {
         const cpuVal = document.getElementById('kpi-cpu-val');
         const cpuBadge = document.getElementById('kpi-cpu-badge');
