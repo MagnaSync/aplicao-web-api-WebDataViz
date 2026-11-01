@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./css/cadastroHospital.css">
   <link rel="stylesheet" href="./css/dashboard.css">
   <link rel="icon" type="image/png" href="./assets/imgs/logo.png">
+  <script src="./js/cadastro.js"></script>
   <script src="./js/sessao.js"></script>
 </head>
 <body>
@@ -43,58 +44,61 @@
     <section class="card">
       <h2 class="card__titulo">Novo Hospital</h2>
 
+      <div id="mensagem_hospital" style="display:none;"></div><br>
+
       <!-- Ajuste action/method quando o back-end estiver pronto -->
       <form id="form-hospital" action="#" method="post" autocomplete="off">
 
         <div class="campo">
-          <label for="nome">Nome do hospital</label>
-          <input type="text" id="nome" name="nome" maxlength="150"
+          <label for="nome_hospital">Nome do hospital</label>
+          <input type="text" id="nome_hospital_input" name="nome" maxlength="150"
                  placeholder="Ex: Hospital Central" required>
         </div>
 
         <div class="linha">
           <div class="campo">
-            <label for="cnpj">CNPJ</label>
-            <input type="text" id="cnpj" name="cnpj" maxlength="14"
+            <label for="cnpj_hospital">CNPJ</label>
+            <input type="text" id="cnpj_hospital_input" name="cnpj" maxlength="14"
                    inputmode="numeric" pattern="\d{14}"
                    title="Digite os 14 números do CNPJ, sem pontos ou traços"
                    placeholder="Somente números (14 dígitos)" required>
           </div>
 
           <div class="campo">
-            <label for="telefone">Telefone</label>
-            <input type="tel" id="telefone" name="telefone" maxlength="20"
+            <label for="telefone_hospital">Telefone</label>
+            <input type="tel" id="telefone_hospital_input" name="telefone" maxlength="20"
                    placeholder="Ex: (11) 3456-7890" required>
           </div>
         </div>
 
         <div class="campo">
-          <label for="email">E-mail</label>
-          <input type="email" id="email" name="email" maxlength="150"
+          <label for="email_hospital">E-mail</label>
+          <input type="email" id="email_hospital_input" name="email" maxlength="150"
                  placeholder="Ex: contato@hospitalcentral.com.br" required>
         </div>
 
         <div class="linha">
           <div class="campo">
-            <label for="cep">CEP</label>
-            <input type="text" id="cep" name="cep" maxlength="8"
+            <label for="cep_hospital">CEP</label>
+            <input type="text" id="cep_hospital_input" name="cep" maxlength="8"
                    inputmode="numeric" pattern="\d{8}"
                    title="Digite os 8 números do CEP, sem traço"
                    placeholder="Somente números (8 dígitos)" required>
           </div>
 
           <div class="campo">
-            <label for="numero">Número</label>
-            <input type="text" id="numero" name="numero" maxlength="10"
+            <label for="numero_hospital">Número</label>
+            <input type="text" id="numero_hospital_input" name="numero" maxlength="10"
                    placeholder="Ex: 1200" required>
           </div>
         </div>
 
         <div class="acoes">
           <button type="reset" class="btn btn--secundario">Limpar</button>
-          <button type="submit" class="btn btn--primario">Cadastrar Hospital</button>
+          <button type="button" onclick="cadastrarHospital()" class="btn btn--primario">Cadastrar Hospital</button>
         </div>
       </form>
+
     </section>
     </main>
   </div>

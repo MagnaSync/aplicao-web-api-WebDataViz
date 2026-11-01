@@ -278,6 +278,84 @@ configurarToggleSenha("toggle-confirmar-senha-btn", "confirmacao_senha_input");
     }
   }
 
+  function mostrarMensagemHospital(texto, tipo) {
+    var caixa = document.getElementById("mensagem_hospital");
+    if (!caixa) return;
+
+    caixa.className = "mensagem mensagem--" + tipo;
+    caixa.innerHTML = texto;
+    caixa.style.display = "block";
+
+    setTimeout(function () {
+      caixa.style.display = "none";
+    }, 5000);
+  }
+
+  function cadastrarHospital() {
+    var form = document.getElementById("form-hospital");
+
+    // Como o botão é type="button", a validação do HTML (required, pattern)
+    // não roda sozinha. Chamamos manualmente.
+    if (!form.reportValidity()) {
+      mostrarMensagemHospital("Preencha todos os campos corretamente.", "erro");
+      return false;
+    }
+
+    var nomeVar = nome_hospital_input.value.trim();
+    var cnpjVar = cnpj_hospital_input.value.trim();
+    var telefoneVar = telefone_hospital_input.value.trim();
+    var emailVar = email_hospital_input.value.trim();
+    var cepVar = cep_hospital_input.value.trim();
+    var numeroVar = numero_hospital_input.value.trim();
+
+    if (nomeVar == "" || telefoneVar == "" || numeroVar == "") {
+      mostrarMensagemHospital("Preencha todos os campos.", "erro");
+      return false;
+    }
+    if (!/^\d{14}$/.test(cnpjVar)) {
+      mostrarMensagemHospital("CNPJ inválido: digite os 14 números.", "erro");
+      return false;
+    }
+    if (!/^\d{8}$/.test(cepVar)) {
+      mostrarMensagemHospital("CEP inválido: digite os 8 números.", "erro");
+      return false;
+    }
+
+    fetch("/hospital/cadastrarHospital", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nomeServer: nomeVar,
+        cnpjServer: cnpjVar,
+        telefoneServer: telefoneVar,
+        emailServer: emailVar,
+        cepServer: cepVar,
+        numeroServer: numeroVar
+      }),
+    })
+      .then(function (resposta) {
+        if (resposta.ok) {
+          mostrarMensagemHospital("Hospital cadastrado com sucesso!", "sucesso");
+          form.reset();
+        } else {
+          throw "Erro ao cadastrar (status " + resposta.status + ")";
+        }
+      })
+      .catch(function (erro) {
+        console.log("#ERRO:", erro);
+        mostrarMensagemHospital("Não foi possível cadastrar o hospital. Tente novamente.", "erro");
+      });
+
+    return false;
+  }
+
+  function sumirMensagem() {
+    var caixa = document.getElementById("mensagem_hospital");
+    if (caixa) caixa.style.display = "none";
+  }
+
   function sumirMensagem() {
     cardErro.style.display = "none";
   }
