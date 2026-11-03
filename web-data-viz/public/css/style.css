@@ -49,7 +49,7 @@
 }
 
 /* ==========================================================================
-   1. VARIÁVEIS GLOBAIS (:root) & ESCALA TIPOGRÁFICA
+   1. VARIÃVEIS GLOBAIS (:root) & ESCALA TIPOGRÃFICA
    ========================================================================== */
 :root {
 
@@ -89,7 +89,7 @@
 }
 
 /* ==========================================================================
-   2. RESET & CONFIGURAÇÕES DE BASE
+   2. RESET & CONFIGURAÃ‡Ã•ES DE BASE
    ========================================================================== */
 * {
   margin: 0;
@@ -147,7 +147,7 @@ button, input {
 }
 
 /* ==========================================================================
-   3. COMPONENTES COMPARTILHADOS (Títulos, Badges, Botões)
+   3. COMPONENTES COMPARTILHADOS (TÃ­tulos, Badges, BotÃµes)
    ========================================================================== */
 .etiqueta-secao{
   font-family: var(--fonte-principal);
@@ -191,7 +191,7 @@ button, input {
 
 @media (min-width: 992px) {
   .centralizado h2 {
-    white-space: nowrap;
+    max-width: 100%;
   }
 }
 
@@ -288,7 +288,7 @@ button, input {
 }
 
 /* ==========================================================================
-   4. CABEÇALHO / HEADER (Logo, Menu, Ações)
+   4. CABEÃ‡ALHO / HEADER (Logo, Menu, AÃ§Ãµes)
    ========================================================================== */
 .cabecalho {
   height: 76px;
@@ -387,7 +387,7 @@ button, input {
 }
 
 /* ==========================================================================
-   5. FUNDO DEGRADÊ ESCURO CONTÍNUO (Hero até Perfis de Usuário)
+   5. FUNDO DEGRADÃŠ ESCURO CONTÃNUO (Hero atÃ© Perfis de UsuÃ¡rio)
    ========================================================================== */
 .fundo-degrade-escuro {
   background: linear-gradient(
@@ -418,7 +418,7 @@ button, input {
 }
 
 /* ==========================================================================
-   6. SEÇÃO HERO / APRESENTAÇÃO INICIAL
+   6. SEÃ‡ÃƒO HERO / APRESENTAÃ‡ÃƒO INICIAL
    ========================================================================== */
 .secao-hero {
   background: transparent;
@@ -427,9 +427,9 @@ button, input {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1fr 0.95fr;
+  grid-template-columns: 0.92fr 1.08fr;
   align-items: center;
-  gap: 48px;
+  gap: 40px;
 }
 
 h1 {
@@ -465,13 +465,12 @@ h1 span {
 
 .hero-imagem-moldura {
   width: 100%;
-  max-width: 580px;
-  min-height: 350px;
+  max-width: 640px;
   border-radius: 14px;
   overflow: hidden;
   background: linear-gradient(145deg, rgba(26, 74, 135, 0.25), rgba(11, 25, 44, 0.7));
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(126, 168, 216, 0.28);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -479,12 +478,15 @@ h1 span {
 
 .hero-imagem {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .hero-placeholder {
-  display: flex;
+  display: none;
+  min-height: 320px;
+  justify-content: center;
   flex-direction: column;
   align-items: center;
   gap: 12px;
@@ -525,7 +527,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   7. SEÇÃO CENÁRIO REAL — COMPARAÇÃO (Sem vs Com MagnaSync)
+   7. SEÃ‡ÃƒO CENÃRIO REAL â€” COMPARAÃ‡ÃƒO (Sem vs Com MagnaSync)
    ========================================================================= */
 .secao-evolucao {
   background: transparent;
@@ -578,7 +580,7 @@ h1 span {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  overflow: visible;
+  overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   position: relative;
 }
@@ -644,14 +646,15 @@ h1 span {
 
 .tabela-card-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   font-family: var(--fonte-apoio);
   font-size: 14.5px;
   font-weight: 500;
   color: var(--cor-secundaria);
-  line-height: 1.4;
-  white-space: nowrap;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .tabela-icone {
@@ -659,7 +662,7 @@ h1 span {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 0;
+  margin-top: 3px;
 }
 
 .tabela-icone--erro {
@@ -671,7 +674,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   8. SEÇÃO MÉTRICAS E SENSORES (Processador, Memória, Disco, Rede)
+   8. SEÃ‡ÃƒO MÃ‰TRICAS E SENSORES (Processador, MemÃ³ria, Disco, Rede)
    ========================================================================== */
 .secao-metricas {
   background: transparent;
@@ -691,6 +694,8 @@ h1 span {
 }
 
 .card-metrica {
+  min-width: 0;
+  overflow-wrap: break-word;
   padding: 30px 26px 28px 26px;
   border: 1px solid rgba(126, 168, 216, 0.22);
   border-radius: 16px;
@@ -747,7 +752,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   9. SEÇÃO PERFIS DE ACESSO (Técnico, Gestor, Administrador de TI)
+   9. SEÃ‡ÃƒO PERFIS DE ACESSO (TÃ©cnico, Gestor, Administrador de TI)
    ========================================================================== */
 .secao-perfis {
   background: transparent;
@@ -775,6 +780,8 @@ h1 span {
 }
 
 .card-perfil {
+  min-width: 0;
+  overflow-wrap: break-word;
   padding: 44px 40px 36px 40px;
   border-radius: 18px;
   background-color: var(--cor-branca);
@@ -883,7 +890,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   10. SEÇÃO DÚVIDAS FREQUENTES (FAQ & Acordeão)
+   10. SEÃ‡ÃƒO DÃšVIDAS FREQUENTES (FAQ & AcordeÃ£o)
    ========================================================================== */
 .secao-duvidas {
   background-color: var(--cor-branca);
@@ -1002,7 +1009,7 @@ h1 span {
 }
 
 .item-duvida.open button::after {
-  content: '−';
+  content: 'âˆ’';
   color: var(--cor-primaria);
   font-weight: 700;
 }
@@ -1020,7 +1027,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   11. SEÇÃO CONTATO E DEMONSTRAÇÃO (Formulário) — Fundo Branco
+   11. SEÃ‡ÃƒO CONTATO E DEMONSTRAÃ‡ÃƒO (FormulÃ¡rio) â€” Fundo Branco
    ========================================================================== */
 .secao-contato {
   background-color: var(--cor-branca);
@@ -1084,6 +1091,7 @@ h1 span {
 
 .formulario-contato input {
   flex: 1;
+  min-width: 0;
   padding: 0 14px;
   border: 0;
   outline: 0;
@@ -1138,7 +1146,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   12. RODAPÉ (Links, Informações e Direitos) — Azul Principal
+   12. RODAPÃ‰ (Links, InformaÃ§Ãµes e Direitos) â€” Azul Principal
    ========================================================================== */
 .rodape {
   background-color: var(--cor-primaria);
@@ -1239,7 +1247,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   13. RESPONSIVIDADE (MEDIA QUERIES HIERÁRQUICAS)
+   13. RESPONSIVIDADE (MEDIA QUERIES HIERÃRQUICAS)
    ========================================================================== */
 
 @media (max-width: 1100px) {
@@ -1261,11 +1269,23 @@ h1 span {
   }
 
   .hero-imagem-moldura {
-    max-width: 560px;
+    max-width: 680px;
   }
 
   .metricas-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tabelas-comparacao-grid {
+    gap: 28px;
+  }
+
+  .perfis-grid {
+    gap: 28px;
+  }
+
+  .card-perfil {
+    padding: 32px 28px 28px 28px;
   }
 
   .duvidas-grid {
@@ -1466,4 +1486,113 @@ h1 span {
   font-weight: 500;
   font-size: 20px;
 }
+}
+
+
+
+/* ==========================================================================
+   ANIMAÃ‡Ã•ES â€” SEÃ‡ÃƒO 1: IMAGEM DA DASHBOARD (HERO)
+   ========================================================================== */
+@keyframes heroEntrada3D {
+  0% {
+    opacity: 0;
+    transform: perspective(1000px) rotateX(10deg) rotateY(-32deg) translateX(-40px) translateY(60px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1000px) rotateX(3deg) rotateY(-14deg) translateX(0) translateY(0);
+  }
+}
+
+@keyframes heroFlutuar {
+  0%   { transform: perspective(1000px) rotateX(3deg) rotateY(-14deg) translateY(0); }
+  100% { transform: perspective(1000px) rotateX(2deg) rotateY(-11deg) translateY(-6px); }
+}
+
+@keyframes heroGlowEntrada {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.hero-imagem-container {
+  position: relative;
+}
+
+.hero-imagem-container::before {
+  content: '';
+  position: absolute;
+  inset: -12% -10%;
+  background: radial-gradient(ellipse at center, rgba(126, 168, 216, 0.28) 0%, rgba(37, 99, 235, 0.14) 45%, transparent 72%);
+  filter: blur(50px);
+  z-index: 0;
+  pointer-events: none;
+  animation: heroGlowEntrada 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-imagem-moldura {
+  position: relative;
+  z-index: 1;
+  border-color: transparent;
+  box-shadow: 0 40px 70px -20px rgba(0, 0, 0, 0.55), 0 18px 36px -12px rgba(0, 0, 0, 0.35);
+  backface-visibility: hidden;
+  will-change: transform;
+  animation:
+    heroEntrada3D 1.4s cubic-bezier(0.22, 1, 0.36, 1) both,
+    heroFlutuar 6s ease-in-out 1.4s infinite alternate;
+}
+
+.hero-imagem {
+  image-rendering: -webkit-optimize-contrast;
+  backface-visibility: hidden;
+}
+
+
+/* ==========================================================================
+   ANIMAÃ‡Ã•ES â€” SEÃ‡ÃƒO 2: CENÃRIO REAL (Sem vs. Com a MagnaSync)
+   ========================================================================== */
+@keyframes quedaScroll {
+  0%   { opacity: 0; transform: translateY(-90px); }
+  60%  { opacity: 1; }
+  80%  { transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Fallback por tempo (navegadores sem scroll-driven animations) */
+.tabela-card,
+.tabela-card-item {
+  animation: quedaScroll 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.tabela-card--sem { animation-delay: 0.1s; }
+.tabela-card--com { animation-delay: 0.2s; }
+.tabela-card-item:nth-child(1) { animation-delay: 0.3s; }
+.tabela-card-item:nth-child(2) { animation-delay: 0.4s; }
+.tabela-card-item:nth-child(3) { animation-delay: 0.5s; }
+.tabela-card-item:nth-child(4) { animation-delay: 0.6s; }
+
+/* Cai conforme a pÃ¡gina Ã© rolada: o progresso acompanha o scroll */
+@supports (animation-timeline: view()) {
+  .tabela-card,
+  .tabela-card-item {
+    animation-timeline: view();
+    animation-duration: 1ms;
+    animation-timing-function: linear;
+    animation-fill-mode: backwards;
+  }
+  .tabela-card--sem { animation-delay: 0s; animation-range: entry 0% entry 70%; }
+  .tabela-card--com { animation-delay: 0s; animation-range: entry 5% entry 75%; }
+  .tabela-card-item:nth-child(1) { animation-delay: 0s; animation-range: entry 15% entry 85%; }
+  .tabela-card-item:nth-child(2) { animation-delay: 0s; animation-range: entry 20% entry 90%; }
+  .tabela-card-item:nth-child(3) { animation-delay: 0s; animation-range: entry 25% entry 95%; }
+  .tabela-card-item:nth-child(4) { animation-delay: 0s; animation-range: entry 30% entry 100%; }
+}
+
+/* Micro-interaÃ§Ã£o no hover (Ã­cones) */
+.tabela-icone {
+  transition: transform 0.25s ease;
+}
+.tabela-card-item:hover .tabela-icone {
+  transform: rotate(8deg) scale(1.08);
 }

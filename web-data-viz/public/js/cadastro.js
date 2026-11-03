@@ -232,12 +232,17 @@ function filtrarFuncionarios() {
 }
 
 // 4. Evento que escuta a digitação
-document.getElementById("ipt_pesquisar_equipe").addEventListener("input", filtrarFuncionarios);
+const iptPesquisar = document.getElementById("ipt_pesquisar_equipe");
+if (iptPesquisar) {
+    iptPesquisar.addEventListener("input", filtrarFuncionarios);
+}
 
-  // Toggles de visibilidade de senha
+// Toggles de visibilidade de senha
 function configurarToggleSenha(botaoId, inputId) {
     const botao = document.getElementById(botaoId);
     const input = document.getElementById(inputId);
+
+    if (!botao || !input) return;
 
     botao.addEventListener("click", function () {
         // Se for password, muda pra text. Se for text, muda pra password

@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Equipamentos e dados simulados de telemetria
-  const consolesData = {
-    'rm-01': {
+  // Servidores PACS e dados simulados de telemetria (CPU, RAM, disco, rede)
+  const servidoresPacsData = {
+    'pacs-01': {
       labels: ['18:15', '18:20', '18:25', '18:30', '18:35', '18:40', '18:45', '18:50', '18:55', '19:00', '19:05', '19:15'],
       cpu: [18, 22, 29, 25, 34, 28, 20, 22, 31, 26, 23, 24],
       ram: [60, 61, 63, 62, 65, 68, 67, 65, 66, 64, 63, 64],
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         redeBadgeClass: 'kpi-badge normal'
       }
     },
-    'rm-02': {
+    'pacs-02': {
       labels: ['18:15', '18:20', '18:25', '18:30', '18:35', '18:40', '18:45', '18:50', '18:55', '19:00', '19:05', '19:15'],
       cpu: [30, 32, 45, 41, 39, 44, 38, 36, 40, 42, 37, 38],
       ram: [50, 52, 51, 54, 53, 55, 52, 53, 51, 52, 53, 52],
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         redeBadgeClass: 'kpi-badge normal'
       }
     },
-    'rm-03': {
+    'pacs-03': {
       labels: ['18:15', '18:20', '18:25', '18:30', '18:35', '18:40', '18:45', '18:50', '18:55', '19:00', '19:05', '19:15'],
       cpu: [42, 48, 56, 65, 59, 62, 58, 60, 54, 57, 53, 55],
       ram: [70, 72, 74, 78, 77, 79, 76, 75, 77, 78, 75, 76],
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gradientDisco.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
     gradientDisco.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
-    const initialData = consolesData['rm-01'];
+    const initialData = servidoresPacsData['pacs-01'];
 
     performanceChart = new Chart(ctx, {
       type: 'line',
@@ -246,17 +246,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Gráfico de Donut: alertas enviados por tipo (dados simulados por console)
-  const alertasPorConsole = {
-    'rm-01': { 'CPU': 2, 'RAM': 3, 'Disco': 1, 'Rede': 1 },
-    'rm-02': { 'CPU': 1, 'RAM': 1, 'Disco': 0, 'Rede': 2 },
-    'rm-03': { 'CPU': 4, 'RAM': 5, 'Disco': 2, 'Rede': 1 }
+  // Gráfico de Donut: alertas enviados por tipo (dados simulados por Servidor PACS)
+  const alertasPorServidor = {
+    'pacs-01': { 'CPU': 2, 'RAM': 3, 'Disco': 1, 'Rede': 1 },
+    'pacs-02': { 'CPU': 1, 'RAM': 1, 'Disco': 0, 'Rede': 2 },
+    'pacs-03': { 'CPU': 4, 'RAM': 5, 'Disco': 2, 'Rede': 1 }
   };
   const coresAlertas = { 'CPU': '#1A4A87', 'RAM': '#f59e0b', 'Disco': '#10b981', 'Rede': '#6366f1' };
   let alertasChart = null;
 
-  function atualizarDonutAlertas(consoleId) {
-    const dados = alertasPorConsole[consoleId] || alertasPorConsole['rm-01'];
+  function atualizarDonutAlertas(servidorId) {
+    const dados = alertasPorServidor[servidorId] || alertasPorServidor['pacs-01'];
     const tipos = Object.keys(dados);
     const valores = tipos.map((t) => dados[t]);
     const total = valores.reduce((a, b) => a + b, 0);
@@ -283,10 +283,10 @@ document.addEventListener('DOMContentLoaded', () => {
     alertasChart = new Chart(canvasDonut.getContext('2d'), {
       type: 'doughnut',
       data: {
-        labels: Object.keys(alertasPorConsole['rm-01']),
+        labels: Object.keys(alertasPorServidor['pacs-01']),
         datasets: [{
-          data: Object.values(alertasPorConsole['rm-01']),
-          backgroundColor: Object.keys(alertasPorConsole['rm-01']).map((t) => coresAlertas[t]),
+          data: Object.values(alertasPorServidor['pacs-01']),
+          backgroundColor: Object.keys(alertasPorServidor['pacs-01']).map((t) => coresAlertas[t]),
           borderColor: '#ffffff',
           borderWidth: 2,
           hoverOffset: 4
@@ -300,9 +300,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  atualizarDonutAlertas('rm-01');
+  atualizarDonutAlertas('pacs-01');
 
-  // Seletor de Equipamento (atualiza KPIs do card e dados do gráfico)
+  // Seletor de Servidor PACS (atualiza KPIs do card e dados do gráfico)
 
   const unitSelector = document.getElementById('unit-selector');
   if (unitSelector) {
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Atualiza as Mini-KPIs dentro do dash-card
-      const data = consolesData[selectedId];
+      const data = servidoresPacsData[selectedId];
       atualizarDonutAlertas(selectedId);
       if (data) {
         const cpuVal = document.getElementById('kpi-cpu-val');
@@ -484,9 +484,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Lista padrão para demonstração inicial caso o banco não tenha registros
   const funcionariosIniciaisPadrao = [
-    { id: 1, nome: 'Eng. Lucas Silva', email: 'lucas.silva@hospitalcentral.com.br', cargo: 'Engenharia Clínica' },
-    { id: 2, nome: 'Dra. Mariana Costa', email: 'mariana.costa@hospitalcentral.com.br', cargo: 'Operador de Console' },
-    { id: 3, nome: 'Bruno Santos', email: 'bruno.santos@hospitalcentral.com.br', cargo: 'Técnico de Ressonância' }
+    { id: 1, nome: 'Eng. Lucas Silva', email: 'lucas.silva@hospitalcentral.com.br', cargo: 'Gerente de TI Hospitalar' },
+    { id: 2, nome: 'Dra. Mariana Costa', email: 'mariana.costa@hospitalcentral.com.br', cargo: 'Analista de Monitoramento' },
+    { id: 3, nome: 'Bruno Santos', email: 'bruno.santos@hospitalcentral.com.br', cargo: 'Técnico de Suporte Operacional' }
   ];
 
   let listaFuncionariosAtual = [];

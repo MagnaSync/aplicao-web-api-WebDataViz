@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MagnaSync – Dashboard de Telemetria Hospitalar</title>
+  <title>MagnaSync – Dashboard de Telemetria de Servidores PACS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -48,16 +48,16 @@
       <header class="dash-topbar">
         <div class="unit-badge">
           <div>
-            <small>Console Monitorado</small>
-            <div><strong>Hospital Central &middot; RM 01</strong></div>
+            <small>Servidor PACS Monitorado</small>
+            <div><strong>Servidor PACS 01 – Armazenamento Principal</strong></div>
           </div>
         </div>
 
         <div class="topbar-actions">
-          <select class="select-unit" id="unit-selector" aria-label="Selecionar Equipamento">
-            <option value="rm-01">Console RM 01 – Ressonância 1.5T</option>
-            <option value="rm-02">Console RM 02 – Ressonância 3.0T</option>
-            <option value="rm-03">Console RM 03 – Ressonância Aberta</option>
+          <select class="select-unit" id="unit-selector" aria-label="Selecionar Servidor PACS">
+            <option value="pacs-01">Servidor PACS 01 – Armazenamento Principal</option>
+            <option value="pacs-02">Servidor PACS 02 – Contingência</option>
+            <option value="pacs-03">Servidor PACS 03 – Indexação DICOM</option>
           </select>
           <a href="../index.html" class="topbar-button">Página Inicial</a>
         </div>
@@ -71,17 +71,17 @@
         <section id="view-overview" class="dash-view">
           <div class="content-header">
             <div>
-              <h1>Telemetria de Hardware em Tempo Real</h1>
-              <p>Monitoramento contínuo de processador, memória, armazenamento e tráfego de rede.</p>
+              <h1>Telemetria de Hardware dos Servidores PACS</h1>
+              <p>Monitoramento contínuo de CPU, memória RAM, armazenamento em disco para exames (DICOM) e tráfego de rede do servidor.</p>
             </div>
           </div>
 
         <!-- ===================== KPIs ===================== -->
         <section class="kpi-grid">
           <div class="kpi-card">
-            <span>Número de exames por dia</span>
+            <span>Disco livre</span>
             <div class="kpi-row">
-              <strong>24</strong>
+              <strong>37%</strong>
             </div>
           </div>
 
@@ -132,7 +132,7 @@
 
           <article class="dash-card">
             <div class="card-title">
-              <h2>Performance do Console</h2>
+              <h2>Performance do Servidor PACS</h2>
               <small>Janela: últimos 60 minutos</small>
             </div>
 
@@ -163,7 +163,7 @@
               <div class="mini-kpi-item">
                 <div class="mini-kpi-header">
                   <span class="mini-kpi-dot disco"></span>
-                  <span class="mini-kpi-title">Uso de Disco</span>
+                  <span class="mini-kpi-title">Disco</span>
                 </div>
                 <div class="mini-kpi-body">
                   <strong id="kpi-disco-val">63%</strong>
@@ -192,7 +192,7 @@
 
           <article class="dash-card">
             <div class="card-title">
-              <h2>Saúde Global do Sistema</h2>
+              <h2>Saúde Global do Servidor PACS</h2>
               <small>Índice de integridade</small>
             </div>
 
@@ -205,23 +205,23 @@
               <div class="status-item">
                 <div class="status-item-left">
                   <i class="status-dot emerald"></i>
-                  <span>Armazenamento NVMe</span>
+                  <span>Armazenamento Disco</span>
                 </div>
-                <span class="status-value">Normal (98%)</span>
+                <span class="status-value">Estável (63% ocupado)</span>
               </div>
               <div class="status-item">
                 <div class="status-item-left">
                   <i class="status-dot emerald"></i>
-                  <span>Rede Local PACS/DICOM</span>
+                  <span>Tráfego de Rede do Servidor</span>
                 </div>
                 <span class="status-value">12 ms (Estável)</span>
               </div>
               <div class="status-item">
                 <div class="status-item-left">
                   <i class="status-dot emerald"></i>
-                  <span>Temperatura da CPU</span>
+                  <span>Processamento &amp; Memória RAM</span>
                 </div>
-                <span class="status-value">42°C (Ideal)</span>
+                <span class="status-value">Carga Normal</span>
               </div>
             </div>
           </article>
@@ -271,7 +271,7 @@
 
                 <div class="form-row-2">
                   <div class="form-group">
-                    <label for="ipt_cargo_funcionario">Cargo / Especialidade</label>
+                    <label for="ipt_cargo_funcionario">Cargo / Função em TI</label>
                     <select id="cargo_select" required>
                       <option value="null">Selecione um cargo...</option>
                     </select>
@@ -347,13 +347,13 @@
           <div class="content-header">
             <div>
               <h1>Relatórios de Performance &amp; Incidentes</h1>
-              <p>Histórico consolidado de telemetria, paradas não programadas e disponibilidade operacional.</p>
+              <p>Histórico consolidado de telemetria de hardware dos Servidores PACS, alertas de saturação e disponibilidade operacional.</p>
             </div>
           </div>
           <div class="dash-card module-placeholder">
             <div class="placeholder-icon">&#128202;</div>
             <h2>Relatórios em Geração Contínua</h2>
-            <p>Selecione os consoles monitorados e exporte relatórios consolidados em formato PDF ou planilha.</p>
+            <p>Selecione os Servidores PACS monitorados e exporte relatórios consolidados de CPU, memória RAM, disco e tráfego de rede em formato PDF ou planilha.</p>
             <div class="placeholder-actions">
               <button class="topbar-button" onclick="switchView('overview')">&larr; Voltar para Visão Geral</button>
             </div>
@@ -365,13 +365,13 @@
           <div class="content-header">
             <div>
               <h1>Suporte Técnico Especializado</h1>
-              <p>Canal direto com a equipe de engenharia da MagnaSync para suporte aos consoles de RM.</p>
+              <p>Canal direto com a equipe técnica da MagnaSync para suporte aos Servidores PACS.</p>
             </div>
           </div>
           <div class="dash-card module-placeholder">
             <div class="placeholder-icon">&#128736;</div>
             <h2>Central de Ajuda &amp; SLA Hospitalar</h2>
-            <p>Precisa de assistência técnica imediata ou calibração de sensores de telemetria?</p>
+            <p>Precisa de assistência técnica imediata ou ajuste nos limites de alerta de hardware dos Servidores PACS?</p>
             <div class="placeholder-actions">
               <button class="topbar-button" onclick="switchView('overview')">&larr; Voltar para Visão Geral</button>
             </div>
