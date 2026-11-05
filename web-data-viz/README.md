@@ -84,7 +84,7 @@ _O comando acima irá iniciar seu projeto e efetuar os comandos de acordo com a 
 
 _* Você verá o verbo HTTP sendo apontado nos arquivos em /routes_
 
-**"E no meu projeto, o que seria um recurso?"** Em web-data-viz manipulamos os recursos **usuário**, **aviso** e **medida**. Podemos conferir isso vendo para quais entidades foram criados os caminhos de inserção e captura de dados, que envolve os diretórios **routes**, **controllers** e **models**.
+**"E no meu projeto, o que seria um recurso?"** Em web-data-viz manipulamos os recursos **usuário (funcionário)** e **hospital**. Podemos conferir isso vendo para quais entidades foram criados os caminhos de inserção e captura de dados, que envolve os diretórios **routes**, **controllers** e **models**.
 
 Abaixo, uma figura que ajuda a compreender o caminho percorrido para, por exemplo, efetuar o cadastro de um usuário:
 
@@ -94,10 +94,10 @@ Abaixo, uma figura que ajuda a compreender o caminho percorrido para, por exempl
 
 
 **Entendi o que é um recurso e gostaria de adicionar um novo ao meu projeto! Como faz?**  
-- Primeiro, crie a tabela no Banco de Dados referente a este recurso. Exemplos de recursos comuns de serem adicionados ao projeto no primeiro semestre: Silo, Aquário, Sala, Andar, Endereço, Mercado, Prateleira, Unidade, Carro, Caminhão...  
+- Primeiro, crie a tabela no Banco de Dados referente a este recurso. Exemplos de recursos comuns de serem adicionados ao projeto no primeiro semestre: Silo, Sala, Andar, Endereço, Mercado, Prateleira, Unidade, Carro, Caminhão...  
 - Assim que criada a tabela, faça todo o caminho de **front-end → routes → controllers → models** replicando o que já existe!  
-- Exemplo, se você quiser a funcionalidade de adicionar um novo Aquário, deve criar arquivos referentes ao aquario nos diretórios e replicar também as funções.  
-- Dica: A implementação de AVISO já contém o CRUD completo! :wink:
+- Exemplo, se você quiser a funcionalidade de adicionar uma nova Sala, deve criar arquivos referentes à sala nos diretórios e replicar também as funções.  
+- Dica: use a implementação de **hospital** e **usuário** como modelo.
  
 ### Fontes bibliográficas
 

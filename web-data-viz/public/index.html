@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
   <link rel="stylesheet" href="./css/style.css" />
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js" defer></script>
   <script src="./js/script.js" defer></script>
 </head>
 <body>
@@ -53,16 +55,16 @@
           <div class="container hero-grid">
 
             <div class="hero-texto">
-              <span class="etiqueta-secao">Infraestrutura de TI · Servidores PACS</span>
-              <h1>Monitoramento contínuo de hardware para Servidores PACS.</h1>
-              <p>Acompanhe CPU, memória RAM, disco e tráfego de rede dos Servidores PACS. Identifique gargalos e saturação de recursos antes que a recepção e o armazenamento de exames do tipo DICOM sejam afetados.</p>
-              <div class="hero-botoes">
+              <span class="etiqueta-secao" data-aos="fade-down" data-aos-offset="0">Infraestrutura de TI · Servidores PACS</span>
+              <h1 data-aos="fade-right" data-aos-delay="100" data-aos-offset="0">Monitoramento contínuo de hardware para Servidores PACS.</h1>
+              <p data-aos="fade-right" data-aos-delay="200" data-aos-offset="0">Acompanhe CPU, memória RAM, disco e tráfego de rede dos Servidores PACS. Identifique gargalos e saturação de recursos antes que a recepção e o armazenamento de exames do tipo DICOM sejam afetados.</p>
+              <div class="hero-botoes" data-aos="fade-up" data-aos-delay="300" data-aos-offset="0">
                 <a href="#contato" class="button button-primary">Solicitar Demonstração</a>
                 <a href="#metricas" class="button button-secundario">Ver Métricas</a>
               </div>
             </div>
 
-            <div class="hero-imagem-container">
+            <div class="hero-imagem-container" data-aos="fade-left" data-aos-delay="150" data-aos-offset="0">
               <div class="hero-imagem-moldura">
                 <img src="assets/imgs/dashboard.png" alt="Monitoramento de Servidores PACS MagnaSync" class="hero-imagem" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                 <div class="hero-placeholder">
@@ -83,14 +85,14 @@
           <div class="container">
 
             <div class="evolucao-cabecalho">
-              <span class="etiqueta-secao">Cenário Real</span>
-              <h2 class="evolucao-titulo">Onde sua empresa pode evoluir</h2>
-              <p class="evolucao-subtitulo">A diferença prática entre uma rotina reativa e a previsibilidade contínua na infraestrutura dos Servidores PACS.</p>
+              <span class="etiqueta-secao" data-aos="fade-down">Cenário Real</span>
+              <h2 class="evolucao-titulo" data-aos="fade-up" data-aos-delay="100">Onde sua empresa pode evoluir</h2>
+              <p class="evolucao-subtitulo" data-aos="fade-up" data-aos-delay="200">A diferença prática entre uma rotina reativa e a previsibilidade contínua na infraestrutura dos Servidores PACS.</p>
             </div>
 
             <div class="tabelas-comparacao-grid">
 
-              <article class="tabela-card tabela-card--sem">
+              <article class="tabela-card tabela-card--sem" data-aos="fade-right">
 
                 <div class="tabela-card-topo">
                   <h3 class="tabela-card-titulo">Sem a MagnaSync</h3>
@@ -99,7 +101,7 @@
                 <div class="tabela-card-divisor" aria-hidden="true"></div>
 
                 <ul class="tabela-card-lista">
-                  <li class="tabela-card-item">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="270" data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--erro" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -108,7 +110,7 @@
                     <span>Falhas detectadas só após a parada do Servidor PACS</span>
                   </li>
 
-                  <li class="tabela-card-item">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="390" data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--erro" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -117,7 +119,7 @@
                     <span>Sem visibilidade contínua de CPU, RAM, disco e rede</span>
                   </li>
 
-                  <li class="tabela-card-item">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="510" data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--erro" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -126,7 +128,7 @@
                     <span>Registros manuais e análises técnicas descentralizadas</span>
                   </li>
 
-                  <li class="tabela-card-item">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="630" data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--erro" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -137,7 +139,7 @@
                 </ul>
               </article>
 
-              <article class="tabela-card tabela-card--com">
+              <article class="tabela-card tabela-card--com" data-aos="fade-left">
 
                 <div class="tabela-card-topo">
                   <h3 class="tabela-card-titulo">Com a MagnaSync</h3>
@@ -146,7 +148,7 @@
                 <div class="tabela-card-divisor" aria-hidden="true"></div>
 
                 <ul class="tabela-card-lista">
-                  <li class="tabela-card-item">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="270" data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--sucesso" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -155,7 +157,7 @@
                     <span>Alertas em tempo real antes do esgotamento de recursos</span>
                   </li>
 
-                  <li class="tabela-card-item">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="390" data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--sucesso" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -164,7 +166,7 @@
                     <span>Monitoramento contínuo de CPU, RAM, disco e rede no PACS</span>
                   </li>
 
-                  <li class="tabela-card-item">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="510" data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--sucesso" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -173,7 +175,7 @@
                     <span>Histórico técnico centralizado para a equipe de TI</span>
                   </li>
 
-                  <li class="tabela-card-item">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="630" data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--sucesso" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -194,13 +196,13 @@
         <section class="secao secao-metricas" id="metricas">
           <div class="container">
             <div class="secao-cabecalho centralizado">
-              <span class="etiqueta-secao">Monitoramento ativo</span>
-              <h2>Tudo o que importa, <span>monitorado em tempo real.</span></h2>
-              <p>O MagnaSync acompanha os principais componentes dos Servidores PACS para identificar alterações antes que elas se tornem problemas.</p>
+              <span class="etiqueta-secao" data-aos="fade-down">Monitoramento ativo</span>
+              <h2 data-aos="fade-up" data-aos-delay="100">Tudo o que importa, <span>monitorado em tempo real.</span></h2>
+              <p data-aos="fade-up" data-aos-delay="200">O MagnaSync acompanha os principais componentes dos Servidores PACS para identificar alterações antes que elas se tornem problemas.</p>
             </div>
 
             <div class="metricas-grid">
-              <article class="card-metrica">
+              <article class="card-metrica" data-aos="zoom-in-up" data-aos-delay="0">
                 <h3>Processador (CPU)</h3>
                 <p>Detecta sobrecarga de processamento no Servidor PACS durante a recepção e a indexação de exames DICOM.</p>
                 <div class="metrica-dados">
@@ -209,7 +211,7 @@
                 </div>
               </article>
 
-              <article class="card-metrica">
+              <article class="card-metrica" data-aos="zoom-in-up" data-aos-delay="120">
                 <h3>Memória RAM</h3>
                 <p>Identifica pressão de memória nos Servidores PACS durante o roteamento simultâneo de estudos.</p>
                 <div class="metrica-dados">
@@ -218,7 +220,7 @@
                 </div>
               </article>
 
-              <article class="card-metrica">
+              <article class="card-metrica" data-aos="zoom-in-up" data-aos-delay="240">
                 <h3>Disco</h3>
                 <p>Alerta precoce de saturação dos volumes de armazenamento de exames nos Servidores PACS.</p>
                 <div class="metrica-dados">
@@ -227,7 +229,7 @@
                 </div>
               </article>
 
-              <article class="card-metrica">
+              <article class="card-metrica" data-aos="zoom-in-up" data-aos-delay="360">
                 <h3>Tráfego de Rede</h3>
                 <p>Acompanha a taxa de transferência e perdas de pacotes nos picos de recepção de exames DICOM.</p>
                 <div class="metrica-dados">
@@ -245,12 +247,12 @@
         <section class="secao secao-perfis" id="perfis">
           <div class="container">
             <div class="secao-cabecalho centralizado">
-              <span class="etiqueta-secao">Perfis de usuário</span>
-              <h2>Quem utiliza o MagnaSync no dia a dia?</h2>
+              <span class="etiqueta-secao" data-aos="fade-down">Perfis de usuário</span>
+              <h2 data-aos="fade-up" data-aos-delay="100">Quem utiliza o MagnaSync no dia a dia?</h2>
             </div>
 
             <div class="perfis-grid">
-              <article class="card-perfil">
+              <article class="card-perfil" data-aos="fade-up" data-aos-delay="0">
                 <span class="perfil-icone" aria-hidden="true">
                   <img src="./assets/imgs/persona-tecnico.png" alt="" />
                 </span>
@@ -265,7 +267,7 @@
                 <a href="#contato">Conhecer perfil &rarr;</a>
               </article>
 
-              <article class="card-perfil">
+              <article class="card-perfil" data-aos="fade-up" data-aos-delay="150">
                 <span class="perfil-icone" aria-hidden="true">
                   <img src="./assets/imgs/persona-analista.png" alt="" />
                 </span>
@@ -280,7 +282,7 @@
                 <a href="#contato">Conhecer perfil &rarr;</a>
               </article>
 
-              <article class="card-perfil">
+              <article class="card-perfil" data-aos="fade-up" data-aos-delay="300">
                 <span class="perfil-icone" aria-hidden="true">
                   <img src="./assets/imgs/persona-gerente.png" alt="" />
                 </span>
@@ -305,7 +307,7 @@
            ========================================================================== -->
       <section class="secao secao-duvidas" id="duvidas">
         <div class="container duvidas-grid">
-          <div class="duvidas-intro">
+          <div class="duvidas-intro" data-aos="fade-right">
             <span class="etiqueta-secao">Perguntas Frequentes</span>
             <h2>Tire suas principais dúvidas sobre o MagnaSync.</h2>
             <p>Respostas objetivas sobre funcionamento, escopo e compatibilidade.</p>
@@ -319,7 +321,7 @@
           </div>
 
           <div class="duvidas-acordeao">
-            <div class="item-duvida open">
+            <div class="item-duvida open" data-aos="fade-left" data-aos-delay="0">
               <button aria-expanded="true">
                 <span>01</span>
                 <span>O que o MagnaSync monitora?</span>
@@ -329,7 +331,7 @@
               </div>
             </div>
 
-            <div class="item-duvida">
+            <div class="item-duvida" data-aos="fade-left" data-aos-delay="120">
               <button aria-expanded="false">
                 <span>02</span>
                 <span>Onde o MagnaSync é instalado?</span>
@@ -339,7 +341,7 @@
               </div>
             </div>
 
-            <div class="item-duvida">
+            <div class="item-duvida" data-aos="fade-left" data-aos-delay="240">
               <button aria-expanded="false">
                 <span>03</span>
                 <span>Como funcionam as notificações e avisos de problema?</span>
@@ -357,13 +359,13 @@
            ========================================================================== -->
       <section class="secao-contato" id="contato">
         <div class="container contato-container">
-          <div class="contato-texto">
+          <div class="contato-texto" data-aos="fade-right" data-aos-offset="100">
             <span class="etiqueta-secao">Demonstração técnica</span>
             <h2>Garanta a disponibilidade contínua dos seus Servidores PACS.</h2>
             <p>Descubra como o MagnaSync ajuda a evitar paradas não planejadas, saturação de armazenamento por arquivos de imagem do tipo DICOM e gargalos de rede nos Servidores PACS.</p>
           </div>
 
-          <div id="area-formulario">
+          <div id="area-formulario" data-aos="fade-left" data-aos-delay="150" data-aos-offset="100">
             <form class="formulario-contato" id="formulario-contato">
               <label for="campo-email">E-mail corporativo institucional</label>
               <div class="formulario-campo-grupo">
@@ -384,7 +386,7 @@
          8. RODAPÉ (Links, Informações e Direitos)
          ========================================================================== -->
     <footer class="rodape">
-      <div class="container rodape-grid">
+      <div class="container rodape-grid" data-aos="fade-up" data-aos-offset="40">
         <div class="rodape-marca">
           <a href="#inicio" class="logo" aria-label="MagnaSync, início">
             <img src="assets/imgs/logo.png" alt="Logo MagnaSync" class="logo-img" />

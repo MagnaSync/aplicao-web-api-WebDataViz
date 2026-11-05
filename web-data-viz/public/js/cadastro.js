@@ -1,199 +1,208 @@
-// cadastro na tela de dashboard
+var listaFuncionariosGlobal = [];
+var timerFeedbackCadastro = null;
+var timerMensagemHospital = null;
+
+function mostrarFeedbackCadastro(msg, tipo) {
+    var box = document.getElementById("cadastro-feedback");
+    if (!box) return;
+
+    box.className = "feedback-box " + (tipo || "success");
+    var icone = "&#10003;";
+    if (tipo === "error") icone = "&#9888;";
+    if (tipo === "warn") icone = "&#8505;";
+
+    box.innerHTML = "<span>" + icone + "</span><span>" + msg + "</span>";
+    box.style.display = "flex";
+
+    if (timerFeedbackCadastro) {
+        clearTimeout(timerFeedbackCadastro);
+    }
+    timerFeedbackCadastro = setTimeout(esconderFeedback, 5000);
+}
+
+function esconderFeedback() {
+    var box = document.getElementById("cadastro-feedback");
+    if (box) {
+        box.style.display = "none";
+        box.className = "feedback-box";
+        box.innerHTML = "";
+    }
+}
+
+function limparErrosValidacao() {
+    var ids = ["hint-nome", "hint-email", "hint-senha", "hint-confirmar-senha"];
+    for (var i = 0; i < ids.length; i++) {
+        var hint = document.getElementById(ids[i]);
+        if (hint) {
+            hint.textContent = "";
+            hint.classList.remove("show");
+        }
+    }
+}
+
+function limparFormularioCadastro() {
+    var form = document.getElementById("form-cadastro-funcionario");
+    if (form) form.reset();
+
+    sincronizarHospitalSessao();
+    esconderFeedback();
+    limparErrosValidacao();
+}
+
+function sincronizarHospitalSessao() {
+    var idHospital = sessionStorage.ID_HOSPITAL || "1";
+    var nomeHospital = sessionStorage.NOME_HOSPITAL;
+    var iptIdHospital = document.getElementById("ipt_id_empresa");
+    var hospitalDisplay = document.getElementById("hospital_input");
+
+    if (iptIdHospital) {
+        iptIdHospital.value = idHospital;
+    }
+    if (hospitalDisplay) {
+        if (nomeHospital) {
+            hospitalDisplay.value = nomeHospital + " (ID: " + idHospital + ")";
+        } else {
+            hospitalDisplay.value = idHospital === "1"
+                ? "Hospital Central (ID: 1)"
+                : "Hospital Vinculado (ID: " + idHospital + ")";
+        }
+    }
+}
 
 function cadastrar() {
-    // aguardar();
+    limparErrosValidacao();
 
-    //Recupere o valor da nova input pelo nome do id
-    // Agora vá para o método fetch logo abaixo
-    var nomeVar = nome_input.value;
-    var emailVar = email_input.value;
+    var nomeVar = nome_input.value.trim();
+    var emailVar = email_input.value.trim();
     var senhaVar = senha_input.value;
     var confirmarSenhaVar = confirmacao_senha_input.value;
     var cargoVar = cargo_select.value;
     var hospitalIdVar = ipt_id_empresa.value;
 
-    // Verificando se há algum campo em branco
     if (
-      nomeVar == "" ||
-      emailVar == "" ||
-      senhaVar == "" ||
-      cargoVar == "" ||
-      hospitalIdVar == ""
+        nomeVar == "" ||
+        emailVar == "" ||
+        senhaVar == "" ||
+        confirmarSenhaVar == "" ||
+        cargoVar == "" ||
+        hospitalIdVar == ""
     ) {
-      cardErro.style.display = "block";
-      mensagem_erro.innerHTML =
-        "(Mensagem de erro para todos os campos em branco)";
-
-      finalizarAguardar();
-      return false;
-    } else if(cargoVar == "null") {
-      cardErro.style.display = "block";
-      mensagem_erro.innerHTML = "(Mensagem de erro para cargo não selecionado)";
-      finalizarAguardar();
-      return false;
+        mostrarFeedbackCadastro("Preencha todos os campos obrigatórios.", "error");
+        return false;
+    } else if (cargoVar == "null") {
+        mostrarFeedbackCadastro("Selecione um cargo válido.", "error");
+        return false;
     } else if (senhaVar != confirmarSenhaVar) {
-      cardErro.style.display = "block";
-      mensagem_erro.innerHTML = "(Mensagem de erro para senha não correspondente)";
-      finalizarAguardar();
-      return false;
+        mostrarFeedbackCadastro("As senhas digitadas não coincidem.", "error");
+        return false;
     }
 
-    // Verificando se o código de ativação é de alguma empresa cadastrada
-    // for (let i = 0; i < listaEmpresasCadastradas.length; i++) {
-    //   if (listaEmpresasCadastradas[i].codigo_ativacao == codigoVar) {
-    //     idEmpresaVincular = listaEmpresasCadastradas[i].id
-    //     console.log("Código de ativação válido.");
-    //     break;
-    //   } else {
-    //     cardErro.style.display = "block";
-    //     mensagem_erro.innerHTML = "(Mensagem de erro para código inválido)";
-    //     finalizarAguardar();
-    //   }
-    // }
-
-    // Enviando o valor da nova input
     fetch("/usuarios/cadastrar", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        // crie um atributo que recebe o valor recuperado aqui
-        // Agora vá para o arquivo routes/usuario.js
-        nomeServer: nomeVar,
-        emailServer: emailVar,
-        senhaServer: senhaVar,
-        idHospitalVincularServer: hospitalIdVar,
-        cargoServer: cargoVar,
-      }),
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            nomeServer: nomeVar,
+            emailServer: emailVar,
+            senhaServer: senhaVar,
+            idHospitalVincularServer: hospitalIdVar,
+            cargoServer: cargoVar,
+        }),
     })
-      .then(function (resposta) {
-        console.log("resposta: ", resposta);
-
-        if (resposta.ok) {
-          cardErro.style.display = "block";
-
-          mensagem_erro.innerHTML =
-            "Cadastro realizado com sucesso!";
-
-         
-          window.location.reload();
-        } else {
-          throw "Houve um erro ao tentar realizar o cadastro!";
-        }
-      })
-      .catch(function (resposta) {
-        console.log(`#ERRO: ${resposta}`);
-      
-      });
+        .then(function (resposta) {
+            if (resposta.ok) {
+                limparFormularioCadastro();
+                mostrarFeedbackCadastro("Cadastro realizado com sucesso!", "success");
+                listarFuncionarios();
+            } else {
+                throw "Houve um erro ao tentar realizar o cadastro!";
+            }
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
+            mostrarFeedbackCadastro("Não foi possível realizar o cadastro. Verifique a conexão.", "error");
+        });
 
     return false;
-  }
+}
 
 function listarCargos() {
-  const cargo_select = document.getElementById("cargo_select");
+    var cargoSelect = document.getElementById("cargo_select");
+    if (!cargoSelect) return;
 
-  fetch("/usuarios/listarCargos", {
+    sincronizarHospitalSessao();
+
+    fetch("/usuarios/listarCargos", {
         method: "GET"
     })
-    .then(resposta => resposta.json())
-    .then(cargos => {
-        console.log("Cargos recebidos:", cargos);
-        console.log("Select encontrado:", cargo_select);
-
-        cargos.forEach(cargo => {
-            cargo_select.innerHTML +=
-                `<option value="${cargo.id}">${cargo.funcao}</option>`;
+        .then(function (resposta) {
+            if (!resposta.ok) throw "Falha ao listar cargos";
+            return resposta.json();
+        })
+        .then(function (cargos) {
+            cargoSelect.innerHTML = '<option value="null">Selecione um cargo...</option>';
+            cargos.forEach(function (cargo) {
+                cargoSelect.innerHTML +=
+                    `<option value="${cargo.id}">${cargo.funcao}</option>`;
+            });
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
         });
-    })
-    .catch(erro => console.log("#ERRO:", erro));
 }
 
-  // Listando empresas cadastradas 
-//   function listar() {
-//     fetch("/empresas/listar", {
-//       method: "GET",
-//     })
-//       .then(function (resposta) {
-//         resposta.json().then((empresas) => {
-//           empresas.forEach((empresa) => {
-//             listaEmpresasCadastradas.push(empresa);
-
-//             console.log("listaEmpresasCadastradas")
-//             console.log(listaEmpresasCadastradas[0].codigo_ativacao)
-//           });
-//         });
-//       })
-//       .catch(function (resposta) {
-//         console.log(`#ERRO: ${resposta}`);
-//       });
-//   }
-
-// function listarFuncionarios() {
-//   const tabelaFuncionarios = document.getElementById("tabelaFuncionarios");
-
-//   fetch("/usuarios/listarFuncionarios", {
-//         method: "GET"
-//     })
-//     .then(resposta => resposta.json())
-//     .then(funcionarios => {
-//         console.log("Funcionários recebidos:", funcionarios);
-//         console.log("Tabela encontrada:", tabelaFuncionarios);
-
-//         funcionarios.forEach(funcionario => {
-//             const row = tabelaFuncionarios.insertRow();
-//             row.insertCell(0).innerText = funcionario["Nome do funcionário"];
-//             row.insertCell(1).innerText = funcionario["Nome do Hospital"];
-//             row.insertCell(2).innerText = funcionario["Função"];
-//         });
-//     })
-//     .catch(erro => console.log("#ERRO:", erro));
-// }
-
-// Variável global para guardar os funcionários
-let listaFuncionariosGlobal = [];
-
-// 1. Busca os dados do servidor
 function listarFuncionarios() {
-  const container = document.getElementById("funcionarios-list-container");
+    var container = document.getElementById("funcionarios-list-container");
+    if (!container) return;
 
-  fetch("/usuarios/listarFuncionarios", { method: "GET" })
-    .then(resposta => resposta.json())
-    .then(funcionarios => {
-        listaFuncionariosGlobal = funcionarios; // Salva globalmente
-        renderizarFuncionarios(funcionarios);   // Desenha na tela
-    })
-    .catch(erro => console.log("#ERRO:", erro));
+    fetch("/usuarios/listarFuncionarios", { method: "GET" })
+        .then(function (resposta) {
+            if (!resposta.ok) throw "Falha ao listar funcionários";
+            return resposta.json();
+        })
+        .then(function (funcionarios) {
+            listaFuncionariosGlobal = Array.isArray(funcionarios) ? funcionarios : [];
+            renderizarFuncionarios(listaFuncionariosGlobal);
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
+            renderizarFuncionarios([]);
+        });
 }
 
-// 2. Desenha os funcionários na tela (HTML)
-function renderizarFuncionarios(funcionarios) {
-    const container = document.getElementById("funcionarios-list-container");
-    container.innerHTML = "";
+function obterIniciais(nomeCompleto) {
+    if (!nomeCompleto) return "";
+    var partes = nomeCompleto.trim().split(" ");
+    if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
+    return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
+}
 
-    function obterIniciais(nomeCompleto) {
-        if (!nomeCompleto) return "";
-        const partes = nomeCompleto.trim().split(" ");
-        if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
-        return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
-    }
+function renderizarFuncionarios(funcionarios) {
+    var container = document.getElementById("funcionarios-list-container");
+    var badgeTotal = document.getElementById("badge-total-equipe");
+    if (!container) return;
+
+    container.innerHTML = "";
 
     if (!funcionarios || funcionarios.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">👥</div>
+                <div class="empty-state-icon">&#128101;</div>
                 <p>Nenhum funcionário encontrado</p>
             </div>
         `;
-        document.getElementById("badge-total-equipe").innerText = "0 colaboradores";
+        if (badgeTotal) badgeTotal.innerText = "0 colaboradores";
         return;
     }
 
-    funcionarios.forEach(funcionario => {
-        const nome = funcionario["Nome do funcionário"];
-        const iniciais = obterIniciais(nome);
+    funcionarios.forEach(function (funcionario) {
+        var nome = funcionario["Nome do funcionário"] || "";
+        var hospital = funcionario["Nome do Hospital"] || "";
+        var funcao = funcionario["Função"] || "";
+        var iniciais = obterIniciais(nome);
 
-        const item = document.createElement("div");
+        var item = document.createElement("div");
         item.className = "funcionario-item";
 
         item.innerHTML = `
@@ -202,110 +211,94 @@ function renderizarFuncionarios(funcionarios) {
                 <div class="funcionario-info">
                     <span class="funcionario-nome">${nome}</span>
                     <div class="funcionario-meta">
-                        <span>${funcionario["Nome do Hospital"]}</span>
+                        <span>${hospital}</span>
                     </div>
                 </div>
             </div>
-            <span class="funcionario-badge role">${funcionario["Função"]}</span>
+            <span class="funcionario-badge role">${funcao}</span>
         `;
 
         container.appendChild(item);
     });
 
-    document.getElementById("badge-total-equipe").innerText = `${funcionarios.length} colaboradores`;
+    if (badgeTotal) {
+        var qtd = funcionarios.length;
+        badgeTotal.innerText = qtd + (qtd === 1 ? " colaborador" : " colaboradores");
+    }
 }
 
-// 3. Função separada para filtrar
 function filtrarFuncionarios() {
-    const inputBusca = document.getElementById("ipt_pesquisar_equipe");
-    const termoBusca = inputBusca.value.toLowerCase().trim();
+    var inputBusca = document.getElementById("ipt_pesquisar_equipe");
+    if (!inputBusca) return;
 
-    const funcionariosFiltrados = listaFuncionariosGlobal.filter(funcionario => {
-        const nome = funcionario["Nome do funcionário"] ? funcionario["Nome do funcionário"].toLowerCase() : "";
-        const funcao = funcionario["Função"] ? funcionario["Função"].toLowerCase() : "";
-        const email = funcionario["Email"] ? funcionario["Email"].toLowerCase() : ""; 
-        
-        return nome.includes(termoBusca) || funcao.includes(termoBusca) || email.includes(termoBusca);
+    var termoBusca = inputBusca.value.toLowerCase().trim();
+
+    var funcionariosFiltrados = listaFuncionariosGlobal.filter(function (funcionario) {
+        var nome = funcionario["Nome do funcionário"] ? funcionario["Nome do funcionário"].toLowerCase() : "";
+        var funcao = funcionario["Função"] ? funcionario["Função"].toLowerCase() : "";
+        var hospital = funcionario["Nome do Hospital"] ? funcionario["Nome do Hospital"].toLowerCase() : "";
+        var email = funcionario["Email"] ? funcionario["Email"].toLowerCase() : "";
+
+        return (
+            nome.includes(termoBusca) ||
+            funcao.includes(termoBusca) ||
+            hospital.includes(termoBusca) ||
+            email.includes(termoBusca)
+        );
     });
 
     renderizarFuncionarios(funcionariosFiltrados);
 }
 
-// 4. Evento que escuta a digitação
-const iptPesquisar = document.getElementById("ipt_pesquisar_equipe");
-if (iptPesquisar) {
-    iptPesquisar.addEventListener("input", filtrarFuncionarios);
-}
-
-// Toggles de visibilidade de senha
 function configurarToggleSenha(botaoId, inputId) {
-    const botao = document.getElementById(botaoId);
-    const input = document.getElementById(inputId);
+    var botao = document.getElementById(botaoId);
+    var input = document.getElementById(inputId);
 
     if (!botao || !input) return;
 
     botao.addEventListener("click", function () {
-        // Se for password, muda pra text. Se for text, muda pra password
-        const tipoAtual = input.getAttribute("type");
-        const novoTipo = tipoAtual === "password" ? "text" : "password";
-        
-        input.setAttribute("type", novoTipo);
+        var tipoAtual = input.getAttribute("type");
+        var novoTipo = tipoAtual === "password" ? "text" : "password";
 
-        // Opcional: Muda o ícone (👁️ para aberto, 🙈 para fechado)
+        input.setAttribute("type", novoTipo);
         this.innerHTML = novoTipo === "password" ? "&#128065;" : "&#128584;";
     });
 }
 
-// Configura os dois campos
-configurarToggleSenha("toggle-senha-btn", "senha_input");
-configurarToggleSenha("toggle-confirmar-senha-btn", "confirmacao_senha_input");
+// --- Cadastro de Hospital (cadastroHospital.html) ---
 
-  // Limpar formulário
-  const btnLimpar = document.getElementById('btn-limpar-form');
-  if (btnLimpar) {
-    btnLimpar.addEventListener('click', limparFormularioCadastro);
-  }
-
-  function limparFormularioCadastro() {
-    const form = document.getElementById('form-cadastro-funcionario');
-    if (form) form.reset();
-
-    esconderFeedback();
-    limparErrosValidacao();
-  }
-
-  function esconderFeedback() {
-    const box = document.getElementById('cadastro-feedback');
-    if (box) {
-      box.style.display = 'none';
-      box.className = 'feedback-box';
-      box.innerHTML = '';
-    }
-  }
-
-  function mostrarMensagemHospital(texto, tipo) {
+function mostrarMensagemHospital(texto, tipo) {
     var caixa = document.getElementById("mensagem_hospital");
     if (!caixa) return;
 
+    var icone = tipo === "erro" ? "&#9888;" : "&#10003;";
     caixa.className = "mensagem mensagem--" + tipo;
-    caixa.innerHTML = texto;
-    caixa.style.display = "block";
+    caixa.innerHTML = "<span>" + icone + "</span><span>" + texto + "</span>";
+    caixa.style.display = "flex";
 
-    setTimeout(function () {
-      caixa.style.display = "none";
-    }, 5000);
-  }
-
-  function cadastrarHospital() {
-    var form = document.getElementById("form-hospital");
-
-    // Como o botão é type="button", a validação do HTML (required, pattern)
-    // não roda sozinha. Chamamos manualmente.
-    if (!form.reportValidity()) {
-      mostrarMensagemHospital("Preencha todos os campos corretamente.", "erro");
-      return false;
+    if (timerMensagemHospital) {
+        clearTimeout(timerMensagemHospital);
     }
+    timerMensagemHospital = setTimeout(sumirMensagemHospital, 5000);
+}
 
+function sumirMensagemHospital() {
+    var caixa = document.getElementById("mensagem_hospital");
+    if (caixa) {
+        caixa.style.display = "none";
+        caixa.className = "mensagem";
+        caixa.innerHTML = "";
+    }
+}
+
+function limparFormularioHospital() {
+    var form = document.getElementById("form-hospital");
+    if (form) form.reset();
+
+    sumirMensagemHospital();
+}
+
+function cadastrarHospital() {
     var nomeVar = nome_hospital_input.value.trim();
     var cnpjVar = cnpj_hospital_input.value.trim();
     var telefoneVar = telefone_hospital_input.value.trim();
@@ -313,54 +306,88 @@ configurarToggleSenha("toggle-confirmar-senha-btn", "confirmacao_senha_input");
     var cepVar = cep_hospital_input.value.trim();
     var numeroVar = numero_hospital_input.value.trim();
 
-    if (nomeVar == "" || telefoneVar == "" || numeroVar == "") {
-      mostrarMensagemHospital("Preencha todos os campos.", "erro");
-      return false;
-    }
-    if (!/^\d{14}$/.test(cnpjVar)) {
-      mostrarMensagemHospital("CNPJ inválido: digite os 14 números.", "erro");
-      return false;
-    }
-    if (!/^\d{8}$/.test(cepVar)) {
-      mostrarMensagemHospital("CEP inválido: digite os 8 números.", "erro");
-      return false;
+    if (
+        nomeVar == "" ||
+        cnpjVar == "" ||
+        telefoneVar == "" ||
+        emailVar == "" ||
+        cepVar == "" ||
+        numeroVar == ""
+    ) {
+        mostrarMensagemHospital("Preencha todos os campos obrigatórios.", "erro");
+        return false;
+    } else if (!/^\d{14}$/.test(cnpjVar)) {
+        mostrarMensagemHospital("CNPJ inválido: digite os 14 números.", "erro");
+        return false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVar)) {
+        mostrarMensagemHospital("Informe um e-mail válido.", "erro");
+        return false;
+    } else if (!/^\d{8}$/.test(cepVar)) {
+        mostrarMensagemHospital("CEP inválido: digite os 8 números.", "erro");
+        return false;
     }
 
     fetch("/hospital/cadastrarHospital", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        nomeServer: nomeVar,
-        cnpjServer: cnpjVar,
-        telefoneServer: telefoneVar,
-        emailServer: emailVar,
-        cepServer: cepVar,
-        numeroServer: numeroVar
-      }),
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            nomeServer: nomeVar,
+            cnpjServer: cnpjVar,
+            telefoneServer: telefoneVar,
+            emailServer: emailVar,
+            cepServer: cepVar,
+            numeroServer: numeroVar
+        }),
     })
-      .then(function (resposta) {
-        if (resposta.ok) {
-          mostrarMensagemHospital("Hospital cadastrado com sucesso!", "sucesso");
-          form.reset();
-        } else {
-          throw "Erro ao cadastrar (status " + resposta.status + ")";
-        }
-      })
-      .catch(function (erro) {
-        console.log("#ERRO:", erro);
-        mostrarMensagemHospital("Não foi possível cadastrar o hospital. Tente novamente.", "erro");
-      });
+        .then(function (resposta) {
+            if (resposta.ok) {
+                limparFormularioHospital();
+                mostrarMensagemHospital("Hospital cadastrado com sucesso!", "sucesso");
+            } else {
+                throw "Erro ao cadastrar (status " + resposta.status + ")";
+            }
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
+            mostrarMensagemHospital("Não foi possível cadastrar o hospital. Tente novamente.", "erro");
+        });
 
     return false;
-  }
+}
 
-  function sumirMensagem() {
-    var caixa = document.getElementById("mensagem_hospital");
-    if (caixa) caixa.style.display = "none";
-  }
+function sincronizarPerfilSidebar() {
+    var nomeUsuario = sessionStorage.NOME_USUARIO;
+    var cargoUsuario = sessionStorage.CARGO_USUARIO;
+    if (!nomeUsuario) return;
 
-  function sumirMensagem() {
-    cardErro.style.display = "none";
-  }
+    var elNome = document.getElementById("sidebar-user-name");
+    var elCargo = document.getElementById("sidebar-user-role");
+    var elAvatar = document.getElementById("sidebar-user-avatar");
+
+    if (elNome) elNome.textContent = nomeUsuario;
+    if (elCargo && cargoUsuario) elCargo.textContent = cargoUsuario;
+    if (elAvatar) {
+        elAvatar.textContent = obterIniciais(nomeUsuario);
+    }
+}
+
+var iptPesquisar = document.getElementById("ipt_pesquisar_equipe");
+if (iptPesquisar) {
+    iptPesquisar.addEventListener("input", filtrarFuncionarios);
+}
+
+var btnLimpar = document.getElementById("btn-limpar-form");
+if (btnLimpar) {
+    btnLimpar.addEventListener("click", limparFormularioCadastro);
+}
+
+var btnLimparHospital = document.getElementById("btn-limpar-hospital");
+if (btnLimparHospital) {
+    btnLimparHospital.addEventListener("click", limparFormularioHospital);
+}
+
+configurarToggleSenha("toggle-senha-btn", "senha_input");
+configurarToggleSenha("toggle-confirmar-senha-btn", "confirmacao_senha_input");
+sincronizarPerfilSidebar();

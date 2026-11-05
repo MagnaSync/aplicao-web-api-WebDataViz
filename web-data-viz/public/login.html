@@ -14,7 +14,8 @@
     <link rel="stylesheet" href="./css/login.css">
     <link rel="icon" type="image/png" href="./assets/imgs/logo.png">
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
@@ -68,81 +69,80 @@
 
     </div>
 
+    <script>
+        var timerMensagemLogin = null;
+
+        function entrar() {
+            aguardar();
+
+            var emailVar = email_input.value.trim();
+            var senhaVar = senha_input.value;
+
+            if (emailVar == "" || senhaVar == "") {
+                cardErro.style.display = "block";
+                mensagem_erro.innerHTML = "Preencha e-mail e senha para entrar.";
+                finalizarAguardar();
+                agendarSumirMensagem();
+                return false;
+            }
+
+            sumirMensagem();
+
+            fetch("/usuarios/autenticar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    emailServer: emailVar,
+                    senhaServer: senhaVar
+                })
+            }).then(function (resposta) {
+                if (resposta.ok) {
+                    resposta.json().then(function (json) {
+                        sessionStorage.EMAIL_USUARIO = json.email;
+                        sessionStorage.NOME_USUARIO = json.nome;
+                        sessionStorage.ID_USUARIO = json.id;
+                        sessionStorage.CARGO_USUARIO = json.cargo;
+                        sessionStorage.ID_HOSPITAL = json.hospital;
+                        if (json.nome_hospital) {
+                            sessionStorage.NOME_HOSPITAL = json.nome_hospital;
+                        }
+
+                        setTimeout(function () {
+                            if (json.cargo === "Administração" && json.hospital == 1) {
+                                window.location = "./cadastroHospital.html";
+                            } else {
+                                window.location = "./dashboard/dashboard.html";
+                            }
+                        }, 1000);
+                    });
+                } else {
+                    resposta.text().then(function (texto) {
+                        console.error(texto);
+                        finalizarAguardar(texto);
+                    });
+                }
+            }).catch(function (erro) {
+                console.log(erro);
+                finalizarAguardar("Não foi possível conectar ao servidor.");
+            });
+
+            return false;
+        }
+
+        function agendarSumirMensagem() {
+            if (timerMensagemLogin) {
+                clearTimeout(timerMensagemLogin);
+            }
+            timerMensagemLogin = setTimeout(sumirMensagem, 5000);
+        }
+
+        function sumirMensagem() {
+            cardErro.style.display = "none";
+        }
+    </script>
+
 </body>
 
 </html>
-
-<script>
- function entrar() {
-        aguardar();
-        console.log("inicio da funcao entrar()");
-        var emailVar = email_input.value;
-        var senhaVar = senha_input.value;
-
-        if (emailVar == "" || senhaVar == "") {
-            cardErro.style.display = "block"
-            mensagem_erro.innerHTML = "(Mensagem de erro para todos os campos em branco)";
-            finalizarAguardar();
-            return false;
-        }
-        else {
-            setInterval(sumirMensagem, 5000)
-        }
-        console.log("infos coletadas, enviando para o servidor...");
-        console.log("FORM LOGIN: ", emailVar);
-        console.log("FORM SENHA: ", senhaVar);
-
-        fetch("/usuarios/autenticar", {
-            
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                emailServer: emailVar,
-                senhaServer: senhaVar
-            })
-        }).then(function (resposta) {
-            console.log("ESTOU NO THEN DO entrar()!")
-
-            if (resposta.ok) {
-                console.log(resposta);
-
-                resposta.json().then(json => {
-                    console.log(json);
-                    console.log(JSON.stringify(json));
-                    sessionStorage.EMAIL_USUARIO = json.email;
-                    sessionStorage.NOME_USUARIO = json.nome;
-                    sessionStorage.ID_USUARIO = json.id;
-                    sessionStorage.CARGO_USUARIO = json.cargo;
-
-                    setTimeout(function () {
-                        console.log("cheguei aqui");
-                        window.location = "./dashboard/dashboard.html";
-                    }, 1000); // apenas para exibir o loading
-
-                });
-
-            } else {
-
-                console.log("Houve um erro ao tentar realizar o login!");
-
-                resposta.text().then(texto => {
-                    console.error(texto);
-                    finalizarAguardar(texto);
-                });
-            }
-
-        }).catch(function (erro) {
-            console.log(erro);
-        })
-
-        return false;
-    }
-
-    function sumirMensagem() {
-        cardErro.style.display = "none"
-    }
-
-</script>
-

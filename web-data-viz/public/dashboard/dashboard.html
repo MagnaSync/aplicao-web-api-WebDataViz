@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MagnaSync – Dashboard de Telemetria de Servidores PACS</title>
+  <link rel="icon" type="image/png" href="../assets/imgs/logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -13,7 +14,7 @@
   <script src="../js/cadastro.js" defer></script>
 </head>
 <body onload="listarCargos(), listarFuncionarios()">
-  <div class="dashboard-app"> 
+  <div class="dashboard-app">
 
     <!-- ===================== SIDEBAR ===================== -->
     <aside class="dash-sidebar">
@@ -30,6 +31,14 @@
       </nav>
 
       <div class="sidebar-footer">
+        <a href="../index.html" class="button-exit" onclick="sessionStorage.clear()" title="Encerrar sessão e voltar para a página inicial">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>Sair</span>
+        </a>
         <div class="user-profile">
           <div class="user-avatar" id="sidebar-user-avatar"></div>
           <div class="user-info">
@@ -39,7 +48,6 @@
         </div>
       </div>
     </aside>
-    <!-- ===================== /SIDEBAR ===================== -->
 
     <!-- ===================== CONTEÚDO PRINCIPAL ===================== -->
     <main class="dash-main">
@@ -62,7 +70,6 @@
           <a href="../index.html" class="topbar-button">Página Inicial</a>
         </div>
       </header>
-      <!-- ===================== /BARRA SUPERIOR ===================== -->
 
       <!-- ===================== CORPO DO DASHBOARD ===================== -->
       <div class="dash-content">
@@ -76,176 +83,163 @@
             </div>
           </div>
 
-        <!-- ===================== KPIs ===================== -->
-        <section class="kpi-grid">
-          <div class="kpi-card">
-            <span>Disco livre</span>
-            <div class="kpi-row">
-              <strong>37%</strong>
+          <!-- KPIs -->
+          <section class="kpi-grid">
+            <div class="kpi-card">
+              <span>Disco livre</span>
+              <div class="kpi-row">
+                <strong id="kpi-disco-livre">37%</strong>
+              </div>
             </div>
-          </div>
 
-          <div class="kpi-card">
-            <span>Último incidente foi em:</span>
-            <div class="kpi-row">
-              <strong>02/04/2026</strong>
-              <span class="kpi-badge warn">CPU</span>
+            <div class="kpi-card">
+              <span>Último incidente foi em:</span>
+              <div class="kpi-row">
+                <strong>02/04/2026</strong>
+                <span class="kpi-badge warn">CPU</span>
+              </div>
             </div>
-          </div>
-          <div class="kpi-card">
-            <span>Quantidade de alertas </span>
-            <div class="kpi-row">
-              <strong id="live-timer">4</strong>
-              <span class="kpi-badge up">Semana</span>
-            </div>
-          </div>
 
-          <div class="kpi-card">
-            <span>Tempo médio de reparo</span>
-            <div class="kpi-row">
-              <strong>5 min</strong>
-              <span class="kpi-badge normal">Excelente</span>
+            <div class="kpi-card">
+              <span>Quantidade de alertas</span>
+              <div class="kpi-row">
+                <strong id="live-timer">4</strong>
+                <span class="kpi-badge up">Semana</span>
+              </div>
             </div>
-          </div>
+
+            <div class="kpi-card">
+              <span>Tempo médio de reparo</span>
+              <div class="kpi-row">
+                <strong>5 min</strong>
+                <span class="kpi-badge normal">Excelente</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Grade de Telemetria -->
+          <section class="telemetry-grid">
+            <article class="dash-card donut-card">
+              <div class="card-title">
+                <h2>Alertas Enviados</h2>
+                <small>Por tipo &middot; últimos 7 dias</small>
+              </div>
+              <div class="donut-layout">
+                <div class="donut-wrapper">
+                  <canvas id="chartAlertasDonut"></canvas>
+                  <div class="donut-center">
+                    <strong id="donut-total">0</strong>
+                    <small>alertas</small>
+                  </div>
+                </div>
+                <ul class="donut-legend" id="donut-legend"></ul>
+              </div>
+            </article>
+
+            <article class="dash-card">
+              <div class="card-title">
+                <h2>Performance do Servidor PACS</h2>
+                <small>Janela: últimos 60 minutos</small>
+              </div>
+
+              <div class="telemetry-mini-kpis">
+                <div class="mini-kpi-item">
+                  <div class="mini-kpi-header">
+                    <span class="mini-kpi-dot cpu"></span>
+                    <span class="mini-kpi-title">Uso de CPU</span>
+                  </div>
+                  <div class="mini-kpi-body">
+                    <strong id="kpi-cpu-val">24%</strong>
+                    <span class="kpi-badge up" id="kpi-cpu-badge">Seguro</span>
+                  </div>
+                </div>
+
+                <div class="mini-kpi-item">
+                  <div class="mini-kpi-header">
+                    <span class="mini-kpi-dot ram"></span>
+                    <span class="mini-kpi-title">Memória RAM</span>
+                  </div>
+                  <div class="mini-kpi-body">
+                    <strong id="kpi-ram-val">64%</strong>
+                    <span class="kpi-badge up" id="kpi-ram-badge">Seguro</span>
+                  </div>
+                </div>
+
+                <div class="mini-kpi-item">
+                  <div class="mini-kpi-header">
+                    <span class="mini-kpi-dot disco"></span>
+                    <span class="mini-kpi-title">Disco</span>
+                  </div>
+                  <div class="mini-kpi-body">
+                    <strong id="kpi-disco-val">63%</strong>
+                    <span class="kpi-badge up" id="kpi-disco-badge">Seguro</span>
+                  </div>
+                </div>
+
+                <div class="mini-kpi-item">
+                  <div class="mini-kpi-header">
+                    <span class="mini-kpi-dot rede"></span>
+                    <span class="mini-kpi-title">Tráfego de Rede</span>
+                  </div>
+                  <div class="mini-kpi-body">
+                    <strong id="kpi-rede-val">450 MB/s</strong>
+                    <span class="kpi-badge up" id="kpi-rede-badge">Estável</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chart-wrapper">
+                <canvas id="chartPerformance"></canvas>
+              </div>
+            </article>
+
+            <article class="dash-card">
+              <div class="card-title">
+                <h2>Saúde Global do Servidor PACS</h2>
+                <small>Índice de integridade</small>
+              </div>
+
+              <div class="gauge-wrapper">
+                <div class="gauge-score" id="gauge-score">98<small>%</small></div>
+                <span class="gauge-label" id="gauge-label">Limite Seguro</span>
+              </div>
+
+              <div class="health-status-list">
+                <div class="status-item">
+                  <div class="status-item-left">
+                    <i class="status-dot emerald" id="health-disco-dot"></i>
+                    <span>Armazenamento Disco</span>
+                  </div>
+                  <span class="status-value" id="health-disco-status">Seguro (63% ocupado)</span>
+                </div>
+                <div class="status-item">
+                  <div class="status-item-left">
+                    <i class="status-dot emerald" id="health-rede-dot"></i>
+                    <span>Tráfego de Rede do Servidor</span>
+                  </div>
+                  <span class="status-value" id="health-rede-status">12 ms &middot; 0% perda (Estável)</span>
+                </div>
+                <div class="status-item">
+                  <div class="status-item-left">
+                    <i class="status-dot emerald" id="health-cpu-ram-dot"></i>
+                    <span>Processamento &amp; Memória RAM</span>
+                  </div>
+                  <span class="status-value" id="health-cpu-ram-status">CPU 24% &middot; RAM 64% (Seguro)</span>
+                </div>
+              </div>
+            </article>
+          </section>
         </section>
-        <!-- ===================== /KPIs ===================== -->
-
-        <!-- ===================== GRADE DE TELEMETRIA ===================== -->
-        <section class="telemetry-grid">
-          <!-- Gráfico de Donut: alertas enviados por tipo -->
-          <article class="dash-card donut-card">
-            <div class="card-title">
-              <h2>Alertas Enviados</h2>
-              <small>Por tipo &middot; últimos 7 dias</small>
-            </div>
-            <div class="donut-layout">
-              <div class="donut-wrapper">
-                <canvas id="chartAlertasDonut"></canvas>
-                <div class="donut-center">
-                  <strong id="donut-total">0</strong>
-                  <small>alertas</small>
-                </div>
-              </div>
-              <ul class="donut-legend" id="donut-legend"></ul>
-            </div>
-          </article>
-
-          <article class="dash-card">
-            <div class="card-title">
-              <h2>Performance do Servidor PACS</h2>
-              <small>Janela: últimos 60 minutos</small>
-            </div>
-
-            <!-- Mini-KPIs de Telemetria Compactas -->
-            <div class="telemetry-mini-kpis">
-              <div class="mini-kpi-item">
-                <div class="mini-kpi-header">
-                  <span class="mini-kpi-dot cpu"></span>
-                  <span class="mini-kpi-title">Uso de CPU</span>
-                </div>
-                <div class="mini-kpi-body">
-                  <strong id="kpi-cpu-val">24%</strong>
-                  <span class="kpi-badge normal" id="kpi-cpu-badge">Normal</span>
-                </div>
-              </div>
-
-              <div class="mini-kpi-item">
-                <div class="mini-kpi-header">
-                  <span class="mini-kpi-dot ram"></span>
-                  <span class="mini-kpi-title">Memória RAM</span>
-                </div>
-                <div class="mini-kpi-body">
-                  <strong id="kpi-ram-val">64%</strong>
-                  <span class="kpi-badge warn" id="kpi-ram-badge">Atenção</span>
-                </div>
-              </div>
-
-              <div class="mini-kpi-item">
-                <div class="mini-kpi-header">
-                  <span class="mini-kpi-dot disco"></span>
-                  <span class="mini-kpi-title">Disco</span>
-                </div>
-                <div class="mini-kpi-body">
-                  <strong id="kpi-disco-val">63%</strong>
-                  <span class="kpi-badge up" id="kpi-disco-badge">Estável</span>
-                </div>
-              </div>
-
-              <div class="mini-kpi-item">
-                <div class="mini-kpi-header">
-                  <span class="mini-kpi-dot rede"></span>
-                  <span class="mini-kpi-title">Tráfego de Rede</span>
-                </div>
-                <div class="mini-kpi-body">
-                  <strong id="kpi-rede-val">450 MB/s</strong>
-                  <span class="kpi-badge normal" id="kpi-rede-badge">Excelente</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Gráfico de Performance com Chart.js -->
-            <div class="chart-wrapper">
-              <canvas id="chartPerformance"></canvas>
-            </div>
-
-          </article>
-
-          <article class="dash-card">
-            <div class="card-title">
-              <h2>Saúde Global do Servidor PACS</h2>
-              <small>Índice de integridade</small>
-            </div>
-
-            <div class="gauge-wrapper">
-              <div class="gauge-score">98<small>%</small></div>
-              <span class="gauge-label">Operação Saudável</span>
-            </div>
-
-            <div class="health-status-list">
-              <div class="status-item">
-                <div class="status-item-left">
-                  <i class="status-dot emerald"></i>
-                  <span>Armazenamento Disco</span>
-                </div>
-                <span class="status-value">Estável (63% ocupado)</span>
-              </div>
-              <div class="status-item">
-                <div class="status-item-left">
-                  <i class="status-dot emerald"></i>
-                  <span>Tráfego de Rede do Servidor</span>
-                </div>
-                <span class="status-value">12 ms (Estável)</span>
-              </div>
-              <div class="status-item">
-                <div class="status-item-left">
-                  <i class="status-dot emerald"></i>
-                  <span>Processamento &amp; Memória RAM</span>
-                </div>
-                <span class="status-value">Carga Normal</span>
-              </div>
-            </div>
-          </article>
-        </section>
-        <!-- ===================== /GRADE DE TELEMETRIA ===================== -->
-        </section>
-        <!-- ===================== /VIEW: VISÃO GERAL ===================== -->
 
         <!-- ===================== VIEW: CADASTRO DE FUNCIONÁRIOS ===================== -->
         <section id="view-cadastro" class="dash-view" style="display: none;">
-
-          <div class="alerta_erro">
-      <div class="card_erro" id="cardErro">
-        <span id="mensagem_erro"></span>
-      </div>
-    </div>
-          <div class="content-header">  
+          <div class="content-header">
             <div>
               <h1>Cadastro de Funcionários</h1>
             </div>
           </div>
 
           <div class="cadastro-grid">
-            <!-- Card de Formulário -->
             <div class="dash-card cadastro-card">
               <div class="card-title">
                 <div>
@@ -253,40 +247,39 @@
                 </div>
               </div>
 
-              <!-- Mensagem de feedback (sucesso ou erro) -->
               <div id="cadastro-feedback" class="feedback-box" style="display: none;"></div>
 
               <form id="form-cadastro-funcionario" class="cadastro-form" onsubmit="return false;">
                 <div class="form-group">
-                  <label for="ipt_nome_funcionario">Nome Completo</label>
+                  <label for="nome_input">Nome Completo</label>
                   <input type="text" id="nome_input" placeholder="Ex: Lucas Mendes Ribeiro" required />
                   <span class="field-hint" id="hint-nome"></span>
                 </div>
 
                 <div class="form-group">
-                  <label for="ipt_email_funcionario">E-mail Corporativo</label>
+                  <label for="email_input">E-mail Corporativo</label>
                   <input type="email" id="email_input" placeholder="Ex: lucas.mendes@hospitalcentral.com.br" required />
                   <span class="field-hint" id="hint-email"></span>
                 </div>
 
                 <div class="form-row-2">
                   <div class="form-group">
-                    <label for="ipt_cargo_funcionario">Cargo / Função em TI</label>
+                    <label for="cargo_select">Cargo / Função em TI</label>
                     <select id="cargo_select" required>
                       <option value="null">Selecione um cargo...</option>
                     </select>
                   </div>
 
                   <div class="form-group">
-                    <label for="ipt_empresa_display">Empresa Vinculada</label>
-                    <input type="text" id="hospital_input" value="Hospital Central (ID: 1)" readonly class="input-readonly" title="Vinculado automaticamente à sua empresa atual" />
+                    <label for="hospital_input">Hospital Vinculado</label>
+                    <input type="text" id="hospital_input" value="Hospital Central (ID: 1)" readonly class="input-readonly" title="Vinculado automaticamente ao seu hospital atual" />
                     <input type="hidden" id="ipt_id_empresa" value="1" />
                   </div>
                 </div>
 
                 <div class="form-row-2">
                   <div class="form-group">
-                    <label for="ipt_senha_funcionario">Senha de Acesso</label>
+                    <label for="senha_input">Senha de Acesso</label>
                     <div class="pass-wrapper">
                       <input type="password" id="senha_input" placeholder="Mínimo 6 caracteres" required />
                       <button type="button" class="btn-toggle-eye" id="toggle-senha-btn" title="Mostrar/ocultar senha">&#128065;</button>
@@ -295,7 +288,7 @@
                   </div>
 
                   <div class="form-group">
-                    <label for="ipt_confirmar_senha_funcionario">Confirmar Senha</label>
+                    <label for="confirmacao_senha_input">Confirmar Senha</label>
                     <div class="pass-wrapper">
                       <input type="password" id="confirmacao_senha_input" placeholder="Repita a senha" required />
                       <button type="button" class="btn-toggle-eye" id="toggle-confirmar-senha-btn" title="Mostrar/ocultar senha">&#128065;</button>
@@ -310,14 +303,10 @@
                     <span class="btn-spinner" id="btn-cadastrar-spinner" style="display: none;"></span>
                     <span class="btn-label" id="btn-cadastrar-text">Cadastrar Funcionário</span>
                   </button>
-                  
                 </div>
-                
               </form>
-              
             </div>
 
-            <!-- Card da Lista de Funcionários Cadastrados -->
             <div class="dash-card cadastro-card">
               <div class="card-title">
                 <div>
@@ -326,23 +315,16 @@
                 <span class="badge-count" id="badge-total-equipe">0 colaboradores</span>
               </div>
 
-              <!-- Filtro de busca -->
               <div class="list-search-wrapper">
                 <input type="text" id="ipt_pesquisar_equipe" placeholder="Buscar por nome, cargo ou e-mail..." />
               </div>
 
-              <!-- Lista de funcionários -->
-              <div class="funcionarios-list-container" id="funcionarios-list-container">
-                <!-- Itens injetados via JS -->
-              </div>
+              <div class="funcionarios-list-container" id="funcionarios-list-container"></div>
             </div>
           </div>
-
-          <div id="div_erros_login"></div>
         </section>
-        <!-- ===================== /VIEW: CADASTRO DE FUNCIONÁRIOS ===================== -->
 
-        <!-- ===================== VIEW: RELATÓRIOS (PLACEHOLDER ELEGANTE) ===================== -->
+        <!-- ===================== VIEW: RELATÓRIOS ===================== -->
         <section id="view-relatorio" class="dash-view" style="display: none;">
           <div class="content-header">
             <div>
@@ -351,7 +333,14 @@
             </div>
           </div>
           <div class="dash-card module-placeholder">
-            <div class="placeholder-icon">&#128202;</div>
+            <div class="placeholder-icon">
+              <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align: -0.125em;">
+                <rect x="5" y="11" width="3.2" height="6.5" rx="0.4" />
+                <rect x="10.4" y="4.5" width="3.2" height="13" rx="0.4" />
+                <rect x="15.8" y="8" width="3.2" height="9.5" rx="0.4" />
+                <rect x="3" y="19" width="18" height="2" rx="0.4" />
+              </svg>
+            </div>
             <h2>Relatórios em Geração Contínua</h2>
             <p>Selecione os Servidores PACS monitorados e exporte relatórios consolidados de CPU, memória RAM, disco e tráfego de rede em formato PDF ou planilha.</p>
             <div class="placeholder-actions">
@@ -360,7 +349,7 @@
           </div>
         </section>
 
-        <!-- ===================== VIEW: SUPORTE (PLACEHOLDER ELEGANTE) ===================== -->
+        <!-- ===================== VIEW: SUPORTE ===================== -->
         <section id="view-suporte" class="dash-view" style="display: none;">
           <div class="content-header">
             <div>
@@ -377,10 +366,9 @@
             </div>
           </div>
         </section>
-      <!-- ===================== /CORPO DO DASHBOARD ===================== -->
 
+      </div>
     </main>
-    <!-- ===================== /CONTEÚDO PRINCIPAL ===================== -->
 
   </div>
 </body>

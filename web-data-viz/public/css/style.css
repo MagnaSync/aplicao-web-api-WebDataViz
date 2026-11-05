@@ -49,7 +49,7 @@
 }
 
 /* ==========================================================================
-   1. VARIÃVEIS GLOBAIS (:root) & ESCALA TIPOGRÃFICA
+   1. VARIÁVEIS GLOBAIS (:root) & ESCALA TIPOGRÁFICA
    ========================================================================== */
 :root {
 
@@ -89,7 +89,7 @@
 }
 
 /* ==========================================================================
-   2. RESET & CONFIGURAÃ‡Ã•ES DE BASE
+   2. RESET & CONFIGURAÇÕES DE BASE
    ========================================================================== */
 * {
   margin: 0;
@@ -147,7 +147,7 @@ button, input {
 }
 
 /* ==========================================================================
-   3. COMPONENTES COMPARTILHADOS (TÃ­tulos, Badges, BotÃµes)
+   3. COMPONENTES COMPARTILHADOS (Títulos, Badges, Botões)
    ========================================================================== */
 .etiqueta-secao{
   font-family: var(--fonte-principal);
@@ -288,7 +288,7 @@ button, input {
 }
 
 /* ==========================================================================
-   4. CABEÃ‡ALHO / HEADER (Logo, Menu, AÃ§Ãµes)
+   4. CABEÇALHO / HEADER (Logo, Menu, Ações)
    ========================================================================== */
 .cabecalho {
   height: 76px;
@@ -387,7 +387,7 @@ button, input {
 }
 
 /* ==========================================================================
-   5. FUNDO DEGRADÃŠ ESCURO CONTÃNUO (Hero atÃ© Perfis de UsuÃ¡rio)
+   5. FUNDO DEGRADÊ ESCURO CONTÍNUO (Hero até Perfis de Usuário)
    ========================================================================== */
 .fundo-degrade-escuro {
   background: linear-gradient(
@@ -418,7 +418,7 @@ button, input {
 }
 
 /* ==========================================================================
-   6. SEÃ‡ÃƒO HERO / APRESENTAÃ‡ÃƒO INICIAL
+   6. SEÇÃO HERO / APRESENTAÇÃO INICIAL
    ========================================================================== */
 .secao-hero {
   background: transparent;
@@ -527,7 +527,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   7. SEÃ‡ÃƒO CENÃRIO REAL â€” COMPARAÃ‡ÃƒO (Sem vs Com MagnaSync)
+   7. SEÇÃO CENÁRIO REAL — COMPARAÇÃO (Sem vs Com MagnaSync)
    ========================================================================= */
 .secao-evolucao {
   background: transparent;
@@ -674,7 +674,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   8. SEÃ‡ÃƒO MÃ‰TRICAS E SENSORES (Processador, MemÃ³ria, Disco, Rede)
+   8. SEÇÃO MÉTRICAS E SENSORES (Processador, Memória, Disco, Rede)
    ========================================================================== */
 .secao-metricas {
   background: transparent;
@@ -752,7 +752,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   9. SEÃ‡ÃƒO PERFIS DE ACESSO (TÃ©cnico, Gestor, Administrador de TI)
+   9. SEÇÃO PERFIS DE ACESSO (Técnico, Analista, Gerente)
    ========================================================================== */
 .secao-perfis {
   background: transparent;
@@ -890,7 +890,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   10. SEÃ‡ÃƒO DÃšVIDAS FREQUENTES (FAQ & AcordeÃ£o)
+   10. SEÇÃO DÚVIDAS FREQUENTES (FAQ & Acordeão)
    ========================================================================== */
 .secao-duvidas {
   background-color: var(--cor-branca);
@@ -1009,7 +1009,7 @@ h1 span {
 }
 
 .item-duvida.open button::after {
-  content: 'âˆ’';
+  content: '-';
   color: var(--cor-primaria);
   font-weight: 700;
 }
@@ -1027,7 +1027,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   11. SEÃ‡ÃƒO CONTATO E DEMONSTRAÃ‡ÃƒO (FormulÃ¡rio) â€” Fundo Branco
+   11. SEÇÃO CONTATO E DEMONSTRAÇÃO (Formulário) — Fundo Branco
    ========================================================================== */
 .secao-contato {
   background-color: var(--cor-branca);
@@ -1146,7 +1146,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   12. RODAPÃ‰ (Links, InformaÃ§Ãµes e Direitos) â€” Azul Principal
+   12. RODAPÉ (Links, Informações e Direitos)
    ========================================================================== */
 .rodape {
   background-color: var(--cor-primaria);
@@ -1247,7 +1247,7 @@ h1 span {
 }
 
 /* ==========================================================================
-   13. RESPONSIVIDADE (MEDIA QUERIES HIERÃRQUICAS)
+   13. RESPONSIVIDADE (MEDIA QUERIES HIERÁRQUICAS)
    ========================================================================== */
 
 @media (max-width: 1100px) {
@@ -1458,40 +1458,12 @@ h1 span {
     gap: 12px;
     padding: 20px 0;
   }
-
-  #div_erros_login {
-  display: none
-}
-
-/* FORMULARIO */
-
-.alerta_erro{
-  display: flex;
-  justify-content: flex-end;
-}
-
-.card_erro {
-  display: none;
-  background-color: #fff;
-  color: black;
-  width: 230px;
-  position: fixed;
-  border-radius: 4px;
-  border: #ED145B 3px solid;
-  padding: 10px;
-  margin-right: 10%;
-}
-
-.card_erro #mensagem_erro{
-  font-weight: 500;
-  font-size: 20px;
-}
 }
 
 
 
 /* ==========================================================================
-   ANIMAÃ‡Ã•ES â€” SEÃ‡ÃƒO 1: IMAGEM DA DASHBOARD (HERO)
+   14. ANIMAÇÕES E MICRO-INTERAÇÕES (Hero e Comparação)
    ========================================================================== */
 @keyframes heroEntrada3D {
   0% {
@@ -1549,47 +1521,7 @@ h1 span {
   backface-visibility: hidden;
 }
 
-
-/* ==========================================================================
-   ANIMAÃ‡Ã•ES â€” SEÃ‡ÃƒO 2: CENÃRIO REAL (Sem vs. Com a MagnaSync)
-   ========================================================================== */
-@keyframes quedaScroll {
-  0%   { opacity: 0; transform: translateY(-90px); }
-  60%  { opacity: 1; }
-  80%  { transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-/* Fallback por tempo (navegadores sem scroll-driven animations) */
-.tabela-card,
-.tabela-card-item {
-  animation: quedaScroll 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-.tabela-card--sem { animation-delay: 0.1s; }
-.tabela-card--com { animation-delay: 0.2s; }
-.tabela-card-item:nth-child(1) { animation-delay: 0.3s; }
-.tabela-card-item:nth-child(2) { animation-delay: 0.4s; }
-.tabela-card-item:nth-child(3) { animation-delay: 0.5s; }
-.tabela-card-item:nth-child(4) { animation-delay: 0.6s; }
-
-/* Cai conforme a pÃ¡gina Ã© rolada: o progresso acompanha o scroll */
-@supports (animation-timeline: view()) {
-  .tabela-card,
-  .tabela-card-item {
-    animation-timeline: view();
-    animation-duration: 1ms;
-    animation-timing-function: linear;
-    animation-fill-mode: backwards;
-  }
-  .tabela-card--sem { animation-delay: 0s; animation-range: entry 0% entry 70%; }
-  .tabela-card--com { animation-delay: 0s; animation-range: entry 5% entry 75%; }
-  .tabela-card-item:nth-child(1) { animation-delay: 0s; animation-range: entry 15% entry 85%; }
-  .tabela-card-item:nth-child(2) { animation-delay: 0s; animation-range: entry 20% entry 90%; }
-  .tabela-card-item:nth-child(3) { animation-delay: 0s; animation-range: entry 25% entry 95%; }
-  .tabela-card-item:nth-child(4) { animation-delay: 0s; animation-range: entry 30% entry 100%; }
-}
-
-/* Micro-interaÃ§Ã£o no hover (Ã­cones) */
+/* Micro-interação no hover (ícones da comparação) */
 .tabela-icone {
   transition: transform 0.25s ease;
 }

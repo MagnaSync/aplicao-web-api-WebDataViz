@@ -1,7 +1,6 @@
 var hospitalModel = require("../models/hospitalModel");
 
 function cadastrar(req, res) {
-    // Crie uma variável que vá recuperar os valores do arquivo cadastro.html
     var nome = req.body.nomeServer;
     var cnpj = req.body.cnpjServer;
     var telefone = req.body.telefoneServer;
@@ -9,7 +8,6 @@ function cadastrar(req, res) {
     var cep = req.body.cepServer;
     var numero = req.body.numeroServer;
 
-    // Faça as validações dos valores
     if (nome == undefined) {
         res.status(400).send("Seu nome está undefined!");
     } else if (cnpj == undefined) {
@@ -31,8 +29,6 @@ function cadastrar(req, res) {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         res.status(400).send("E-mail inválido!");
     } else {
-
-        // Passe os valores como parâmetro e vá para o arquivo hospitalModel.js
         hospitalModel.cadastrar(nome, cnpj, telefone, email, cep, numero)
             .then(
                 function (resultado) {
@@ -49,8 +45,8 @@ function cadastrar(req, res) {
                 }
             );
     }
-}       
+}
 
 module.exports = {
     cadastrar
-}   
+};

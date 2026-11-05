@@ -1,28 +1,26 @@
-var database = require("../database/config")
+var database = require("../database/config");
 
 function autenticar(email, senha) {
-    console.log("ACESSEI O USUARIO MODEL \n \n\t\t >> Se aqui der erro de 'Error: connect ECONNREFUSED',\n \t\t >> verifique suas credenciais de acesso ao banco\n \t\t >> e se o servidor de seu BD está rodando corretamente. \n\n function entrar(): ", email, senha)
+    console.log("ACESSEI O USUARIO MODEL - function autenticar():", email);
     var instrucaoSql = `
         SELECT 
-    f.id, 
-    f.nome, 
-    f.email, 
-    f.hospital_id as hospital, 
-    c.funcao as cargo 
-    FROM funcionario f
-    JOIN cargo c ON f.cargo_id = c.id
-    WHERE f.email = '${email}' AND f.senha = '${senha}';
+            f.id, 
+            f.nome, 
+            f.email, 
+            f.hospital_id AS hospital, 
+            h.nome AS nome_hospital,
+            c.funcao AS cargo 
+        FROM funcionario f
+        JOIN cargo c ON f.cargo_id = c.id
+        JOIN hospital h ON f.hospital_id = h.id
+        WHERE f.email = '${email}' AND f.senha = '${senha}';
     `;
     console.log("Executando a instrução SQL: \n" + instrucaoSql);
     return database.executar(instrucaoSql);
 }
 
-// Coloque os mesmos parâmetros aqui. Vá para a var instrucaoSql
 function cadastrar(nome, email, senha, hospital_id, cargo_id) {
-    console.log("ACESSEI O USUARIO MODEL \n \n\t\t >> Se aqui der erro de 'Error: connect ECONNREFUSED',\n \t\t >> verifique suas credenciais de acesso ao banco\n \t\t >> e se o servidor de seu BD está rodando corretamente. \n\n function cadastrar():", nome, email, senha, hospital_id, cargo_id);
-    
-    // Insira exatamente a query do banco aqui, lembrando da nomenclatura exata nos valores
-    //  e na ordem de inserção dos dados.
+    console.log("ACESSEI O USUARIO MODEL - function cadastrar():", nome, email, hospital_id, cargo_id);
     var instrucaoSql = `
         INSERT INTO funcionario (nome, email, senha, hospital_id, cargo_id) VALUES ('${nome}', '${email}', '${senha}', '${hospital_id}', ${cargo_id});
     `;
@@ -31,29 +29,25 @@ function cadastrar(nome, email, senha, hospital_id, cargo_id) {
 }
 
 function listarCargos() {
-    console.log("ACESSEI O USUARIO MODEL \n \n\t\t >> Se aqui der erro de 'Error: connect ECONNREFUSED',\n \t\t >> verifique suas credenciais de acesso ao banco\n \t\t >> e se o servidor de seu BD está rodando corretamente. \n\n function listarCargos()");
-    
+    console.log("ACESSEI O USUARIO MODEL - function listarCargos()");
     var instrucaoSql = `
-        SELECT cargo.id, cargo.funcao FROM magnasync.cargo;
+        SELECT id, funcao FROM cargo;
     `;
     console.log("Executando a instrução SQL: \n" + instrucaoSql);
     return database.executar(instrucaoSql);
-}   
+}
 
 function listarFuncionarios() {
-    console.log("ACESSEI O USUARIO MODEL \n \n\t\t >> Se aqui der erro de 'Error: connect ECONNREFUSED',\n \t\t >> verifique suas credenciais de acesso ao banco\n \t\t >> e se o servidor de seu BD está rodando corretamente. \n\n function listarFuncionarios()");
-    
+    console.log("ACESSEI O USUARIO MODEL - function listarFuncionarios()");
     var instrucaoSql = `
         SELECT 
-    f.nome AS "Nome do funcionário", 
-    h.nome AS "Nome do Hospital", 
-    c.funcao AS "Função"
-FROM 
-    funcionario AS f
-JOIN 
-    cargo AS c ON f.cargo_id = c.id
-JOIN 
-    hospital AS h ON f.hospital_id = h.id;
+            f.nome AS "Nome do funcionário", 
+            f.email AS "Email",
+            h.nome AS "Nome do Hospital", 
+            c.funcao AS "Função"
+        FROM funcionario AS f
+        JOIN cargo AS c ON f.cargo_id = c.id
+        JOIN hospital AS h ON f.hospital_id = h.id;
     `;
     console.log("Executando a instrução SQL: \n" + instrucaoSql);
     return database.executar(instrucaoSql);

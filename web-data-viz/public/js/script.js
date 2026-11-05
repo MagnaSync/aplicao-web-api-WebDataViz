@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // --- Animações ao rolar a página: AOS (https://github.com/michalsnik/aos) ---
+  AOS.init({
+    duration: 900,
+    easing: 'ease-out-cubic',
+    offset: 220,
+    once: false,
+    mirror: true,
+  });
+
   // --- Menu: destaca (negrito) a seção atual ---
   const linksMenu = Array.from(document.querySelectorAll('.menu-navegacao a[href^="#"]'));
   const secoesMenu = linksMenu

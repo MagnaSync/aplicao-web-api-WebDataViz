@@ -23,12 +23,13 @@ function executar(instrucao) {
             conexao.end();
             if (erro) {
                 reject(erro);
+                return;
             }
             console.log(resultados);
             resolve(resultados);
         });
         conexao.on('error', function (erro) {
-            return ("ERRO NO MySQL SERVER: ", erro.sqlMessage);
+            console.error("ERRO NO MySQL SERVER: ", erro.sqlMessage);
         });
     });
 }

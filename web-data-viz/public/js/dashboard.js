@@ -3,14 +3,34 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Time filter buttons (if present)
-  const timeButtons = document.querySelectorAll('.time-btn');
-  timeButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      timeButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
+  // Regras oficiais de classificação de métricas (Fonte: GE HealthCare / Documentação MagnaSync)
+  function classificarDisco(pct) {
+    if (pct >= 95) return { nivel: 3, texto: 'Bloqueio', badgeClass: 'kpi-badge block', dotClass: 'status-dot darkred' };
+    if (pct >= 90) return { nivel: 2, texto: 'Crítico', badgeClass: 'kpi-badge critical', dotClass: 'status-dot crimson' };
+    if (pct >= 80) return { nivel: 1, texto: 'Atenção', badgeClass: 'kpi-badge warn', dotClass: 'status-dot amber' };
+    return { nivel: 0, texto: 'Seguro', badgeClass: 'kpi-badge up', dotClass: 'status-dot emerald' };
+  }
+
+  function classificarRam(pct) {
+    if (pct >= 90) return { nivel: 3, texto: 'Bloqueio', badgeClass: 'kpi-badge block', dotClass: 'status-dot darkred' };
+    if (pct >= 85) return { nivel: 2, texto: 'Crítico', badgeClass: 'kpi-badge critical', dotClass: 'status-dot crimson' };
+    if (pct >= 75) return { nivel: 1, texto: 'Atenção', badgeClass: 'kpi-badge warn', dotClass: 'status-dot amber' };
+    return { nivel: 0, texto: 'Seguro', badgeClass: 'kpi-badge up', dotClass: 'status-dot emerald' };
+  }
+
+  function classificarCpu(pct) {
+    if (pct >= 98) return { nivel: 3, texto: 'Bloqueio', badgeClass: 'kpi-badge block', dotClass: 'status-dot darkred' };
+    if (pct >= 90) return { nivel: 2, texto: 'Crítico', badgeClass: 'kpi-badge critical', dotClass: 'status-dot crimson' };
+    if (pct >= 80) return { nivel: 1, texto: 'Atenção', badgeClass: 'kpi-badge warn', dotClass: 'status-dot amber' };
+    return { nivel: 0, texto: 'Seguro', badgeClass: 'kpi-badge up', dotClass: 'status-dot emerald' };
+  }
+
+  function classificarRede(latenciaMs, perdaPct, indisponivel) {
+    if (indisponivel) return { nivel: 3, texto: 'Indisponível', badgeClass: 'kpi-badge block', dotClass: 'status-dot darkred' };
+    if (perdaPct > 0 || latenciaMs >= 80) return { nivel: 2, texto: 'Crítico', badgeClass: 'kpi-badge critical', dotClass: 'status-dot crimson' };
+    if (latenciaMs > 25) return { nivel: 1, texto: 'Atenção', badgeClass: 'kpi-badge warn', dotClass: 'status-dot amber' };
+    return { nivel: 0, texto: 'Estável', badgeClass: 'kpi-badge up', dotClass: 'status-dot emerald' };
+  }
 
   // Servidores PACS e dados simulados de telemetria (CPU, RAM, disco, rede)
   const servidoresPacsData = {
@@ -19,19 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
       cpu: [18, 22, 29, 25, 34, 28, 20, 22, 31, 26, 23, 24],
       ram: [60, 61, 63, 62, 65, 68, 67, 65, 66, 64, 63, 64],
       disco: [62, 62, 62, 63, 63, 63, 63, 63, 63, 64, 63, 63],
-      kpis: {
-        cpu: '24%',
-        cpuBadge: 'Normal',
-        cpuBadgeClass: 'kpi-badge normal',
-        ram: '64%',
-        ramBadge: 'Atenção',
-        ramBadgeClass: 'kpi-badge warn',
-        disco: '63%',
-        discoBadge: 'Estável',
-        discoBadgeClass: 'kpi-badge up',
-        rede: '450 MB/s',
-        redeBadge: 'Excelente',
-        redeBadgeClass: 'kpi-badge normal'
+      metricas: {
+        cpuPct: 24,
+        ramPct: 64,
+        discoPct: 63,
+        redeTaxa: '450 MB/s',
+        latenciaMs: 12,
+        perdaPct: 0,
+        saudeScore: 98
       }
     },
     'pacs-02': {
@@ -39,19 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
       cpu: [30, 32, 45, 41, 39, 44, 38, 36, 40, 42, 37, 38],
       ram: [50, 52, 51, 54, 53, 55, 52, 53, 51, 52, 53, 52],
       disco: [47, 47, 47, 48, 48, 48, 48, 48, 48, 49, 48, 48],
-      kpis: {
-        cpu: '38%',
-        cpuBadge: 'Normal',
-        cpuBadgeClass: 'kpi-badge normal',
-        ram: '52%',
-        ramBadge: 'Normal',
-        ramBadgeClass: 'kpi-badge normal',
-        disco: '48%',
-        discoBadge: 'Estável',
-        discoBadgeClass: 'kpi-badge up',
-        rede: '320 MB/s',
-        redeBadge: 'Excelente',
-        redeBadgeClass: 'kpi-badge normal'
+      metricas: {
+        cpuPct: 38,
+        ramPct: 52,
+        discoPct: 48,
+        redeTaxa: '320 MB/s',
+        latenciaMs: 9,
+        perdaPct: 0,
+        saudeScore: 99
       }
     },
     'pacs-03': {
@@ -59,31 +69,25 @@ document.addEventListener('DOMContentLoaded', () => {
       cpu: [42, 48, 56, 65, 59, 62, 58, 60, 54, 57, 53, 55],
       ram: [70, 72, 74, 78, 77, 79, 76, 75, 77, 78, 75, 76],
       disco: [70, 70, 70, 71, 71, 71, 71, 72, 71, 71, 71, 71],
-      kpis: {
-        cpu: '55%',
-        cpuBadge: 'Atenção',
-        cpuBadgeClass: 'kpi-badge warn',
-        ram: '76%',
-        ramBadge: 'Crítico',
-        ramBadgeClass: 'kpi-badge warn',
-        disco: '71%',
-        discoBadge: 'Atenção',
-        discoBadgeClass: 'kpi-badge warn',
-        rede: '680 MB/s',
-        redeBadge: 'Intenso',
-        redeBadgeClass: 'kpi-badge normal'
+      metricas: {
+        cpuPct: 55,
+        ramPct: 76,
+        discoPct: 71,
+        redeTaxa: '680 MB/s',
+        latenciaMs: 18,
+        perdaPct: 0,
+        saudeScore: 91
       }
     }
   };
 
-  // Inicialização do Gráfico Chart.js
+  // Inicialização do Gráfico de Performance (Chart.js)
   const canvas = document.getElementById('chartPerformance');
   let performanceChart = null;
 
   if (canvas && typeof Chart !== 'undefined') {
     const ctx = canvas.getContext('2d');
 
-    // Gradientes elegantes para os datasets
     const gradientCPU = ctx.createLinearGradient(0, 0, 0, 260);
     gradientCPU.addColorStop(0, 'rgba(26, 74, 135, 0.35)');
     gradientCPU.addColorStop(1, 'rgba(26, 74, 135, 0.0)');
@@ -264,6 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const elTotal = document.getElementById('donut-total');
     if (elTotal) elTotal.textContent = total;
 
+    const elKpiAlertas = document.getElementById('live-timer');
+    if (elKpiAlertas) elKpiAlertas.textContent = total;
+
     const legenda = document.getElementById('donut-legend');
     if (legenda) {
       legenda.innerHTML = tipos
@@ -302,71 +309,151 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   atualizarDonutAlertas('pacs-01');
 
-  // Seletor de Servidor PACS (atualiza KPIs do card e dados do gráfico)
-
+  // Seletor de Servidor PACS (atualiza todos os cards, KPIs e gráficos segundo a tabela GE HealthCare)
   const unitSelector = document.getElementById('unit-selector');
+
+  function sincronizarServidorInicial() {
+    if (unitSelector) unitSelector.dispatchEvent(new Event('change'));
+  }
+
   if (unitSelector) {
     unitSelector.addEventListener('change', (e) => {
       const selectedId = e.target.value;
       const selectedName = e.target.options[e.target.selectedIndex].text;
 
-      // Atualiza o badge superior
       const unitTitle = document.querySelector('.unit-badge strong');
       if (unitTitle) {
         unitTitle.textContent = selectedName;
       }
 
-      // Atualiza as Mini-KPIs dentro do dash-card
       const data = servidoresPacsData[selectedId];
       atualizarDonutAlertas(selectedId);
-      if (data) {
-        const cpuVal = document.getElementById('kpi-cpu-val');
-        const cpuBadge = document.getElementById('kpi-cpu-badge');
-        const ramVal = document.getElementById('kpi-ram-val');
-        const ramBadge = document.getElementById('kpi-ram-badge');
-        const discoVal = document.getElementById('kpi-disco-val');
-        const discoBadge = document.getElementById('kpi-disco-badge');
-        const redeVal = document.getElementById('kpi-rede-val');
-        const redeBadge = document.getElementById('kpi-rede-badge');
+      if (!data) return;
 
-        if (cpuVal) cpuVal.textContent = data.kpis.cpu;
-        if (cpuBadge) {
-          cpuBadge.textContent = data.kpis.cpuBadge;
-          cpuBadge.className = data.kpis.cpuBadgeClass;
-        }
+      const m = data.metricas;
+      const statusCpu = classificarCpu(m.cpuPct);
+      const statusRam = classificarRam(m.ramPct);
+      const statusDisco = classificarDisco(m.discoPct);
+      const statusRede = classificarRede(m.latenciaMs, m.perdaPct, false);
 
-        if (ramVal) ramVal.textContent = data.kpis.ram;
-        if (ramBadge) {
-          ramBadge.textContent = data.kpis.ramBadge;
-          ramBadge.className = data.kpis.ramBadgeClass;
-        }
+      // 1. Mini-KPIs (CPU, RAM, Disco, Rede)
+      const cpuVal = document.getElementById('kpi-cpu-val');
+      const cpuBadge = document.getElementById('kpi-cpu-badge');
+      const ramVal = document.getElementById('kpi-ram-val');
+      const ramBadge = document.getElementById('kpi-ram-badge');
+      const discoVal = document.getElementById('kpi-disco-val');
+      const discoBadge = document.getElementById('kpi-disco-badge');
+      const redeVal = document.getElementById('kpi-rede-val');
+      const redeBadge = document.getElementById('kpi-rede-badge');
 
-        if (discoVal) discoVal.textContent = data.kpis.disco;
-        if (discoBadge) {
-          discoBadge.textContent = data.kpis.discoBadge;
-          discoBadge.className = data.kpis.discoBadgeClass;
-        }
+      if (cpuVal) cpuVal.textContent = `${m.cpuPct}%`;
+      if (cpuBadge) {
+        cpuBadge.textContent = statusCpu.texto;
+        cpuBadge.className = statusCpu.badgeClass;
+      }
 
-        if (redeVal) redeVal.textContent = data.kpis.rede;
-        if (redeBadge) {
-          redeBadge.textContent = data.kpis.redeBadge;
-          redeBadge.className = data.kpis.redeBadgeClass;
-        }
+      if (ramVal) ramVal.textContent = `${m.ramPct}%`;
+      if (ramBadge) {
+        ramBadge.textContent = statusRam.texto;
+        ramBadge.className = statusRam.badgeClass;
+      }
 
-        // Atualiza os dados no gráfico Chart.js
-        if (performanceChart) {
-          performanceChart.data.labels = data.labels;
-          performanceChart.data.datasets[0].data = data.cpu;
-          performanceChart.data.datasets[1].data = data.ram;
-          performanceChart.data.datasets[2].data = data.disco;
-          performanceChart.update();
+      const discoOcupado = Math.min(100, Math.max(0, m.discoPct));
+      const discoLivre = +(100 - discoOcupado).toFixed(2);
+      const discoLivreEl = document.getElementById('kpi-disco-livre');
+
+      if (discoVal) discoVal.textContent = `${discoOcupado}%`;
+      if (discoLivreEl) discoLivreEl.textContent = `${discoLivre}%`;
+      if (discoBadge) {
+        discoBadge.textContent = statusDisco.texto;
+        discoBadge.className = statusDisco.badgeClass;
+      }
+
+      if (redeVal) redeVal.textContent = m.redeTaxa;
+      if (redeBadge) {
+        redeBadge.textContent = statusRede.texto;
+        redeBadge.className = statusRede.badgeClass;
+      }
+
+      // 2. Painel de Saúde Global do Servidor PACS
+      const gaugeScore = document.getElementById('gauge-score');
+      const gaugeLabel = document.getElementById('gauge-label');
+      const healthDiscoDot = document.getElementById('health-disco-dot');
+      const healthDiscoStatus = document.getElementById('health-disco-status');
+      const healthRedeDot = document.getElementById('health-rede-dot');
+      const healthRedeStatus = document.getElementById('health-rede-status');
+      const healthCpuRamDot = document.getElementById('health-cpu-ram-dot');
+      const healthCpuRamStatus = document.getElementById('health-cpu-ram-status');
+
+      if (gaugeScore) {
+        gaugeScore.innerHTML = `${m.saudeScore}<small>%</small>`;
+      }
+
+      const piorNivelGeral = Math.max(statusCpu.nivel, statusRam.nivel, statusDisco.nivel, statusRede.nivel);
+      if (gaugeLabel) {
+        if (piorNivelGeral >= 2) {
+          gaugeLabel.textContent = 'Estado Crítico';
+          gaugeLabel.className = 'gauge-label critical';
+        } else if (piorNivelGeral === 1) {
+          gaugeLabel.textContent = 'Requer Atenção';
+          gaugeLabel.className = 'gauge-label warn';
+        } else {
+          gaugeLabel.textContent = 'Limite Seguro';
+          gaugeLabel.className = 'gauge-label';
         }
+      }
+
+      if (healthDiscoDot) healthDiscoDot.className = statusDisco.dotClass;
+      if (healthDiscoStatus) {
+        healthDiscoStatus.textContent = `${statusDisco.texto} (${discoOcupado}% ocupado)`;
+      }
+
+      if (healthRedeDot) healthRedeDot.className = statusRede.dotClass;
+      if (healthRedeStatus) {
+        healthRedeStatus.textContent = `${m.latenciaMs} ms · ${m.perdaPct}% perda (${statusRede.texto})`;
+      }
+
+      const piorCpuRam = statusRam.nivel >= statusCpu.nivel ? statusRam : statusCpu;
+      if (healthCpuRamDot) healthCpuRamDot.className = piorCpuRam.dotClass;
+      if (healthCpuRamStatus) {
+        healthCpuRamStatus.textContent = `CPU ${m.cpuPct}% · RAM ${m.ramPct}% (${piorCpuRam.texto})`;
+      }
+
+      // 3. Gráfico de Performance (Chart.js)
+      if (performanceChart) {
+        performanceChart.data.labels = data.labels;
+        performanceChart.data.datasets[0].data = data.cpu;
+        performanceChart.data.datasets[1].data = data.ram;
+        performanceChart.data.datasets[2].data = data.disco;
+        performanceChart.update();
       }
     });
   }
 
+  // Perfil do usuário autenticado no rodapé da barra lateral
+  function atualizarPerfilSidebar() {
+    const nomeUsuarioSessao = sessionStorage.getItem('NOME_USUARIO') || 'Visitante';
+    const cargoUsuarioSessao = sessionStorage.getItem('CARGO_USUARIO') || 'TI Hospitalar';
+
+    const elUserName = document.getElementById('sidebar-user-name');
+    const elUserRole = document.getElementById('sidebar-user-role');
+    const elUserAvatar = document.getElementById('sidebar-user-avatar');
+
+    if (elUserName) elUserName.textContent = nomeUsuarioSessao;
+    if (elUserRole) elUserRole.textContent = cargoUsuarioSessao;
+    if (elUserAvatar) {
+      const partes = nomeUsuarioSessao.trim().split(' ');
+      elUserAvatar.textContent = (
+        partes[0][0] + (partes.length > 1 ? partes[partes.length - 1][0] : '')
+      ).toUpperCase();
+    }
+  }
+
+  atualizarPerfilSidebar();
+  sincronizarServidorInicial();
+
   // =========================================================================
-  // SISTEMA DE NAVEGAÇÃO ENTRE VISÕES DO DASHBOARD (#overview, #cadastro, etc.)
+  // NAVEGAÇÃO ENTRE VISÕES DO DASHBOARD (#overview, #cadastro, #relatorio, #suporte)
   // =========================================================================
   const views = {
     overview: document.getElementById('view-overview'),
@@ -382,14 +469,12 @@ document.addEventListener('DOMContentLoaded', () => {
       targetView = 'overview';
     }
 
-    // Esconde todas as visões e mostra a alvo
     Object.keys(views).forEach((key) => {
       if (views[key]) {
         views[key].style.display = key === targetView ? 'flex' : 'none';
       }
     });
 
-    // Atualiza links do sidebar
     navLinks.forEach((link) => {
       const href = link.getAttribute('href');
       if (href === `#${targetView}`) {
@@ -399,14 +484,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Se for para o cadastro, atualiza e carrega a equipe
-    if (targetView === 'cadastro') {
-      inicializarContextoEmpresa();
-      carregarEquipeEmpresa();
+    if (targetView === 'cadastro' && typeof listarFuncionarios === 'function') {
+      listarFuncionarios();
     }
   };
 
-  // Intercepta cliques nos links do sidebar
   navLinks.forEach((link) => {
     link.addEventListener('click', (e) => {
       const href = link.getAttribute('href');
@@ -419,7 +501,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Gerencia evento de hash (ao carregar ou ao navegar pelo histórico)
   function handleUrlHash() {
     const rawHash = (window.location.hash || '').replace('#', '').trim();
     if (rawHash && views[rawHash]) {
@@ -431,379 +512,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('hashchange', handleUrlHash);
   handleUrlHash();
-
-  // =========================================================================
-  // MÓDULO: CADASTRO DE FUNCIONÁRIOS DA PRÓPRIA EMPRESA
-  // =========================================================================
-  const STORAGE_KEY_EQUIPE = 'MAGNASYNC_EQUIPE_';
-
-  // Obter contexto da empresa logada (ou padrão Hospital Central / ID 1)
-  function getContextoEmpresa() {
-    const idEmpresa = sessionStorage.getItem('ID_EMPRESA') || '1';
-    const nomeEmpresa = sessionStorage.getItem('NOME_EMPRESA') || 'Hospital Central';
-    return { idEmpresa, nomeEmpresa };
-  }
-
-  function inicializarContextoEmpresa() {
-    const { idEmpresa, nomeEmpresa } = getContextoEmpresa();
-
-    const companyDisplayName = document.getElementById('company-display-name');
-    const companyDisplayId = document.getElementById('company-display-id');
-    const iptEmpresaDisplay = document.getElementById('ipt_empresa_display');
-    const iptIdEmpresa = document.getElementById('ipt_id_empresa');
-    const statusEmpresaTag = document.getElementById('status-empresa-tag');
-
-    if (companyDisplayName) companyDisplayName.textContent = nomeEmpresa;
-    if (companyDisplayId) companyDisplayId.textContent = idEmpresa;
-    if (iptEmpresaDisplay) iptEmpresaDisplay.value = `${nomeEmpresa} (ID: ${idEmpresa})`;
-    if (iptIdEmpresa) iptIdEmpresa.value = idEmpresa;
-    if (statusEmpresaTag) statusEmpresaTag.textContent = `Empresa #${idEmpresa}`;
-
-    // Atualiza nome do usuário no rodapé do sidebar se presente na sessão
- const nomeUsuarioSessao = sessionStorage.getItem('NOME_USUARIO');
- const cargoUsuarioSessao = sessionStorage.getItem('CARGO_USUARIO'); // Recupera o cargo
-
-    if (nomeUsuarioSessao) {
-      const elUserName = document.getElementById('sidebar-user-name');
-      const elUserRole = document.getElementById('sidebar-user-role'); // Elemento do cargo
-      const elUserAvatar = document.getElementById('sidebar-user-avatar');
-      
-      if (elUserName) elUserName.textContent = nomeUsuarioSessao;
-      
-      // Atualiza o cargo se ele existir na sessão
-      if (elUserRole && cargoUsuarioSessao) {
-        elUserRole.textContent = cargoUsuarioSessao;
-      }
-
-      if (elUserAvatar) {
-        const partes = nomeUsuarioSessao.trim().split(' ');
-        elUserAvatar.textContent = (partes[0][0] + (partes[1] ? partes[1][0] : '')).toUpperCase();
-      }
-    }
-  }
-
-  // Lista padrão para demonstração inicial caso o banco não tenha registros
-  const funcionariosIniciaisPadrao = [
-    { id: 1, nome: 'Eng. Lucas Silva', email: 'lucas.silva@hospitalcentral.com.br', cargo: 'Gerente de TI Hospitalar' },
-    { id: 2, nome: 'Dra. Mariana Costa', email: 'mariana.costa@hospitalcentral.com.br', cargo: 'Analista de Monitoramento' },
-    { id: 3, nome: 'Bruno Santos', email: 'bruno.santos@hospitalcentral.com.br', cargo: 'Técnico de Suporte Operacional' }
-  ];
-
-  let listaFuncionariosAtual = [];
-
-  function carregarEquipeEmpresa() {
-    const { idEmpresa } = getContextoEmpresa();
-    const cacheKey = STORAGE_KEY_EQUIPE + idEmpresa;
-
-    // 1. Tenta carregar do cache da sessão primeiro
-    const cacheLocal = sessionStorage.getItem(cacheKey);
-    if (cacheLocal) {
-      try {
-        listaFuncionariosAtual = JSON.parse(cacheLocal);
-        renderizarEquipe(listaFuncionariosAtual);
-      } catch (err) {
-        listaFuncionariosAtual = [...funcionariosIniciaisPadrao];
-      }
-    } else {
-      listaFuncionariosAtual = [...funcionariosIniciaisPadrao];
-      salvarEquipeCache();
-      renderizarEquipe(listaFuncionariosAtual);
-    }
-
-    // 2. Faz requisição à API para puxar registros reais caso o backend e BD estejam ativos
-    fetch(`/usuarios/listar/${idEmpresa}`)
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        }
-        throw new Error('API indisponível ou vazia');
-      })
-      .then((dados) => {
-        if (Array.isArray(dados) && dados.length > 0) {
-          // Mapeia os dados do banco
-          const doBanco = dados.map((u) => ({
-            id: u.id,
-            nome: u.nome,
-            email: u.email,
-            cargo: u.cargo || 'Membro Técnico'
-          }));
-
-          // Mescla evitando duplicatas por e-mail
-          const emailsExistentes = new Set(doBanco.map((u) => u.email.toLowerCase()));
-          const locaisNaoNoBanco = listaFuncionariosAtual.filter(
-            (u) => !emailsExistentes.has(u.email.toLowerCase())
-          );
-
-          listaFuncionariosAtual = [...doBanco, ...locaisNaoNoBanco];
-          salvarEquipeCache();
-          renderizarEquipe(listaFuncionariosAtual);
-        }
-      })
-      .catch((_) => {
-        // Fallback silencioso mantendo o cache local para a apresentação
-      });
-  }
-
-  function salvarEquipeCache() {
-    const { idEmpresa } = getContextoEmpresa();
-    sessionStorage.setItem(STORAGE_KEY_EQUIPE + idEmpresa, JSON.stringify(listaFuncionariosAtual));
-  }
-
-  function renderizarEquipe(lista) {
-    const container = document.getElementById('funcionarios-list-container');
-    const badgeTotal = document.getElementById('badge-total-equipe');
-    if (!container) return;
-
-    if (badgeTotal) {
-      const qtd = lista.length;
-      badgeTotal.textContent = `${qtd} ${qtd === 1 ? 'colaborador' : 'colaboradores'}`;
-    }
-
-    if (!lista || lista.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-icon">&#128101;</div>
-          <p>Nenhum funcionário encontrado</p>
-          <small>Use o formulário ao lado para cadastrar o primeiro colaborador.</small>
-        </div>
-      `;
-      return;
-    }
-
-    container.innerHTML = lista
-      .map((f) => {
-        const partesNome = (f.nome || 'Usuário').trim().split(' ');
-        const iniciais = (
-          partesNome[0][0] + (partesNome.length > 1 ? partesNome[partesNome.length - 1][0] : '')
-        ).toUpperCase();
-
-        return `
-          <div class="funcionario-item">
-            <div class="funcionario-item-left">
-              <div class="funcionario-avatar">${iniciais}</div>
-              <div class="funcionario-info">
-                <span class="funcionario-nome">${escapeHtml(f.nome)}</span>
-                <div class="funcionario-meta">
-                  <span class="funcionario-badge role">${escapeHtml(f.cargo || 'Colaborador')}</span>
-                  <span class="funcionario-email" title="${escapeHtml(f.email)}">${escapeHtml(f.email)}</span>
-                </div>
-              </div>
-            </div>
-            <div>
-              <span class="funcionario-badge status">Ativo</span>
-            </div>
-          </div>
-        `;
-      })
-      .join('');
-  }
-
-  function escapeHtml(text) {
-    if (!text) return '';
-    return String(text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  // Busca em tempo real na lista da equipe
-  const iptBusca = document.getElementById('ipt_pesquisar_equipe');
-  if (iptBusca) {
-    iptBusca.addEventListener('input', (e) => {
-      const termo = (e.target.value || '').toLowerCase().trim();
-      if (!termo) {
-        renderizarEquipe(listaFuncionariosAtual);
-        return;
-      }
-      const filtrados = listaFuncionariosAtual.filter((f) => {
-        return (
-          f.nome.toLowerCase().includes(termo) ||
-          f.email.toLowerCase().includes(termo) ||
-          (f.cargo && f.cargo.toLowerCase().includes(termo))
-        );
-      });
-      renderizarEquipe(filtrados);
-    });
-  }
-
-
-
-  function mostrarFeedback(msg, tipo = 'success') {
-    const box = document.getElementById('cadastro-feedback');
-    if (!box) return;
-
-    box.className = `feedback-box ${tipo}`;
-    let icone = '&#10003;';
-    if (tipo === 'error') icone = '&#9888;';
-    if (tipo === 'warn') icone = '&#8505;';
-
-    box.innerHTML = `<span>${icone}</span><span>${msg}</span>`;
-    box.style.display = 'flex';
-  }
-
-  function limparErrosValidacao() {
-    ['hint-nome', 'hint-email', 'hint-senha', 'hint-confirmar-senha'].forEach((id) => {
-      const hint = document.getElementById(id);
-      if (hint) {
-        hint.textContent = '';
-        hint.classList.remove('show');
-      }
-    });
-  }
-
-  // Submissão do Formulário de Cadastro de Funcionário
-  // const btnCadastrar = document.getElementById('btn-cadastrar-funcionario');
-  // if (btnCadastrar) {
-  //   btnCadastrar.addEventListener('click', async (e) => {
-  //     e.preventDefault();
-  //     limparErrosValidacao();
-  //     esconderFeedback();
-
-  //     const iptNome = document.getElementById('ipt_nome_funcionario');
-  //     const iptEmail = document.getElementById('ipt_email_funcionario');
-  //     const iptCargo = document.getElementById('ipt_cargo_funcionario');
-  //     const iptSenha = document.getElementById('ipt_senha_funcionario');
-  //     const iptConfirmar = document.getElementById('ipt_confirmar_senha_funcionario');
-  //     const iptIdEmpresa = document.getElementById('ipt_id_empresa');
-
-  //     const nome = iptNome ? iptNome.value.trim() : '';
-  //     const email = iptEmail ? iptEmail.value.trim() : '';
-  //     const cargo = iptCargo ? iptCargo.value : 'Engenharia Clínica';
-  //     const senha = iptSenha ? iptSenha.value : '';
-  //     const confirmarSenha = iptConfirmar ? iptConfirmar.value : '';
-  //     const { idEmpresa } = getContextoEmpresa();
-
-  //     let temErro = false;
-
-  //     // Validação do Nome
-  //     if (!nome || nome.length < 3) {
-  //       const hint = document.getElementById('hint-nome');
-  //       if (hint) {
-  //         hint.textContent = 'Informe o nome completo (mínimo de 3 caracteres).';
-  //         hint.classList.add('show');
-  //       }
-  //       temErro = true;
-  //     }
-
-  //     // Validação do E-mail
-  //     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  //     if (!email || !emailValido) {
-  //       const hint = document.getElementById('hint-email');
-  //       if (hint) {
-  //         hint.textContent = 'Informe um e-mail corporativo válido.';
-  //         hint.classList.add('show');
-  //       }
-  //       temErro = true;
-  //     }
-
-  //     // Validação da Senha
-  //     if (!senha || senha.length < 6) {
-  //       const hint = document.getElementById('hint-senha');
-  //       if (hint) {
-  //         hint.textContent = 'A senha deve conter no mínimo 6 caracteres.';
-  //         hint.classList.add('show');
-  //       }
-  //       temErro = true;
-  //     }
-
-  //     // Validação da Confirmação de Senha
-  //     if (senha !== confirmarSenha) {
-  //       const hint = document.getElementById('hint-confirmar-senha');
-  //       if (hint) {
-  //         hint.textContent = 'As senhas digitadas não coincidem.';
-  //         hint.classList.add('show');
-  //       }
-  //       temErro = true;
-  //     }
-
-  //     if (temErro) {
-  //       mostrarFeedback('Por favor, corrija os campos indicados acima.', 'error');
-  //       return;
-  //     }
-
-  //     // Estado de Carregamento
-  //     const spinner = document.getElementById('btn-cadastrar-spinner');
-  //     const btnText = document.getElementById('btn-cadastrar-text');
-  //     if (spinner) spinner.style.display = 'inline-block';
-  //     if (btnText) btnText.textContent = 'Cadastrando...';
-  //     btnCadastrar.disabled = true;
-
-  //     try {
-  //       // Envia para o endpoint do backend (/usuarios/cadastrar)
-  //       const resposta = await fetch('/usuarios/cadastrar', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json'
-  //         },
-  //         body: JSON.stringify({
-  //           nomeServer: nome,
-  //           emailServer: email,
-  //           senhaServer: senha,
-  //           idEmpresaVincularServer: idEmpresa
-  //         })
-  //       });
-
-  //       if (resposta.ok) {
-  //         // Sucesso no banco de dados!
-  //         mostrarFeedback(`Colaborador ${nome} cadastrado com sucesso para a sua empresa!`, 'success');
-
-  //         // Adiciona à lista local imediatamente
-  //         const novoFuncionario = {
-  //           id: Date.now(),
-  //           nome: nome,
-  //           email: email,
-  //           cargo: cargo
-  //         };
-  //         listaFuncionariosAtual.unshift(novoFuncionario);
-  //         salvarEquipeCache();
-  //         renderizarEquipe(listaFuncionariosAtual);
-
-  //         limparFormularioCadastro();
-  //       } else {
-  //         // Resposta com erro do backend (ex: erro de SQL ou validação do servidor)
-  //         const textoErro = await resposta.text();
-  //         console.warn('Aviso do servidor ao cadastrar:', textoErro);
-
-  //         // Mesmo que o BD local do aluno não esteja configurado, salvamos na sessão para demonstração
-  //         mostrarFeedback(`Colaborador ${nome} registrado na sessão! (Nota: Banco de dados local desconectado)`, 'warn');
-
-  //         const novoFuncionario = {
-  //           id: Date.now(),
-  //           nome: nome,
-  //           email: email,
-  //           cargo: cargo
-  //         };
-  //         listaFuncionariosAtual.unshift(novoFuncionario);
-  //         salvarEquipeCache();
-  //         renderizarEquipe(listaFuncionariosAtual);
-
-  //         limparFormularioCadastro();
-  //       }
-  //     } catch (erroRede) {
-  //       console.warn('Erro de rede ou servidor offline:', erroRede);
-
-  //       // Fallback resiliente para ambiente local sem MySQL
-  //       mostrarFeedback(`Colaborador ${nome} registrado localmente para demonstração!`, 'warn');
-
-  //       const novoFuncionario = {
-  //         id: Date.now(),
-  //         nome: nome,
-  //         email: email,
-  //         cargo: cargo
-  //       };
-  //       listaFuncionariosAtual.unshift(novoFuncionario);
-  //       salvarEquipeCache();
-  //       renderizarEquipe(listaFuncionariosAtual);
-
-  //       limparFormularioCadastro();
-  //     } finally {
-  //       if (spinner) spinner.style.display = 'none';
-  //       if (btnText) btnText.textContent = 'Cadastrar Funcionário';
-  //       btnCadastrar.disabled = false;
-  //     }
-  //   });
-  // }
 });
-
