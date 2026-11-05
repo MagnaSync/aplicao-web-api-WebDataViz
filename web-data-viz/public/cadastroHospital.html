@@ -21,7 +21,7 @@
       </a>
 
       <nav class="sidebar-nav" aria-label="Navegação do Dashboard">
-        <a href="#suporte" class="nav-link">Suporte</a>
+        <a href="#dashboard" class="nav-link">Dashboard</a>
         <a href="#cadastrarHospital" class="nav-link active">Cadastrar Hospital</a>
       </nav>
 
@@ -45,6 +45,7 @@
     </aside>
 
     <main class="pagina">
+      <div id="view-cadastrarHospital">
       <h1 class="pagina__titulo">Cadastro de Hospital</h1>
 
       <section class="card">
@@ -105,7 +106,62 @@
         </form>
 
       </section>
+      </div>
+
+      <!-- ===================== VIEW: DASHBOARD ===================== -->
+      <section id="view-dashboard" class="dash-view" style="display: none;">
+        <div class="content-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Visão consolidada dos hospitais cadastrados e dos Servidores PACS monitorados pela MagnaSync.</p>
+          </div>
+        </div>
+        <div class="dash-card module-placeholder">
+          <div class="placeholder-icon">
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align: -0.125em;">
+              <rect x="5" y="11" width="3.2" height="6.5" rx="0.4" />
+              <rect x="10.4" y="4.5" width="3.2" height="13" rx="0.4" />
+              <rect x="15.8" y="8" width="3.2" height="9.5" rx="0.4" />
+              <rect x="3" y="19" width="18" height="2" rx="0.4" />
+            </svg>
+          </div>
+          <h2>Disponível em breve</h2>
+          <p>Estamos preparando o Dashboard administrativo da MagnaSync. Em breve você poderá acompanhar todos os hospitais por aqui.</p>
+          <div class="placeholder-actions">
+            <button class="topbar-button" onclick="switchView('cadastrarHospital')">&larr; Voltar para Cadastrar Hospital</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
-</body>
+
+  <script>
+    const views = {
+      cadastrarHospital: document.getElementById('view-cadastrarHospital'),
+      dashboard: document.getElementById('view-dashboard')
+    };
+    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+
+    function switchView(target) {
+      if (!views[target]) target = 'cadastrarHospital';
+      Object.keys(views).forEach(function (k) {
+        views[k].style.display = k === target ? (k === 'dashboard' ? 'flex' : 'block') : 'none';
+      });
+      navLinks.forEach(function (l) {
+        l.classList.toggle('active', l.getAttribute('href') === '#' + target);
+      });
+      if (window.location.hash !== '#' + target) window.location.hash = target;
+    }
+
+    navLinks.forEach(function (l) {
+      l.addEventListener('click', function (e) {
+        e.preventDefault();
+        switchView(l.getAttribute('href').substring(1));
+      });
+    });
+    window.addEventListener('hashchange', function () {
+      switchView(window.location.hash.replace('#', ''));
+    });
+    switchView(window.location.hash.replace('#', ''));
+  </script></body>
 </html>
