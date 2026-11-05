@@ -81,6 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // Substitui os horários fixos por horários reais: 12 pontos, espaçados de 5s, terminando agora
+  const INTERVALO_MS = 5000;
+  function formatarHora(date) {
+    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+  Object.values(servidoresPacsData).forEach((d) => {
+    const fim = Date.now();
+    d.labels = d.labels.map((_, i) => formatarHora(new Date(fim - (d.labels.length - 1 - i) * INTERVALO_MS)));
+  });
+
   // Inicialização do Gráfico de Performance (Chart.js)
   const canvas = document.getElementById('chartPerformance');
   let performanceChart = null;
@@ -451,6 +461,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   atualizarPerfilSidebar();
   sincronizarServidorInicial();
+
+  // Simula novas leituras de telemetria a cada 5s
+  function variar(valor, passo, min = 0, max = 100) {
+    const novo = valor + (Math.random() * 2 - 1) * passo;
+    return Math.round(Math.min(max, Math.max(min, novo)));
+  }
+
+  setInterval(() => {
+    const agora = formatarHora(new Date());
+
+    Object.values(servidoresPacsData).forEach((d) => {
+      const m = d.metricas;
+      m.cpuPct = variar(m.cpuPct, 6);
+      m.ramPct = variar(m.ramPct, 3);
+      m.discoPct = variar(m.discoPct, 0.5);
+      m.latenciaMs = variar(m.latenciaMs, 4, 1, 120);
+
+      // janela deslizante: remove o ponto mais antigo e adiciona o novo
+      d.labels.shift(); d.labels.push(agora);
+      d.cpu.shift();    d.cpu.push(m.cpuPct);
+      d.ram.shift();    d.ram.push(m.ramPct);
+      d.disco.shift();  d.disco.push(m.discoPct);
+    });
+
+    sincronizarServidorInicial(); // reaproveita o handler que já atualiza tudo
+  }, INTERVALO_MS);
 
   // =========================================================================
   // NAVEGAÇÃO ENTRE VISÕES DO DASHBOARD (#overview, #cadastro, #relatorio, #suporte)
