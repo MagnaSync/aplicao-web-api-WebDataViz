@@ -21,23 +21,46 @@
 }
 
 /* --------------------------------------------------------------------------
-   Grade Central dos 3 Gráficos
+   Grade Central 2x2 (Linha + Saúde Global | Ranking + Rosca)
    -------------------------------------------------------------------------- */
 .daniel-charts-grid {
   display: grid;
-  grid-template-columns: 1.05fr 1.25fr 0.9fr;
+  grid-template-columns: 1.55fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 14px;
   flex: 1;
-  min-height: 300px;
+  min-height: 0;
 }
 
 .daniel-view .daniel-charts-grid .dash-card {
   overflow: hidden;
+  min-height: 0;
   flex-shrink: 1;
 }
 
+.daniel-main-chart-card {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.daniel-health-card {
+  grid-column: 2;
+  grid-row: 1;
+  justify-content: space-between;
+}
+
+.daniel-ranking-card {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.daniel-donut-card {
+  grid-column: 2;
+  grid-row: 2;
+}
+
 .daniel-chart-card {
-  min-height: 0;
+  justify-content: space-between;
 }
 
 .daniel-chart-box {
@@ -47,45 +70,145 @@
   min-height: 0;
 }
 
-/* Texto que explica o que cada bloco de Relatórios faz */
-.explicacao-bloco {
-  margin: 0;
-  padding: 10px 14px;
-  background-color: #F2F7FC;
-  border-left: 3px solid #1A4A87;
-  border-radius: 6px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: #273E63;
+.daniel-gauge-wrapper {
+  padding: 2px 0;
 }
 
-.kpi-grid-compact .kpi-card {
-  background-color: #F8FAFC;
-  box-shadow: none;
+.daniel-gauge-wrapper .gauge-score {
+  font-size: 34px;
+}
+
+.daniel-health-card .health-status-list {
+  gap: 6px;
+}
+
+.daniel-health-card .status-item {
+  padding: 7px 10px;
+  font-size: 12.5px;
+}
+
+.daniel-donut-layout {
+  flex: 1;
+  min-height: 0;
+  align-items: center;
 }
 
 .hospital-card {
   max-width: 760px;
 }
 
-.daniel-donut-body {
+/* --------------------------------------------------------------------------
+   Modal de Detalhes do Hospital
+   -------------------------------------------------------------------------- */
+.audit-table tbody tr.row-clickable {
+  cursor: pointer;
+}
+
+.audit-table tbody tr.row-clickable:hover {
+  background-color: #eef4fc;
+}
+
+.audit-table tbody tr.row-divergencia.row-clickable:hover {
+  background-color: #fee2e2;
+}
+
+.daniel-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(11, 25, 44, 0.55);
+  backdrop-filter: blur(2px);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  flex: 1;
-  padding: 6px 0;
+  padding: 20px;
+  z-index: 1000;
 }
 
-.daniel-donut-wrapper {
-  width: 156px;
-  height: 156px;
-}
-
-.daniel-donut-card .donut-legend {
+.daniel-modal-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(39, 62, 99, 0.16);
+  box-shadow: 0 20px 50px rgba(11, 25, 44, 0.25);
   width: 100%;
-  flex: 0 0 auto;
+  max-width: 920px;
+  max-height: 85vh;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.daniel-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(39, 62, 99, 0.12);
+}
+
+.daniel-modal-header h2 {
+  font-size: 18px;
+  color: #0B192C;
+}
+
+.daniel-modal-header small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: #5B7396;
+}
+
+.daniel-modal-close {
+  border: 1px solid rgba(39, 62, 99, 0.2);
+  background: #F2F7FC;
+  color: #273E63;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.daniel-modal-close:hover {
+  background-color: #E2E8F0;
+  color: #0B192C;
+}
+
+.daniel-modal-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.daniel-modal-kpi {
+  background-color: #F8FAFC;
+  border: 1px solid rgba(39, 62, 99, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.daniel-modal-kpi span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #5B7396;
+  text-transform: uppercase;
+}
+
+.daniel-modal-kpi strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px;
+  color: #0B192C;
+}
+
+.modal-table-wrapper {
+  max-height: 360px;
 }
 
 /* --------------------------------------------------------------------------
@@ -175,9 +298,17 @@
    -------------------------------------------------------------------------- */
 .table-scroll-wrapper {
   width: 100%;
+  max-height: 460px;
   overflow-x: auto;
+  overflow-y: auto;
   border: 1px solid rgba(39, 62, 99, 0.12);
   border-radius: 8px;
+}
+
+.audit-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .audit-table {
@@ -325,15 +456,23 @@
 /* --------------------------------------------------------------------------
    Responsividade
    -------------------------------------------------------------------------- */
-@media (max-width: 1240px) {
-  .daniel-charts-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .daniel-charts-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    flex: none;
+  }
+
+  .daniel-main-chart-card,
+  .daniel-health-card,
+  .daniel-ranking-card,
+  .daniel-donut-card {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .daniel-modal-kpis {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .daniel-chart-box {
@@ -396,5 +535,10 @@
   .kpi-card {
     box-shadow: none !important;
     break-inside: avoid;
+  }
+
+  .table-scroll-wrapper {
+    max-height: none !important;
+    overflow: visible !important;
   }
 }

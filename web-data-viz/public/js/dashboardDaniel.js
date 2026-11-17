@@ -1,7 +1,9 @@
 /**
  * MagnaSync — Dashboard Executiva do Admin Geral (Daniel)
- * Consome os endpoints /dashboardDaniel/* (MySQL) e controla as 3 telas:
- *   #overview (KPIs + gráficos) | #relatorio (carteira + auditoria) | #cadastrarHospital
+ * Consome /dashboardDaniel/* (MySQL) e controla:
+ *   #overview (KPIs, gráficos 2x2, Saúde Global e filtro por hospital)
+ *   #relatorio (Resumo por Hospital + Modal de detalhes/logs)
+ *   #cadastrarHospital (Cadastro de novo hospital na mesma página)
  */
 document.addEventListener('DOMContentLoaded', () => {
   const INTERVALO_MS = 5000;
@@ -10,9 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let timelineChart = null;
   let roscaChart = null;
 
+  let escopoAtual = 'todos';
+  let kpisGlobais = null;
+  let rankingGlobal = [];
+  let timelineGlobal = [];
+  let roscaGlobal = null;
   let registrosAuditoria = [];
   let dadosRelatorio = [];
-  let filtroAtual = 'todos';
 
   // ------------------------------------------------------------------
   // Utilitários
@@ -24,14 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  }
-
-  function sanitizarLinha(linha) {
-    const copia = {};
-    Object.keys(linha).forEach((chave) => {
-      copia[chave] = typeof linha[chave] === 'string' ? escaparHtml(linha[chave]) : linha[chave];
-    });
-    return copia;
   }
 
   async function buscarJson(url) {
@@ -71,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ------------------------------------------------------------------
-  // Navegação entre as 3 telas (a sidebar nunca muda)
+  // Navegação entre as 3 telas (sidebar única)
   // ------------------------------------------------------------------
   const views = {
     overview: document.getElementById('view-overview'),
@@ -88,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.forEach((link) => {
       link.classList.toggle('active', link.getAttribute('href') === `#${alvo}`);
     });
-    // O Chart.js precisa recalcular o tamanho quando a tela volta a ficar visível
     if (alvo === 'overview') {
       [rankingChart, timelineChart, roscaChart].forEach((g) => g && g.resize());
     }
@@ -102,12 +99,123 @@ document.addEventListener('DOMContentLoaded', () => {
       switchView(alvo);
     });
   });
-
   window.addEventListener('hashchange', () => switchView(window.location.hash.replace('#', '')));
 
   // ------------------------------------------------------------------
-  // TELA 1 — KPIs
+  // Seletor de escopo no topo (Todos os Hospitais x Hospital específico)
   // ------------------------------------------------------------------
+  const hospitalSelector = document.getElementById('hospital-selector');
+  let listaNomesHospitaisAnterior = '';
+
+  function atualizarOpcoesSeletor() {
+    if (!hospitalSelector) return;
+    const nomesAtuais = dadosRelatorio.map((h) => h.nome_cliente);
+    const assinatura = JSON.stringify(nomesAtuais);
+    if (assinatura === listaNomesHospitaisAnterior) return;
+    listaNomesHospitaisAnterior = assinatura;
+
+    const selecionadoAntes = escopoAtual;
+    hospitalSelector.innerHTML = '<option value="todos">Todos os Hospitais – Visão Global</option>';
+    nomesAtuais.forEach((nome) => {
+      const opt = document.createElement('option');
+      opt.value = nome;
+      opt.textContent = nome;
+      hospitalSelector.appendChild(opt);
+    });
+    const existe = nomesAtuais.includes(selecionadoAntes);
+    escopoAtual = existe ? selecionadoAntes : 'todos';
+    hospitalSelector.value = escopoAtual;
+  }
+
+  if (hospitalSelector) {
+    hospitalSelector.addEventListener('change', () => {
+      escopoAtual = hospitalSelector.value || 'todos';
+      aplicarEscopoOverview();
+      renderizarRelatorio();
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // TELA 1 — Aplicação do escopo (Global ou Hospital selecionado)
+  // ------------------------------------------------------------------
+  function ehDivergencia(r) {
+    return Number(r.enviado_sistema) === 1 && Number(r.confirmado_entrega) === 0;
+  }
+
+  function taxaDe(item) {
+    return item.taxa_entrega_pct == null ? 100 : Number(item.taxa_entrega_pct);
+  }
+
+  function montarTimelineFiltrada(logsFiltrados) {
+    const porHora = new Map();
+    [...logsFiltrados].reverse().forEach((r) => {
+      const parteHora = String(r.horario_alerta || '').split(' ')[1] || '00:00:00';
+      const hora = `${parteHora.slice(0, 2)}:00`;
+      if (!porHora.has(hora)) porHora.set(hora, { janela_hora: hora, alertas_gerados: 0, alertas_entregues: 0 });
+      const bucket = porHora.get(hora);
+      bucket.alertas_gerados += 1;
+      if (Number(r.confirmado_entrega) === 1) bucket.alertas_entregues += 1;
+    });
+    return Array.from(porHora.values());
+  }
+
+  function aplicarEscopoOverview() {
+    const isGlobal = escopoAtual === 'todos';
+    definirTexto(
+      'topbar-escopo-titulo',
+      isGlobal ? 'Todos os Hospitais – Visão Global' : escopoAtual
+    );
+
+    const hosp = dadosRelatorio.find((h) => h.nome_cliente === escopoAtual);
+    const logsDoEscopo = isGlobal
+      ? registrosAuditoria
+      : registrosAuditoria.filter((r) => r.nome_cliente === escopoAtual);
+
+    // 1. KPIs do topo
+    if (isGlobal || !hosp) {
+      renderizarKpis(kpisGlobais);
+    } else {
+      const criticos = Number(hosp.alertas_criticos || 0);
+      renderizarKpis({
+        total_clientes_ativos: 1,
+        parque_total_monitorado: Number(hosp.total_maquinas || 0),
+        clientes_estado_critico: criticos > 0 ? 1 : 0,
+        volume_chamados_24h: Number(hosp.total_alertas || 0),
+        divergencias_ativas: Number(hosp.falhas_divergencia || 0)
+      });
+    }
+
+    // 2. Linha Dupla
+    const serie = isGlobal ? timelineGlobal : montarTimelineFiltrada(logsDoEscopo);
+    renderizarGeradosVsEntregues(serie);
+
+    // 3. Ranking
+    const rankingExibido = isGlobal
+      ? rankingGlobal
+      : rankingGlobal.filter((r) => r.hospital_nome === escopoAtual);
+    renderizarRanking(rankingExibido.length ? rankingExibido : rankingGlobal);
+
+    // 4. Rosca + Saúde Global
+    let roscaExibida = roscaGlobal;
+    if (!isGlobal) {
+      const entregues = logsDoEscopo.filter((r) => r.status_auditoria === 'ENTREGUE').length;
+      const abertos = logsDoEscopo.filter((r) => r.status_auditoria === 'CHAMADO_ABERTO').length;
+      const falhas = logsDoEscopo.filter(ehDivergencia).length;
+      roscaExibida = {
+        entregues_sucesso: entregues,
+        chamados_abertos: abertos,
+        retidos_falha: falhas,
+        total_auditado: logsDoEscopo.length
+      };
+    }
+    renderizarRosca(roscaExibida);
+
+    const maquinas = isGlobal
+      ? Number(kpisGlobais?.parque_total_monitorado || 0)
+      : Number(hosp?.total_maquinas || 0);
+    renderizarSaudeGlobal(roscaExibida, maquinas);
+  }
+
   function renderizarKpis(kpis) {
     if (!kpis) return;
     const criticos = Number(kpis.clientes_estado_critico || 0);
@@ -132,7 +240,47 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ------------------------------------------------------------------
-  // TELA 1 — Gráficos
+  // TELA 1 — Saúde Global da Plataforma (Score % + 3 bolinhas)
+  // ------------------------------------------------------------------
+  function renderizarSaudeGlobal(rosca, totalMaquinas) {
+    const entregues = Number(rosca?.entregues_sucesso || 0) + Number(rosca?.chamados_abertos || 0);
+    const abertos = Number(rosca?.chamados_abertos || 0);
+    const falhas = Number(rosca?.retidos_falha || 0);
+    const total = Number(rosca?.total_auditado || entregues + falhas);
+    const taxaEntrega = total > 0 ? Math.round((entregues / total) * 100) : 100;
+
+    const scoreEl = document.getElementById('gauge-score');
+    const labelEl = document.getElementById('gauge-label');
+    if (scoreEl) scoreEl.innerHTML = `${taxaEntrega}<small>%</small>`;
+
+    if (labelEl) {
+      if (falhas === 0 && taxaEntrega >= 90) {
+        labelEl.textContent = 'Limite Seguro';
+        labelEl.className = 'gauge-label';
+      } else if (taxaEntrega >= 75) {
+        labelEl.textContent = 'Requer Atenção';
+        labelEl.className = 'gauge-label warn';
+      } else {
+        labelEl.textContent = 'Estado Crítico';
+        labelEl.className = 'gauge-label critical';
+      }
+    }
+
+    const parqueDot = document.getElementById('health-parque-dot');
+    if (parqueDot) parqueDot.className = totalMaquinas > 0 ? 'status-dot emerald' : 'status-dot amber';
+    definirTexto('health-parque-status', `${totalMaquinas} servidor(es) ativo(s)`);
+
+    const slackDot = document.getElementById('health-slack-dot');
+    if (slackDot) slackDot.className = falhas === 0 ? 'status-dot emerald' : taxaEntrega >= 75 ? 'status-dot amber' : 'status-dot crimson';
+    definirTexto('health-slack-status', `${entregues} de ${total} confirmados`);
+
+    const falhasDot = document.getElementById('health-falhas-dot');
+    if (falhasDot) falhasDot.className = falhas === 0 ? 'status-dot emerald' : 'status-dot crimson';
+    definirTexto('health-falhas-status', `${falhas} falha(s) · ${abertos} chamado(s) aberto(s)`);
+  }
+
+  // ------------------------------------------------------------------
+  // TELA 1 — Gráficos Chart.js
   // ------------------------------------------------------------------
   function renderizarRanking(lista) {
     const canvas = document.getElementById('chartRankingIncidentes');
@@ -282,46 +430,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ------------------------------------------------------------------
-  // TELA 2 — Bloco 1: Saúde da carteira
+  // TELA 2 — Resumo por Hospital + Modal de Detalhes
   // ------------------------------------------------------------------
-  function taxaDe(item) {
-    return item.taxa_entrega_pct == null ? 100 : Number(item.taxa_entrega_pct);
+  function obterRelatorioFiltrado() {
+    const busca = (document.getElementById('ipt-busca-hospital')?.value || '').trim().toLowerCase();
+    return dadosRelatorio.filter((item) => {
+      if (escopoAtual !== 'todos' && item.nome_cliente !== escopoAtual) return false;
+      if (busca && !String(item.nome_cliente || '').toLowerCase().includes(busca)) return false;
+      return true;
+    });
   }
 
-  function renderizarRelatorio(lista) {
-    dadosRelatorio = lista;
-
-    const soma = (campo) => lista.reduce((acc, r) => acc + Number(r[campo] || 0), 0);
-    const totalAlertas = soma('total_alertas');
-    const taxaMedia = totalAlertas > 0 ? ((soma('entregas_confirmadas') / totalAlertas) * 100).toFixed(1) : '100.0';
-
-    definirTexto('rel-taxa-entrega', `${taxaMedia}%`);
-    definirTexto('rel-total-maquinas', soma('total_maquinas'));
-    definirTexto('rel-total-criticos', soma('alertas_criticos'));
-    definirTexto('rel-total-divergencias', soma('falhas_divergencia'));
-
+  function renderizarRelatorio() {
     const tbody = document.getElementById('tbody-relatorio-executivo');
     if (!tbody) return;
 
-    if (lista.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" class="table-empty">Nenhum cliente cadastrado.</td></tr>';
+    const filtrados = obterRelatorioFiltrado();
+
+    if (filtrados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Nenhum hospital encontrado.</td></tr>';
       return;
     }
 
-    tbody.innerHTML = lista
+    tbody.innerHTML = filtrados
       .map((item) => {
         const taxa = taxaDe(item);
+        const criticos = Number(item.alertas_criticos || 0);
+        const atencao = Number(item.alertas_atencao || 0);
         const falhas = Number(item.falhas_divergencia || 0);
         const classeTaxa = taxa >= 90 ? 'up' : taxa >= 75 ? 'warn' : 'critical';
+        const nomeEsc = escaparHtml(item.nome_cliente);
         return `
-          <tr class="${falhas > 0 ? 'row-divergencia' : ''}">
-            <td><span class="cell-primary">${item.nome_cliente}</span><span class="cell-sub">${item.email}</span></td>
-            <td>${item.cnpj}</td>
-            <td><strong>${item.total_maquinas}</strong></td>
-            <td><span class="kpi-badge ${Number(item.alertas_criticos) > 0 ? 'critical' : 'up'}">${item.alertas_criticos}</span></td>
-            <td>${item.alertas_atencao}</td>
-            <td><strong>${item.total_alertas}</strong></td>
-            <td>${item.entregas_confirmadas}</td>
+          <tr class="${falhas > 0 ? 'row-divergencia ' : ''}row-clickable" data-hospital="${nomeEsc}" title="Clique para ver detalhes e logs deste hospital">
+            <td><strong>${nomeEsc}</strong></td>
+            <td>${Number(item.total_maquinas || 0)}</td>
+            <td><span class="kpi-badge ${criticos > 0 ? 'critical' : 'up'}">${criticos}</span></td>
+            <td>${atencao}</td>
             <td><span class="kpi-badge ${falhas > 0 ? 'critical' : 'up'}">${falhas}</span></td>
             <td><span class="kpi-badge ${classeTaxa}">${taxa}%</span></td>
           </tr>`;
@@ -329,95 +473,106 @@ document.addEventListener('DOMContentLoaded', () => {
       .join('');
   }
 
-  // ------------------------------------------------------------------
-  // TELA 2 — Bloco 2: Auditoria de divergências
-  // ------------------------------------------------------------------
-  function ehDivergencia(r) {
-    return Number(r.enviado_sistema) === 1 && Number(r.confirmado_entrega) === 0;
+  const tbodyRelatorio = document.getElementById('tbody-relatorio-executivo');
+  if (tbodyRelatorio) {
+    tbodyRelatorio.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-hospital]');
+      if (tr) abrirModalHospital(tr.dataset.hospital);
+    });
   }
 
-  function renderizarAuditoria() {
-    const tbody = document.getElementById('tbody-auditoria-logs');
-    if (!tbody) return;
+  const iptBuscaHospital = document.getElementById('ipt-busca-hospital');
+  if (iptBuscaHospital) iptBuscaHospital.addEventListener('input', renderizarRelatorio);
 
-    definirTexto('count-todos', registrosAuditoria.length);
-    definirTexto('count-divergencias', registrosAuditoria.filter(ehDivergencia).length);
-    definirTexto('count-entregues', registrosAuditoria.filter((r) => !ehDivergencia(r)).length);
+  // Modal de detalhes
+  const modalOverlay = document.getElementById('modal-hospital');
 
-    const busca = (document.getElementById('ipt-busca-auditoria').value || '').trim().toLowerCase();
+  function formatarHorarioCurto(horarioStr) {
+    const partes = String(horarioStr || '').split(' ');
+    if (partes.length < 2) return horarioStr || '--';
+    return `${partes[0].slice(0, 5)} ${partes[1].slice(0, 5)}`;
+  }
 
-    const filtrados = registrosAuditoria.filter((r) => {
-      if (filtroAtual === 'divergencias' && !ehDivergencia(r)) return false;
-      if (filtroAtual === 'entregues' && ehDivergencia(r)) return false;
-      if (!busca) return true;
-      return [r.alerta_id, r.nome_cliente, r.servidor_fabricante, r.mac_adress, r.componente, r.log_aplicacao]
-        .join(' ')
-        .toLowerCase()
-        .includes(busca);
-    });
+  function abrirModalHospital(nomeHospital) {
+    const hosp = dadosRelatorio.find((h) => h.nome_cliente === nomeHospital);
+    if (!hosp || !modalOverlay) return;
 
-    if (filtrados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Nenhum registro para o filtro selecionado.</td></tr>';
-      return;
+    definirTexto('modal-hosp-nome', hosp.nome_cliente);
+    definirTexto('modal-hosp-meta', `CNPJ: ${hosp.cnpj || '--'} · E-mail: ${hosp.email || '--'}`);
+    definirTexto('modal-hosp-maquinas', Number(hosp.total_maquinas || 0));
+    definirTexto('modal-hosp-alertas', Number(hosp.total_alertas || 0));
+    definirTexto('modal-hosp-falhas', Number(hosp.falhas_divergencia || 0));
+    definirTexto('modal-hosp-taxa', `${taxaDe(hosp)}%`);
+
+    const logsHosp = registrosAuditoria.filter((r) => r.nome_cliente === nomeHospital);
+    const tbodyModal = document.getElementById('tbody-modal-hospital-logs');
+
+    if (tbodyModal) {
+      if (logsHosp.length === 0) {
+        tbodyModal.innerHTML = '<tr><td colspan="5" class="table-empty">Nenhum alerta ou log registrado para este hospital.</td></tr>';
+      } else {
+        tbodyModal.innerHTML = logsHosp
+          .map((r) => {
+            const divergente = ehDivergencia(r);
+            let situacao = '<span class="status-pill delivered">Entregue</span>';
+            let classeLog = 'log-code log-ok';
+            if (divergente) {
+              situacao = '<span class="status-pill failed">Falha no Envio</span>';
+              classeLog = 'log-code log-error';
+            } else if (r.status_auditoria === 'CHAMADO_ABERTO') {
+              situacao = '<span class="status-pill open-ticket">Chamado Aberto</span>';
+              classeLog = 'log-code log-ticket';
+            }
+            const sevBadge = r.severidade === 'Crítico'
+              ? '<span class="kpi-badge critical">Crítico</span>'
+              : '<span class="kpi-badge warn">Atenção</span>';
+
+            return `
+              <tr class="${divergente ? 'row-divergencia' : ''}">
+                <td>${escaparHtml(formatarHorarioCurto(r.horario_alerta))}</td>
+                <td>
+                  <span class="cell-primary">${escaparHtml(r.servidor_fabricante || 'PACS')} (${escaparHtml(r.componente)})</span>
+                  <span class="cell-sub">${escaparHtml(r.mac_adress)} · ${r.valor_leitura}${escaparHtml(r.unidade_medida || '')}</span>
+                </td>
+                <td>${sevBadge}</td>
+                <td>${situacao}</td>
+                <td><code class="${classeLog}">${escaparHtml(r.log_aplicacao)}</code></td>
+              </tr>`;
+          })
+          .join('');
+      }
     }
 
-    tbody.innerHTML = filtrados
-      .map((r) => {
-        const divergente = ehDivergencia(r);
-        let statusReal = '<span class="status-pill delivered">Entregue (ACK)</span>';
-        let classeLog = 'log-code log-ok';
-        if (divergente) {
-          statusReal = '<span class="status-pill failed">Divergência / Falha</span>';
-          classeLog = 'log-code log-error';
-        } else if (r.status_auditoria === 'CHAMADO_ABERTO') {
-          statusReal = '<span class="status-pill open-ticket">Chamado Aberto</span>';
-          classeLog = 'log-code log-ticket';
-        }
-        const severidade = r.severidade === 'Crítico'
-          ? '<span class="kpi-badge critical">Crítico</span>'
-          : '<span class="kpi-badge warn">Atenção</span>';
-
-        return `
-          <tr class="${divergente ? 'row-divergencia' : ''}">
-            <td><span class="cell-primary">#${r.alerta_id}</span>${severidade}</td>
-            <td><span class="cell-primary">${r.nome_cliente}</span><span class="cell-sub">${r.canal_destino || ''}</span></td>
-            <td><span class="cell-primary">${r.servidor_fabricante || 'Servidor PACS'} (${r.componente})</span><span class="cell-sub">${r.mac_adress} &middot; ${r.valor_leitura}${r.unidade_medida || ''}</span></td>
-            <td><span class="cell-primary">${r.horario_alerta}</span><span class="cell-sub">Auditado: ${r.horario_auditoria}</span></td>
-            <td><span class="status-pill sent">Enviado (Sistema)</span></td>
-            <td>${statusReal}</td>
-            <td><code class="${classeLog}">${r.log_aplicacao}</code></td>
-          </tr>`;
-      })
-      .join('');
+    modalOverlay.style.display = 'flex';
   }
 
-  document.querySelectorAll('.filter-pill').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-pill').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      filtroAtual = btn.dataset.filter || 'todos';
-      renderizarAuditoria();
+  function fecharModalHospital() {
+    if (modalOverlay) modalOverlay.style.display = 'none';
+  }
+
+  const btnFecharModal = document.getElementById('btn-fechar-modal');
+  if (btnFecharModal) btnFecharModal.addEventListener('click', fecharModalHospital);
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) fecharModalHospital();
     });
-  });
-  document.getElementById('ipt-busca-auditoria').addEventListener('input', renderizarAuditoria);
-
-  // ------------------------------------------------------------------
-  // TELA 2 — Exportações
-  // ------------------------------------------------------------------
-  function textoPuro(valor) {
-    const div = document.createElement('div');
-    div.innerHTML = valor == null ? '' : String(valor); // desfaz o escape para o arquivo
-    return div.textContent;
   }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') fecharModalHospital();
+  });
 
+  // ------------------------------------------------------------------
+  // TELA 2 — Exportações (CSV e PDF)
+  // ------------------------------------------------------------------
   document.getElementById('btn-exportar-csv').addEventListener('click', () => {
-    if (!dadosRelatorio.length) return;
+    const listaExportar = obterRelatorioFiltrado();
+    if (!listaExportar.length) return;
 
-    const cabecalho = ['Hospital', 'CNPJ', 'Email', 'Servidores PACS', 'Alertas Criticos', 'Alertas Atencao', 'Total Alertas', 'Entregas Confirmadas', 'Divergencias', 'Taxa Entrega (%)'];
-    const linhas = dadosRelatorio.map((r) => [
-      `"${textoPuro(r.nome_cliente).replace(/"/g, '""')}"`,
-      `"'${r.cnpj}"`,
-      `"${textoPuro(r.email)}"`,
+    const cabecalho = ['Hospital', 'CNPJ', 'Email', 'Servidores PACS', 'Alertas Criticos', 'Alertas Atencao', 'Total Alertas', 'Entregas Confirmadas', 'Falhas de Envio', 'Taxa Entrega (%)'];
+    const linhas = listaExportar.map((r) => [
+      `"${String(r.nome_cliente || '').replace(/"/g, '""')}"`,
+      `"'${r.cnpj || ''}"`,
+      `"${r.email || ''}"`,
       r.total_maquinas,
       r.alertas_criticos,
       r.alertas_atencao,
@@ -496,7 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
       limparFormularioHospital();
       mostrarFeedbackHospital('Hospital cadastrado com sucesso!', 'success');
-      carregarDashboard(); // atualiza KPIs e relatórios com o novo cliente
+      carregarDashboard();
     } catch (erro) {
       console.error(erro);
       mostrarFeedbackHospital('Não foi possível cadastrar o hospital. Tente novamente.', 'error');
@@ -520,24 +675,20 @@ document.addEventListener('DOMContentLoaded', () => {
         buscarJson('/dashboardDaniel/relatorio-executivo')
       ]);
 
-      registrosAuditoria = Array.isArray(logs) ? logs.map(sanitizarLinha) : [];
+      kpisGlobais = kpis;
+      rankingGlobal = Array.isArray(ranking) ? ranking : [];
+      timelineGlobal = Array.isArray(timeline) ? timeline : [];
+      roscaGlobal = rosca;
+      registrosAuditoria = Array.isArray(logs) ? logs : [];
+      dadosRelatorio = Array.isArray(relatorio) ? relatorio : [];
 
-      renderizarKpis(kpis);
-      renderizarRanking(Array.isArray(ranking) ? ranking : []);
-      renderizarGeradosVsEntregues(Array.isArray(timeline) ? timeline : []);
-      renderizarRosca(rosca);
-      renderizarRelatorio(Array.isArray(relatorio) ? relatorio.map(sanitizarLinha) : []);
-      renderizarAuditoria();
-
-      definirTexto('ultima-atualizacao-label', `Última leitura: ${new Date().toLocaleTimeString('pt-BR')}`);
-      definirTexto('status-sync-texto', 'Conectado ao banco (5s)');
+      atualizarOpcoesSeletor();
+      aplicarEscopoOverview();
+      renderizarRelatorio();
     } catch (erro) {
       console.error('Erro ao carregar a dashboard:', erro);
-      definirTexto('status-sync-texto', 'Erro de conexão com a API');
     }
   }
-
-  document.getElementById('btn-atualizar-agora').addEventListener('click', carregarDashboard);
 
   atualizarPerfilSidebar();
   switchView(window.location.hash.replace('#', ''));
