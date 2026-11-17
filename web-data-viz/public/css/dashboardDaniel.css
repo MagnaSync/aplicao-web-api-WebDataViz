@@ -1,0 +1,382 @@
+/* ==========================================================================
+   MagnaSync — Dashboard Executiva e Auditoria ITIL (Admin Geral)
+   Arquivo: public/css/dashboardDaniel.css
+   Complementa public/css/dashboard.css mantendo a paleta oficial MagnaSync
+   ========================================================================== */
+
+.daniel-view {
+  gap: 14px;
+  padding-bottom: 18px;
+}
+
+.daniel-view .dash-card {
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.header-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Grade Central dos 3 Gráficos
+   -------------------------------------------------------------------------- */
+.daniel-charts-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1.25fr 0.9fr;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.daniel-chart-card {
+  min-height: 310px;
+  justify-content: space-between;
+}
+
+.daniel-chart-box {
+  position: relative;
+  width: 100%;
+  height: 235px;
+}
+
+.daniel-donut-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex: 1;
+  padding: 6px 0;
+}
+
+.daniel-donut-wrapper {
+  width: 156px;
+  height: 156px;
+}
+
+.daniel-donut-card .donut-legend {
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+/* --------------------------------------------------------------------------
+   Painel de Auditoria de Divergência & Logs
+   -------------------------------------------------------------------------- */
+.audit-panel-card {
+  gap: 14px;
+}
+
+.audit-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.audit-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.audit-filter-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #F2F7FC;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(39, 62, 99, 0.12);
+}
+
+.filter-pill {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #273E63;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  background-color: rgba(26, 74, 135, 0.08);
+}
+
+.filter-pill.active {
+  background-color: #1A4A87;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(26, 74, 135, 0.25);
+}
+
+.filter-pill.danger.active {
+  background-color: #dc2626;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+}
+
+.filter-pill.success.active {
+  background-color: #059669;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+}
+
+.audit-search-input {
+  min-width: 245px;
+  padding: 7px 12px;
+  border: 1px solid rgba(39, 62, 99, 0.2);
+  border-radius: 8px;
+  background-color: #F8FAFC;
+  font-size: 12.5px;
+  color: #0B192C;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.audit-search-input:focus {
+  background-color: #ffffff;
+  border-color: #1A4A87;
+  box-shadow: 0 0 0 3px rgba(26, 74, 135, 0.12);
+}
+
+/* --------------------------------------------------------------------------
+   Tabelas de Auditoria e Relatório
+   -------------------------------------------------------------------------- */
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid rgba(39, 62, 99, 0.12);
+  border-radius: 8px;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: left;
+  background-color: #ffffff;
+}
+
+.audit-table thead th {
+  background-color: #F2F7FC;
+  color: #273E63;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(39, 62, 99, 0.14);
+  white-space: nowrap;
+}
+
+.audit-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(39, 62, 99, 0.08);
+  vertical-align: middle;
+  color: #0B192C;
+}
+
+.audit-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.audit-table tbody tr:hover {
+  background-color: #F8FAFC;
+}
+
+.audit-table tbody tr.row-divergencia {
+  background-color: #fff5f5;
+}
+
+.audit-table tbody tr.row-divergencia:hover {
+  background-color: #fee2e2;
+}
+
+.cell-primary {
+  font-weight: 700;
+  color: #0B192C;
+  display: block;
+}
+
+.cell-sub {
+  font-size: 11px;
+  color: #5B7396;
+  display: block;
+  margin-top: 2px;
+}
+
+.log-code {
+  display: inline-block;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11.5px;
+  line-height: 1.4;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: #F2F7FC;
+  color: #273E63;
+  border: 1px solid rgba(39, 62, 99, 0.12);
+  max-width: 390px;
+  word-break: break-word;
+}
+
+.log-code.log-error {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.log-code.log-ok {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.log-code.log-ticket {
+  background-color: #eef2ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-pill.sent {
+  background-color: rgba(26, 74, 135, 0.1);
+  color: #1A4A87;
+}
+
+.status-pill.delivered {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.status-pill.open-ticket {
+  background-color: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
+.status-pill.failed {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.table-empty {
+  text-align: center;
+  padding: 28px 16px !important;
+  color: #8a9dbf !important;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Seção Relatório Executivo & Ações
+   -------------------------------------------------------------------------- */
+.relatorio-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.print-only-header {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Responsividade
+   -------------------------------------------------------------------------- */
+@media (max-width: 1240px) {
+  .daniel-charts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .daniel-donut-card {
+    grid-column: 1 / -1;
+  }
+
+  .daniel-donut-body {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+
+  .daniel-donut-card .donut-legend {
+    max-width: 340px;
+  }
+}
+
+@media (max-width: 900px) {
+  .daniel-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-search-input {
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Formatação Exclusiva para Impressão / PDF
+   -------------------------------------------------------------------------- */
+@media print {
+  html,
+  body,
+  .dashboard-app,
+  .dash-main,
+  .dash-content,
+  .dash-view {
+    height: auto !important;
+    overflow: visible !important;
+    background-color: #ffffff !important;
+  }
+
+  .dash-sidebar,
+  .dash-topbar,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid #1A4A87;
+  }
+
+  .print-only-header img {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+  }
+
+  .print-only-header h2 {
+    font-size: 16px;
+    color: #0B192C;
+  }
+
+  .print-only-header p {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    color: #273E63;
+  }
+
+  .dash-card,
+  .kpi-card {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+}
