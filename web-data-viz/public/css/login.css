@@ -1,14 +1,29 @@
+/* ==========================================================================
+   MagnaSync — Login Responsivo
+   Arquivo: login.css
+   ========================================================================== */
 
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
 
 body {
   display: flex;
-  min-height: 100vh;
   background-color: var(--cor-fundo-escuro);
+  color: var(--cor-branca);
+  font-family: var(--fonte-apoio);
 }
 
 .imagem-login {
-  flex: 0 0 62%;
+  flex: 0 0 60%;
   position: relative;
+  overflow: hidden;
+  background-color: #0B192C;
 }
 
 .imagem-login img {
@@ -19,31 +34,78 @@ body {
   object-fit: cover;
 }
 
+.imagem-login::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, transparent 65%, rgba(11, 25, 44, 0.85) 100%);
+  pointer-events: none;
+}
+
 .login {
-  flex: 1 1 38%;
+  flex: 1 1 40%;
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 24px;
+  padding: clamp(32px, 5vw, 48px) clamp(24px, 5vw, 40px);
+  background-color: var(--cor-fundo-escuro);
+  box-sizing: border-box;
 }
 
 .login .container {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
   padding: 0;
+}
+
+.topo-login {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto 22px auto;
+}
+
+.voltar {
+  font-family: var(--fonte-principal);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cor-texto-claro);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(126, 168, 216, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.voltar:hover {
+  color: var(--cor-branca);
+  border-color: var(--cor-destaque);
+  background: rgba(126, 168, 216, 0.15);
 }
 
 .card-login {
   width: 100%;
-  max-width: 450px;
+  max-width: 430px;
   margin: 0 auto;
+  background: rgba(16, 40, 72, 0.35);
+  border: 1px solid rgba(126, 168, 216, 0.2);
+  border-radius: 14px;
+  padding: clamp(24px, 4vw, 34px) clamp(20px, 4vw, 28px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
 }
 
 .card-login h2 {
-  font-size: 32px;
+  font-size: clamp(24px, 3.5vw, 28px);
   font-weight: 800;
   color: var(--cor-branca);
   letter-spacing: -0.02em;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .formulario {
@@ -59,23 +121,25 @@ body {
 }
 
 .formulario span {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--cor-texto-claro);
 }
 
 .formulario input {
-  height: 50px;
-  padding: 0 16px;
+  height: 48px;
+  padding: 0 15px;
   border: 1px solid var(--borda-suave);
   border-radius: 8px;
-  background-color: rgba(39, 62, 99, 0.2);
+  background-color: rgba(39, 62, 99, 0.25);
   color: var(--cor-branca);
-  font-size: 16px;
+  font-size: 15px;
   outline: 0;
   transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .formulario input::placeholder {
@@ -83,24 +147,26 @@ body {
 }
 
 .formulario input:focus {
-  background-color: rgba(39, 62, 99, 0.35);
+  background-color: rgba(39, 62, 99, 0.45);
   border-color: var(--cor-destaque);
-  box-shadow: 0 0 0 3px rgba(126, 168, 216, 0.2);
+  box-shadow: 0 0 0 3px rgba(126, 168, 216, 0.25);
 }
 
 .botao {
-  height: 50px;
+  height: 48px;
   border: 1px solid rgba(147, 197, 253, 0.4);
   border-radius: 8px;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
   color: var(--cor-branca);
   font-family: var(--fonte-principal);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.02em;
   box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   cursor: pointer;
   transition: all 0.25s ease;
+  width: 100%;
+  margin-top: 4px;
 }
 
 .botao:hover {
@@ -159,73 +225,28 @@ body {
 
 .alerta_erro {
   width: 100%;
-  max-width: 420px;
+  max-width: 450px;
   margin: 0 auto 16px auto;
 }
 
 .card_erro {
   display: none;
   padding: 12px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: rgba(220, 38, 38, 0.15);
   border: 1px solid rgba(220, 38, 38, 0.4);
   color: #fca5a5;
   font-size: var(--texto-pequeno);
-}
-
-@media (max-width: 860px) {
-  body {
-    flex-direction: column;
-  }
-
-  .imagem-login {
-    flex: none;
-    height: 220px;
-  }
-
-  .login {
-    flex: 1;
-  }
-}
-
-.topo-login {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 450px;
-  margin: 0 auto 18px auto;
-}
-
-.voltar {
-  font-family: var(--fonte-principal);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--cor-texto-claro);
-  transition: color 0.2s ease;
-}
-
-.voltar:hover {
-  color: var(--cor-destaque);
-}
-
-.card-login .etiqueta-secao {
-  margin-bottom: 8px;
-}
-
-.subtitulo {
-  font-size: var(--texto-lead);
-  color: var(--cor-texto-cinza);
-  margin: 0 0 20px 0;
-  line-height: 1.5;
+  word-break: break-word;
 }
 
 .ajuda-login {
   max-width: 450px;
   margin: 22px auto 0 auto;
   text-align: center;
-  font-size: var(--texto-pequeno);
+  font-size: 14px;
   color: var(--cor-texto-cinza);
+  line-height: 1.5;
 }
 
 .ajuda-login a {
@@ -238,3 +259,84 @@ body {
   text-decoration: underline;
 }
 
+/* ==========================================================================
+   Responsividade Hierárquica
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .imagem-login {
+    flex: 0 0 50%;
+  }
+
+  .login {
+    flex: 0 0 50%;
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 860px) {
+  body {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .imagem-login {
+    display: none;
+  }
+
+  .login {
+    flex: 1;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    justify-content: center;
+    padding: 28px 20px;
+    box-sizing: border-box;
+    background: radial-gradient(ellipse at top, #102848 0%, #0B192C 75%);
+  }
+}
+
+@media (max-width: 480px) {
+  .login {
+    padding: 24px 18px;
+  }
+
+  .card-login {
+    padding: 22px 18px;
+    border-radius: 12px;
+  }
+
+  .card-login h2 {
+    font-size: 23px;
+    margin-bottom: 16px;
+  }
+
+  .formulario input,
+  .botao {
+    height: 46px;
+  }
+
+  .ajuda-login {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 20px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .topo-login .logo {
+    font-size: 18px;
+    gap: 6px;
+  }
+
+  .topo-login .logo-img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .voltar {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+}
