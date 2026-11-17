@@ -21,7 +21,7 @@
       </a>
 
       <nav class="sidebar-nav" aria-label="Navegação do Dashboard">
-        <a href="#dashboard" class="nav-link">Dashboard</a>
+        <a href="./dashboard/dashboardDaniel.html" class="nav-link">Dashboard</a>
         <a href="#cadastrarHospital" class="nav-link active">Cadastrar Hospital</a>
       </nav>
 
@@ -143,9 +143,13 @@
     const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
 
     function switchView(target) {
+      if (target === 'dashboard') {
+        window.location = './dashboard/dashboardDaniel.html';
+        return;
+      }
       if (!views[target]) target = 'cadastrarHospital';
       Object.keys(views).forEach(function (k) {
-        views[k].style.display = k === target ? (k === 'dashboard' ? 'flex' : 'block') : 'none';
+        views[k].style.display = k === target ? 'block' : 'none';
       });
       navLinks.forEach(function (l) {
         l.classList.toggle('active', l.getAttribute('href') === '#' + target);
@@ -155,8 +159,11 @@
 
     navLinks.forEach(function (l) {
       l.addEventListener('click', function (e) {
-        e.preventDefault();
-        switchView(l.getAttribute('href').substring(1));
+        const href = l.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          switchView(href.substring(1));
+        }
       });
     });
     window.addEventListener('hashchange', function () {

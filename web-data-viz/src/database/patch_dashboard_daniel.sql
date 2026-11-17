@@ -1,498 +1,149 @@
 -- ============================================================================
--- MagnaSync — Patch Incremental e Isolado (Dashboard Executiva e Auditoria ITIL)
--- Arquivo: src/database/patch_dashboard_daniel.sql
--- Regra: NÃO altera nem apaga tabelas ou registros existentes do grupo.
+-- MagnaSync — Patch incremental da Dashboard Executiva (Daniel)
+-- Não altera nem apaga nada do script do grupo; pode ser executado mais de uma vez.
 -- ============================================================================
-
 USE magnasync;
 
--- 1. Criação segura da tabela auxiliar de auditoria de entrega/notificações
+-- 1. Tabela de auditoria de entrega das notificações (Slack / Jira)
 CREATE TABLE IF NOT EXISTS auditoria_notificacao (
     id INT PRIMARY KEY AUTO_INCREMENT,
     fkAlerta INT NOT NULL UNIQUE,
     fkChamado INT NULL,
     canal_destino VARCHAR(60) NOT NULL DEFAULT 'Slack #alertas-pacs',
-    enviado_sistema TINYINT(1) NOT NULL DEFAULT 1,
-    confirmado_entrega TINYINT(1) NOT NULL DEFAULT 0,
-    status_auditoria VARCHAR(30) NOT NULL,
+    enviado_sistema TINYINT(1) NOT NULL DEFAULT 1,       -- 1 = o sistema marcou como enviado
+    confirmado_entrega TINYINT(1) NOT NULL DEFAULT 0,    -- 1 = a API externa confirmou o recebimento
+    status_auditoria VARCHAR(30) NOT NULL,               -- ENTREGUE | CHAMADO_ABERTO | FALHA_ENVIO
     log_aplicacao VARCHAR(255) NOT NULL,
     dt_auditoria DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_auditoria_alerta FOREIGN KEY (fkAlerta) REFERENCES alerta(id),
-    CONSTRAINT fk_auditoria_chamado FOREIGN KEY (fkChamado) REFERENCES chamado(id)
+    FOREIGN KEY (fkAlerta) REFERENCES alerta(id),
+    FOREIGN KEY (fkChamado) REFERENCES chamado(id)
 );
 
--- 2. Garantir componentes base (Processador, Ram, Disco, Rede - Latencia) caso ainda não existam em componente
+-- 2. Componentes monitorados (só cria se ainda não existirem)
 INSERT INTO componente (valor, fkTipo, fkUnidade)
 SELECT NULL, tc.id, u.id
 FROM tipoComponente tc
-JOIN unidade u ON u.medida = '%'
-WHERE tc.tipo = 'Processador'
+JOIN unidade u ON u.medida = IF(tc.tipo = 'Rede - Latencia', 'ms', '%')
+WHERE tc.tipo IN ('Processador', 'Ram', 'Disco', 'Rede - Latencia')
   AND NOT EXISTS (SELECT 1 FROM componente c WHERE c.fkTipo = tc.id);
 
-INSERT INTO componente (valor, fkTipo, fkUnidade)
-SELECT NULL, tc.id, u.id
-FROM tipoComponente tc
-JOIN unidade u ON u.medida = '%'
-WHERE tc.tipo = 'Ram'
-  AND NOT EXISTS (SELECT 1 FROM componente c WHERE c.fkTipo = tc.id);
-
-INSERT INTO componente (valor, fkTipo, fkUnidade)
-SELECT NULL, tc.id, u.id
-FROM tipoComponente tc
-JOIN unidade u ON u.medida = '%'
-WHERE tc.tipo = 'Disco'
-  AND NOT EXISTS (SELECT 1 FROM componente c WHERE c.fkTipo = tc.id);
-
-INSERT INTO componente (valor, fkTipo, fkUnidade)
-SELECT NULL, tc.id, u.id
-FROM tipoComponente tc
-JOIN unidade u ON u.medida = 'ms'
-WHERE tc.tipo = 'Rede - Latencia'
-  AND NOT EXISTS (SELECT 1 FROM componente c WHERE c.fkTipo = tc.id);
-
--- 3. Seed incremental de Hospitais Clientes (sem sobrescrever registros existentes)
+-- 3. Hospitais clientes (identificados pelo CNPJ, não duplica)
 INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
-SELECT 'Hospital Albert Einstein', '60765823000130', '(11) 2151-1233', 'ti.pacs@einstein.br', '05652900', '627'
-WHERE NOT EXISTS (SELECT 1 FROM hospital WHERE cnpj = '60765823000130');
+SELECT v.* FROM (
+    SELECT 'Hospital Albert Einstein' nome, '60765823000130' cnpj, '(11) 2151-1233' tel, 'ti.pacs@einstein.br' email, '05652900' cep, '627' num
+    UNION ALL SELECT 'Hospital Sírio-Libanês',     '61590410000124', '(11) 3394-5000', 'infra@hsl.org.br',         '01308050', '91'
+    UNION ALL SELECT 'Hospital Santa Catarina',    '60922168000186', '(11) 3016-4133', 'suporte.dicom@hsc.org.br', '01310000', '200'
+    UNION ALL SELECT 'Hospital São Luiz Rede DOr', '06047087000139', '(11) 3040-1100', 'noc@rededor.com.br',       '04505002', '250'
+    UNION ALL SELECT 'Hospital Oswaldo Cruz',      '60726502000189', '(11) 3549-1000', 'pacs.admin@haoc.com.br',   '01323001', '325'
+    UNION ALL SELECT 'Hospital Das Dores',         '01234567891011', '(11) 11111-1111', 'hospitaldasdores@gmail.com', '05548722', '7980'
+) v
+WHERE NOT EXISTS (SELECT 1 FROM hospital h WHERE h.cnpj = v.cnpj);
 
-INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
-SELECT 'Hospital Sírio-Libanês', '61590410000124', '(11) 3394-5000', 'infra@hsl.org.br', '01308050', '91'
-WHERE NOT EXISTS (SELECT 1 FROM hospital WHERE cnpj = '61590410000124');
-
-INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
-SELECT 'Hospital Santa Catarina', '60922168000186', '(11) 3016-4133', 'suporte.dicom@hsc.org.br', '01310000', '200'
-WHERE NOT EXISTS (SELECT 1 FROM hospital WHERE cnpj = '60922168000186');
-
-INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
-SELECT 'Hospital São Luiz Rede DOr', '06047087000139', '(11) 3040-1100', 'noc@rededor.com.br', '04505002', '250'
-WHERE NOT EXISTS (SELECT 1 FROM hospital WHERE cnpj = '06047087000139');
-
-INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
-SELECT 'Hospital Oswaldo Cruz', '60726502000189', '(11) 3549-1000', 'pacs.admin@haoc.com.br', '01323001', '325'
-WHERE NOT EXISTS (SELECT 1 FROM hospital WHERE cnpj = '60726502000189');
-
-INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
-SELECT 'Hospital Das Dores', '01234567891011', '(11) 11111-1111', 'hospitaldasdores@gmail.com', '05548722', '7980'
-WHERE NOT EXISTS (SELECT 1 FROM hospital WHERE cnpj = '01234567891011');
-
--- 4. Seed incremental de Equipamentos (Servidores PACS) por Hospital
+-- 4. Servidores PACS por hospital (identificados pelo MAC, não duplica)
 INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'GE Centricity PACS-01', '00:1B:44:11:3A:01', id FROM hospital WHERE cnpj = '60765823000130'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:11:3A:01') LIMIT 1;
+SELECT v.fab, v.mac, h.id FROM (
+    SELECT 'GE Centricity PACS-01' fab, '00:1B:44:11:3A:01' mac, '60765823000130' cnpj
+    UNION ALL SELECT 'GE Centricity PACS-02',        '00:1B:44:11:3A:02', '60765823000130'
+    UNION ALL SELECT 'Dell PowerEdge R750-DICOM',    '00:1B:44:11:3A:03', '60765823000130'
+    UNION ALL SELECT 'HPE ProLiant DL380-Archive',   '00:1B:44:11:3A:04', '60765823000130'
+    UNION ALL SELECT 'GE PACS Storage-SL1',          '00:1B:44:22:4B:01', '61590410000124'
+    UNION ALL SELECT 'Philips IntelliSpace-SL2',     '00:1B:44:22:4B:02', '61590410000124'
+    UNION ALL SELECT 'Dell PowerEdge PACS-SL3',      '00:1B:44:22:4B:03', '61590410000124'
+    UNION ALL SELECT 'GE Centricity PACS-SC1',       '00:1B:44:33:5C:01', '60922168000186'
+    UNION ALL SELECT 'Lenovo ThinkSystem SR650',     '00:1B:44:33:5C:02', '60922168000186'
+    UNION ALL SELECT 'Dell PACS Backup-SC3',         '00:1B:44:33:5C:03', '60922168000186'
+    UNION ALL SELECT 'GE PACS Central-RD1',          '00:1B:44:44:6D:01', '06047087000139'
+    UNION ALL SELECT 'HPE ProLiant PACS-RD2',        '00:1B:44:44:6D:02', '06047087000139'
+    UNION ALL SELECT 'GE Centricity PACS-OC1',       '00:1B:44:55:7E:01', '60726502000189'
+    UNION ALL SELECT 'Dell PACS Index-OC2',          '00:1B:44:55:7E:02', '60726502000189'
+    UNION ALL SELECT 'GE PACS Legado-HD1',           '00:1B:44:66:8F:01', '01234567891011'
+) v
+JOIN hospital h ON h.cnpj = v.cnpj
+WHERE NOT EXISTS (SELECT 1 FROM equipamento e WHERE e.mac_adress = v.mac);
 
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'GE Centricity PACS-02', '00:1B:44:11:3A:02', id FROM hospital WHERE cnpj = '60765823000130'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:11:3A:02') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'Dell PowerEdge R750-DICOM', '00:1B:44:11:3A:03', id FROM hospital WHERE cnpj = '60765823000130'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:11:3A:03') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'HPE ProLiant DL380-Archive', '00:1B:44:11:3A:04', id FROM hospital WHERE cnpj = '60765823000130'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:11:3A:04') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'GE PACS Storage-SL1', '00:1B:44:22:4B:01', id FROM hospital WHERE cnpj = '61590410000124'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:22:4B:01') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'Philips IntelliSpace-SL2', '00:1B:44:22:4B:02', id FROM hospital WHERE cnpj = '61590410000124'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:22:4B:02') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'Dell PowerEdge PACS-SL3', '00:1B:44:22:4B:03', id FROM hospital WHERE cnpj = '61590410000124'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:22:4B:03') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'GE Centricity PACS-SC1', '00:1B:44:33:5C:01', id FROM hospital WHERE cnpj = '60922168000186'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:33:5C:01') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'Lenovo ThinkSystem SR650', '00:1B:44:33:5C:02', id FROM hospital WHERE cnpj = '60922168000186'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:33:5C:02') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'Dell PACS Backup-SC3', '00:1B:44:33:5C:03', id FROM hospital WHERE cnpj = '60922168000186'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:33:5C:03') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'GE PACS Central-RD1', '00:1B:44:44:6D:01', id FROM hospital WHERE cnpj = '06047087000139'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:44:6D:01') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'HPE ProLiant PACS-RD2', '00:1B:44:44:6D:02', id FROM hospital WHERE cnpj = '06047087000139'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:44:6D:02') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'GE Centricity PACS-OC1', '00:1B:44:55:7E:01', id FROM hospital WHERE cnpj = '60726502000189'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:55:7E:01') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'Dell PACS Index-OC2', '00:1B:44:55:7E:02', id FROM hospital WHERE cnpj = '60726502000189'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:55:7E:02') LIMIT 1;
-
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT 'GE PACS Legado-HD1', '00:1B:44:66:8F:01', id FROM hospital WHERE cnpj = '01234567891011'
-  AND NOT EXISTS (SELECT 1 FROM equipamento WHERE mac_adress = '00:1B:44:66:8F:01') LIMIT 1;
-
--- 5. Garantir parâmetros (FK composta exigida por leitura) para cada equipamento e componente monitorado
-SET @comp_cpu = (SELECT MIN(c.id) FROM componente c JOIN tipoComponente tc ON tc.id = c.fkTipo WHERE tc.tipo = 'Processador');
-SET @comp_ram = (SELECT MIN(c.id) FROM componente c JOIN tipoComponente tc ON tc.id = c.fkTipo WHERE tc.tipo = 'Ram');
-SET @comp_disco = (SELECT MIN(c.id) FROM componente c JOIN tipoComponente tc ON tc.id = c.fkTipo WHERE tc.tipo = 'Disco');
-SET @comp_rede = (SELECT MIN(c.id) FROM componente c JOIN tipoComponente tc ON tc.id = c.fkTipo WHERE tc.tipo = 'Rede - Latencia');
-
+-- 5. Parâmetros de cada servidor (a tabela leitura exige essa chave composta)
 INSERT IGNORE INTO parametro (id, fkEquipamento, fkComponente, metrica)
-SELECT 1, e.id, @comp_cpu, 80 FROM equipamento e WHERE @comp_cpu IS NOT NULL;
+SELECT 1, e.id, c.id, 80
+FROM equipamento e
+JOIN (SELECT MIN(c.id) id FROM componente c JOIN tipoComponente tc ON tc.id = c.fkTipo
+      WHERE tc.tipo IN ('Processador', 'Ram', 'Disco', 'Rede - Latencia') GROUP BY tc.tipo) c;
 
-INSERT IGNORE INTO parametro (id, fkEquipamento, fkComponente, metrica)
-SELECT 1, e.id, @comp_ram, 75 FROM equipamento e WHERE @comp_ram IS NOT NULL;
+-- 6. Eventos de teste (24): leituras -> alertas -> chamados -> auditoria
+-- Só roda se a auditoria ainda estiver vazia.
+SET @precisa_seed = (SELECT COUNT(*) = 0 FROM auditoria_notificacao);
 
-INSERT IGNORE INTO parametro (id, fkEquipamento, fkComponente, metrica)
-SELECT 1, e.id, @comp_disco, 85 FROM equipamento e WHERE @comp_disco IS NOT NULL;
+DROP TEMPORARY TABLE IF EXISTS tmp_evento;
+CREATE TEMPORARY TABLE tmp_evento (
+    mac VARCHAR(17), tipo VARCHAR(45), valor DOUBLE, sev INT,
+    status_aud VARCHAR(30), entregue TINYINT, chamado_status INT,
+    canal VARCHAR(60), log_app VARCHAR(255), dt DATETIME
+);
 
-INSERT IGNORE INTO parametro (id, fkEquipamento, fkComponente, metrica)
-SELECT 1, e.id, @comp_rede, 25 FROM equipamento e WHERE @comp_rede IS NOT NULL;
-
--- 6. Seed controlado de Leituras, Alertas, Chamados e Auditoria de Notificação
--- Executa apenas se auditoria_notificacao ainda estiver vazia (garantia anti-duplicidade)
-SET @precisa_seed = (SELECT IF(COUNT(*) = 0, 1, 0) FROM auditoria_notificacao);
-SET @cat_atencao = (SELECT MIN(id) FROM categoria_alerta WHERE classificacao = 'Atenção');
-SET @cat_critico = (SELECT MIN(id) FROM categoria_alerta WHERE classificacao = 'Crítico');
-
--- ==================== EVENTO 01: Einstein | CPU Crítico | FALHA_ENVIO (Divergência) ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 96.4, NOW() - INTERVAL 18 MINUTE
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:11:3A:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 18 MINUTE, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #noc-einstein', 1, 0, 'FALHA_ENVIO',
-       '[ERROR 504] Gateway Timeout ao aguardar confirmação de webhook Slack - Retentativa pendente',
-       NOW() - INTERVAL 17 MINUTE
+-- status_aud: FALHA_ENVIO (divergência) | CHAMADO_ABERTO | ENTREGUE
+-- sev: 1 = Atenção, 2 = Crítico | chamado_status: 0 = sem chamado
+INSERT INTO tmp_evento (mac, tipo, valor, sev, status_aud, entregue, chamado_status, canal, log_app, dt)
+SELECT t.mac, t.tipo, t.valor, t.sev, t.st, t.ent, t.ch, t.canal, t.log_app, NOW() - INTERVAL t.min MINUTE
+FROM (
+    -- Divergências: sistema enviou, API externa NÃO confirmou
+    SELECT '00:1B:44:11:3A:01' mac, 'Processador' tipo, 96.4 valor, 2 sev, 'FALHA_ENVIO' st, 0 ent, 0 ch, 'Slack #noc-einstein' canal, '[ERROR 504] Gateway Timeout ao aguardar confirmação de webhook Slack - Retentativa pendente' log_app, 18 min
+    UNION ALL SELECT '00:1B:44:22:4B:01', 'Disco',           94.8, 2, 'FALHA_ENVIO', 0, 0, 'Jira ITIL ServiceDesk',   '[ERROR 429] Rate Limit Exceeded na API de abertura de incidentes - Fila de reenvio retida', 42
+    UNION ALL SELECT '00:1B:44:11:3A:02', 'Ram',             91.2, 2, 'FALHA_ENVIO', 0, 0, 'Slack #noc-einstein',     '[ERROR 502] Bad Gateway no endpoint de mensageria hospitalar - Sem ACK do destinatário', 120
+    UNION ALL SELECT '00:1B:44:33:5C:01', 'Rede - Latencia', 118,  2, 'FALHA_ENVIO', 0, 0, 'Slack #pacs-santacatarina','[ERROR 408] Request Timeout ao validar certificado TLS do webhook externo - Divergência registrada', 180
+    UNION ALL SELECT '00:1B:44:22:4B:02', 'Processador',     86.5, 1, 'FALHA_ENVIO', 0, 0, 'Slack #alertas-hsl',      '[ERROR 503] Service Unavailable no broker de notificações - Alerta emitido sem confirmação', 300
+    UNION ALL SELECT '00:1B:44:44:6D:01', 'Disco',           93.1, 2, 'FALHA_ENVIO', 0, 0, 'Jira ITIL ServiceDesk',   '[ERROR 504] Timeout na criação automática do ticket ITIL - Aguardando reprocessamento', 480
+    -- Chamados abertos (1 = Aberto, 2 = Em Andamento)
+    UNION ALL SELECT '00:1B:44:11:3A:03', 'Disco',           95.2, 2, 'CHAMADO_ABERTO', 1, 1, 'Slack #noc-einstein / Jira', '[ITIL INCIDENT] Chamado #INC-1041 aberto e atribuído ao Nível 2 - ACK confirmado em 118ms', 60
+    UNION ALL SELECT '00:1B:44:11:3A:04', 'Processador',     94.0, 2, 'CHAMADO_ABERTO', 1, 2, 'Slack #noc-einstein / Jira', '[ITIL INCIDENT] Chamado #INC-1038 em andamento pela Engenharia Clínica - ACK HTTP 200', 360
+    UNION ALL SELECT '00:1B:44:22:4B:03', 'Ram',             89.7, 2, 'CHAMADO_ABERTO', 1, 1, 'Slack #alertas-hsl / Jira', '[ITIL INCIDENT] Chamado #INC-1039 aberto automaticamente - SLA de atendimento iniciado', 240
+    UNION ALL SELECT '00:1B:44:33:5C:02', 'Processador',     92.3, 2, 'CHAMADO_ABERTO', 1, 2, 'Slack #pacs-santacatarina', '[ITIL INCIDENT] Chamado #INC-1035 em análise pelo suporte local - Entrega confirmada', 600
+    UNION ALL SELECT '00:1B:44:44:6D:02', 'Ram',             82.4, 1, 'CHAMADO_ABERTO', 1, 1, 'Jira ITIL ServiceDesk',  '[ITIL INCIDENT] Chamado #INC-1032 aberto na fila de infraestrutura PACS - HTTP 201 Created', 720
+    UNION ALL SELECT '00:1B:44:55:7E:01', 'Processador',     91.8, 2, 'CHAMADO_ABERTO', 1, 2, 'Slack #pacs-haoc / Jira', '[ITIL INCIDENT] Chamado #INC-1029 em tratamento preventivo de CPU - ACK confirmado', 900
+    -- Entregues com sucesso (alguns com chamado já finalizado = 3)
+    UNION ALL SELECT '00:1B:44:11:3A:01', 'Processador',     83.2, 1, 'ENTREGUE', 1, 0, 'Slack #noc-einstein',  '[HTTP 200 OK] Webhook Slack entregue e confirmado pelo canal em 94ms', 30
+    UNION ALL SELECT '00:1B:44:11:3A:02', 'Rede - Latencia', 44,   1, 'ENTREGUE', 1, 0, 'Slack #noc-einstein',  '[HTTP 200 OK] Notificação de latência de rede entregue e validada em 112ms', 180
+    UNION ALL SELECT '00:1B:44:11:3A:03', 'Ram',             79.5, 1, 'ENTREGUE', 1, 3, 'Slack #noc-einstein',  '[HTTP 200 OK] Alerta entregue e incidente #INC-1034 encerrado dentro do SLA', 540
+    UNION ALL SELECT '00:1B:44:22:4B:01', 'Processador',     90.8, 2, 'ENTREGUE', 1, 3, 'Slack #alertas-hsl',   '[HTTP 200 OK] Alerta crítico entregue e mitigado pela equipe do Sírio-Libanês', 420
+    UNION ALL SELECT '00:1B:44:22:4B:02', 'Rede - Latencia', 38.4, 1, 'ENTREGUE', 1, 0, 'Slack #alertas-hsl',   '[HTTP 200 OK] Alerta preventivo entregue com sucesso (latência 38ms)', 840
+    UNION ALL SELECT '00:1B:44:33:5C:03', 'Disco',           86.0, 1, 'ENTREGUE', 1, 0, 'Slack #pacs-santacatarina', '[HTTP 200 OK] Webhook entregue ao canal operacional Santa Catarina em 131ms', 660
+    UNION ALL SELECT '00:1B:44:33:5C:01', 'Ram',             78.2, 1, 'ENTREGUE', 1, 0, 'Slack #pacs-santacatarina', '[HTTP 200 OK] Confirmação de recebimento recebida via Webhook API', 1080
+    UNION ALL SELECT '00:1B:44:44:6D:01', 'Processador',     84.9, 1, 'ENTREGUE', 1, 0, 'Slack #noc-rededor',   '[HTTP 200 OK] Mensagem entregue no canal Rede DOr sem falhas', 960
+    UNION ALL SELECT '00:1B:44:55:7E:02', 'Disco',           85.4, 1, 'ENTREGUE', 1, 0, 'Slack #pacs-haoc',     '[HTTP 200 OK] Webhook Slack #pacs-haoc entregue e confirmado em 105ms', 1140
+    UNION ALL SELECT '00:1B:44:55:7E:01', 'Rede - Latencia', 31.0, 1, 'ENTREGUE', 1, 0, 'Slack #pacs-haoc',     '[HTTP 200 OK] Alerta de rede entregue ao NOC Oswaldo Cruz', 1260
+    UNION ALL SELECT '00:1B:44:66:8F:01', 'Processador',     81.5, 1, 'ENTREGUE', 1, 0, 'Slack #suporte-geral', '[HTTP 200 OK] Notificação entregue ao operador Hospital Das Dores em 88ms', 1200
+    UNION ALL SELECT '00:1B:44:66:8F:01', 'Ram',             77.6, 1, 'ENTREGUE', 1, 0, 'Slack #suporte-geral', '[HTTP 200 OK] Notificação de memória RAM entregue com sucesso', 1320
+) t
 WHERE @precisa_seed = 1;
 
--- ==================== EVENTO 02: Sírio-Libanês | Disco Crítico | FALHA_ENVIO (Divergência) ====================
+-- Leitura que originou cada alerta
 INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_disco, 1, 94.8, NOW() - INTERVAL 42 MINUTE
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:22:4B:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 42 MINUTE, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Jira ITIL ServiceDesk', 1, 0, 'FALHA_ENVIO',
-       '[ERROR 429] Rate Limit Exceeded na API de abertura de incidentes - Fila de reenvio retida',
-       NOW() - INTERVAL 41 MINUTE
-WHERE @precisa_seed = 1;
+SELECT e.id, c.id, 1, t.valor, t.dt
+FROM tmp_evento t
+JOIN equipamento e ON e.mac_adress = t.mac
+JOIN (SELECT MIN(c.id) id, tc.tipo FROM componente c JOIN tipoComponente tc ON tc.id = c.fkTipo GROUP BY tc.tipo) c ON c.tipo = t.tipo;
 
--- ==================== EVENTO 03: Einstein | RAM Crítico | FALHA_ENVIO (Divergência) ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_ram, 1, 91.2, NOW() - INTERVAL 2 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:11:3A:02' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
+-- Alerta (vinculado à leitura pela combinação servidor + componente + horário)
 INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 2 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #noc-einstein', 1, 0, 'FALHA_ENVIO',
-       '[ERROR 502] Bad Gateway no endpoint de mensageria hospitalar - Sem ACK do destinatário',
-       NOW() - INTERVAL 119 MINUTE
-WHERE @precisa_seed = 1;
+SELECT t.dt, l.id, t.sev
+FROM tmp_evento t
+JOIN equipamento e ON e.mac_adress = t.mac
+JOIN leitura l ON l.fkEquipamento = e.id AND l.data_hora = t.dt AND l.valor = t.valor;
 
--- ==================== EVENTO 04: Santa Catarina | Rede Crítico | FALHA_ENVIO (Divergência) ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_rede, 1, 118.0, NOW() - INTERVAL 3 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:33:5C:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 3 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #pacs-santacatarina', 1, 0, 'FALHA_ENVIO',
-       '[ERROR 408] Request Timeout ao validar certificado TLS do webhook externo - Divergência registrada',
-       NOW() - INTERVAL 178 MINUTE
-WHERE @precisa_seed = 1;
-
--- ==================== EVENTO 05: Sírio-Libanês | CPU Atenção | FALHA_ENVIO (Divergência) ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 86.5, NOW() - INTERVAL 5 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:22:4B:02' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 5 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #alertas-hsl', 1, 0, 'FALHA_ENVIO',
-       '[ERROR 503] Service Unavailable no broker de notificações - Alerta emitido sem confirmação',
-       NOW() - INTERVAL 298 MINUTE
-WHERE @precisa_seed = 1;
-
--- ==================== EVENTO 06: São Luiz | Disco Crítico | FALHA_ENVIO (Divergência) ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_disco, 1, 93.1, NOW() - INTERVAL 8 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:44:6D:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 8 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Jira ITIL ServiceDesk', 1, 0, 'FALHA_ENVIO',
-       '[ERROR 504] Timeout na criação automática do ticket ITIL - Aguardando reprocessamento',
-       NOW() - INTERVAL 478 MINUTE
-WHERE @precisa_seed = 1;
-
--- ==================== EVENTO 07: Einstein | Disco Crítico | CHAMADO_ABERTO ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_disco, 1, 95.2, NOW() - INTERVAL 1 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:11:3A:03' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 1 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
+-- Chamado (somente para eventos que abriram ticket)
 INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08EINSTEIN01', '1731860101.000101', NOW() - INTERVAL 1 HOUR, NOW() + INTERVAL 2 HOUR, @id_alerta, 1 WHERE @precisa_seed = 1;
-SET @id_chamado = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, @id_chamado, 'Slack #noc-einstein / Jira', 1, 1, 'CHAMADO_ABERTO',
-       '[ITIL INCIDENT] Chamado #INC-1041 aberto e atribuído ao Nível 2 - ACK confirmado em 118ms',
-       NOW() - INTERVAL 59 MINUTE
-WHERE @precisa_seed = 1;
+SELECT 'C08MAGNASYNC', CONCAT(UNIX_TIMESTAMP(t.dt), '.000100'), t.dt, t.dt + INTERVAL 3 HOUR, a.id, t.chamado_status
+FROM tmp_evento t
+JOIN equipamento e ON e.mac_adress = t.mac
+JOIN leitura l ON l.fkEquipamento = e.id AND l.data_hora = t.dt AND l.valor = t.valor
+JOIN alerta a ON a.leitura_id = l.id
+WHERE t.chamado_status > 0;
 
--- ==================== EVENTO 08: Einstein | CPU Crítico | CHAMADO_ABERTO ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 94.0, NOW() - INTERVAL 6 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:11:3A:04' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 6 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08EINSTEIN01', '1731842101.000102', NOW() - INTERVAL 6 HOUR, NOW() + INTERVAL 1 HOUR, @id_alerta, 2 WHERE @precisa_seed = 1;
-SET @id_chamado = LAST_INSERT_ID();
+-- Auditoria de entrega
 INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, @id_chamado, 'Slack #noc-einstein / Jira', 1, 1, 'CHAMADO_ABERTO',
-       '[ITIL INCIDENT] Chamado #INC-1038 em andamento pela Engenharia Clínica - ACK HTTP 200',
-       NOW() - INTERVAL 358 MINUTE
-WHERE @precisa_seed = 1;
+SELECT a.id, ch.id, t.canal, 1, t.entregue, t.status_aud, t.log_app, t.dt + INTERVAL 1 MINUTE
+FROM tmp_evento t
+JOIN equipamento e ON e.mac_adress = t.mac
+JOIN leitura l ON l.fkEquipamento = e.id AND l.data_hora = t.dt AND l.valor = t.valor
+JOIN alerta a ON a.leitura_id = l.id
+LEFT JOIN chamado ch ON ch.fkAlerta = a.id;
 
--- ==================== EVENTO 09: Sírio-Libanês | RAM Crítico | CHAMADO_ABERTO ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_ram, 1, 89.7, NOW() - INTERVAL 4 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:22:4B:03' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 4 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08SIRIO02', '1731849101.000103', NOW() - INTERVAL 4 HOUR, NOW() + INTERVAL 3 HOUR, @id_alerta, 1 WHERE @precisa_seed = 1;
-SET @id_chamado = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, @id_chamado, 'Slack #alertas-hsl / Jira', 1, 1, 'CHAMADO_ABERTO',
-       '[ITIL INCIDENT] Chamado #INC-1039 aberto automaticamente - SLA de atendimento iniciado',
-       NOW() - INTERVAL 239 MINUTE
-WHERE @precisa_seed = 1;
-
--- ==================== EVENTO 10: Santa Catarina | CPU Crítico | CHAMADO_ABERTO ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 92.3, NOW() - INTERVAL 10 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:33:5C:02' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 10 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08STACAT03', '1731827101.000104', NOW() - INTERVAL 10 HOUR, NOW() + INTERVAL 2 HOUR, @id_alerta, 2 WHERE @precisa_seed = 1;
-SET @id_chamado = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, @id_chamado, 'Slack #pacs-santacatarina', 1, 1, 'CHAMADO_ABERTO',
-       '[ITIL INCIDENT] Chamado #INC-1035 em análise pelo suporte local - Entrega confirmada',
-       NOW() - INTERVAL 598 MINUTE
-WHERE @precisa_seed = 1;
-
--- ==================== EVENTO 11: São Luiz | RAM Atenção | CHAMADO_ABERTO ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_ram, 1, 82.4, NOW() - INTERVAL 12 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:44:6D:02' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 12 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08REDEDOR04', '1731820101.000105', NOW() - INTERVAL 12 HOUR, NOW() + INTERVAL 4 HOUR, @id_alerta, 1 WHERE @precisa_seed = 1;
-SET @id_chamado = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, @id_chamado, 'Jira ITIL ServiceDesk', 1, 1, 'CHAMADO_ABERTO',
-       '[ITIL INCIDENT] Chamado #INC-1032 aberto na fila de infraestrutura PACS - HTTP 201 Created',
-       NOW() - INTERVAL 718 MINUTE
-WHERE @precisa_seed = 1;
-
--- ==================== EVENTO 12: Oswaldo Cruz | CPU Crítico | CHAMADO_ABERTO ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 91.8, NOW() - INTERVAL 15 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:55:7E:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 15 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08HAOC05', '1731809101.000106', NOW() - INTERVAL 15 HOUR, NOW() + INTERVAL 5 HOUR, @id_alerta, 2 WHERE @precisa_seed = 1;
-SET @id_chamado = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, @id_chamado, 'Slack #pacs-haoc / Jira', 1, 1, 'CHAMADO_ABERTO',
-       '[ITIL INCIDENT] Chamado #INC-1029 em tratamento preventivo de CPU - ACK confirmado',
-       NOW() - INTERVAL 898 MINUTE
-WHERE @precisa_seed = 1;
-
--- ==================== EVENTOS 13 a 24: ENTREGUE (Sucesso HTTP 200 / Finalizados) ====================
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 83.2, NOW() - INTERVAL 30 MINUTE
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:11:3A:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 30 MINUTE, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #noc-einstein', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Webhook Slack entregue e confirmado pelo canal em 94ms', NOW() - INTERVAL 29 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_rede, 1, 44.0, NOW() - INTERVAL 3 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:11:3A:02' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 3 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #noc-einstein', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Notificação de latência de rede entregue e validada em 112ms', NOW() - INTERVAL 179 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_ram, 1, 79.5, NOW() - INTERVAL 9 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:11:3A:03' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 9 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08EINSTEIN01', '1731831101.000107', NOW() - INTERVAL 9 HOUR, NOW() - INTERVAL 7 HOUR, @id_alerta, 3 WHERE @precisa_seed = 1;
-SET @id_chamado = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, @id_chamado, 'Slack #noc-einstein', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Alerta entregue e incidente #INC-1034 encerrado dentro do SLA', NOW() - INTERVAL 539 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 90.8, NOW() - INTERVAL 7 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:22:4B:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 7 HOUR, @id_leitura, @cat_critico WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08SIRIO02', '1731838101.000108', NOW() - INTERVAL 7 HOUR, NOW() - INTERVAL 5 HOUR, @id_alerta, 3 WHERE @precisa_seed = 1;
-SET @id_chamado = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, @id_chamado, 'Slack #alertas-hsl', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Alerta crítico entregue e mitigado pela equipe do Sírio-Libanês', NOW() - INTERVAL 419 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_rede, 1, 38.4, NOW() - INTERVAL 14 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:22:4B:02' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 14 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #alertas-hsl', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Alerta preventivo entregue com sucesso (latência 38ms)', NOW() - INTERVAL 839 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_disco, 1, 86.0, NOW() - INTERVAL 11 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:33:5C:03' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 11 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #pacs-santacatarina', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Webhook entregue ao canal operacional Santa Catarina em 131ms', NOW() - INTERVAL 659 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_ram, 1, 78.2, NOW() - INTERVAL 18 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:33:5C:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 18 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #pacs-santacatarina', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Confirmação de recebimento recebida via Webhook API', NOW() - INTERVAL 1079 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 84.9, NOW() - INTERVAL 16 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:44:6D:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 16 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #noc-rededor', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Mensagem entregue no canal Rede DOr sem falhas', NOW() - INTERVAL 959 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_disco, 1, 85.4, NOW() - INTERVAL 19 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:55:7E:02' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 19 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #pacs-haoc', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Webhook Slack #pacs-haoc entregue e confirmado em 105ms', NOW() - INTERVAL 1139 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_rede, 1, 31.0, NOW() - INTERVAL 21 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:55:7E:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 21 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #pacs-haoc', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Alerta de rede entregue ao NOC Oswaldo Cruz', NOW() - INTERVAL 1259 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_cpu, 1, 81.5, NOW() - INTERVAL 20 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:66:8F:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 20 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #suporte-geral', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Notificação entregue ao operador Hospital Das Dores em 88ms', NOW() - INTERVAL 1199 MINUTE
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, @comp_ram, 1, 77.6, NOW() - INTERVAL 22 HOUR
-FROM equipamento e WHERE e.mac_adress = '00:1B:44:66:8F:01' AND @precisa_seed = 1 LIMIT 1;
-SET @id_leitura = LAST_INSERT_ID();
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT NOW() - INTERVAL 22 HOUR, @id_leitura, @cat_atencao WHERE @precisa_seed = 1;
-SET @id_alerta = LAST_INSERT_ID();
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT @id_alerta, NULL, 'Slack #suporte-geral', 1, 1, 'ENTREGUE',
-       '[HTTP 200 OK] Notificação de memória RAM entregue com sucesso', NOW() - INTERVAL 1319 MINUTE
-WHERE @precisa_seed = 1;
+DROP TEMPORARY TABLE IF EXISTS tmp_evento;

@@ -27,18 +27,45 @@
   display: grid;
   grid-template-columns: 1.05fr 1.25fr 0.9fr;
   gap: 14px;
-  flex-shrink: 0;
+  flex: 1;
+  min-height: 300px;
+}
+
+.daniel-view .daniel-charts-grid .dash-card {
+  overflow: hidden;
+  flex-shrink: 1;
 }
 
 .daniel-chart-card {
-  min-height: 310px;
-  justify-content: space-between;
+  min-height: 0;
 }
 
 .daniel-chart-box {
   position: relative;
   width: 100%;
-  height: 235px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Texto que explica o que cada bloco de Relatórios faz */
+.explicacao-bloco {
+  margin: 0;
+  padding: 10px 14px;
+  background-color: #F2F7FC;
+  border-left: 3px solid #1A4A87;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #273E63;
+}
+
+.kpi-grid-compact .kpi-card {
+  background-color: #F8FAFC;
+  box-shadow: none;
+}
+
+.hospital-card {
+  max-width: 760px;
 }
 
 .daniel-donut-body {
@@ -302,24 +329,15 @@
   .daniel-charts-grid {
     grid-template-columns: 1fr 1fr;
   }
-
-  .daniel-donut-card {
-    grid-column: 1 / -1;
-  }
-
-  .daniel-donut-body {
-    flex-direction: row;
-    justify-content: space-around;
-  }
-
-  .daniel-donut-card .donut-legend {
-    max-width: 340px;
-  }
 }
 
 @media (max-width: 900px) {
   .daniel-charts-grid {
     grid-template-columns: 1fr;
+  }
+
+  .daniel-chart-box {
+    min-height: 240px;
   }
 
   .audit-search-input {

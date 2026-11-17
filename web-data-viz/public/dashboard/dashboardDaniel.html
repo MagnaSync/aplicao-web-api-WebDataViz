@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MagnaSync – Dashboard Executiva &amp; Auditoria ITIL (Admin Geral)</title>
+  <title>MagnaSync – Dashboard Executiva do Admin Geral</title>
   <link rel="icon" type="image/png" href="../assets/imgs/logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,17 +18,17 @@
 <body>
   <div class="dashboard-app">
 
-    <!-- ===================== SIDEBAR ===================== -->
+    <!-- ===================== SIDEBAR (única para as 3 telas) ===================== -->
     <aside class="dash-sidebar">
       <a href="../index.html" class="sidebar-logo" title="Voltar para a página inicial">
         <img src="../assets/imgs/logo.png" alt="Logo MagnaSync" class="logo-img" />
         <span>Magna<span>Sync</span></span>
       </a>
 
-      <nav class="sidebar-nav" aria-label="Navegação Executiva MagnaSync">
-        <a href="#overview" class="nav-link active">Visão Geral &amp; Auditoria</a>
-        <a href="#relatorio" class="nav-link">Relatório Executivo ITIL</a>
-        <a href="../cadastroHospital.html" class="nav-link">Cadastrar Hospital</a>
+      <nav class="sidebar-nav" aria-label="Navegação do Admin Geral">
+        <a href="#overview" class="nav-link active">Dashboard</a>
+        <a href="#relatorio" class="nav-link">Relatórios</a>
+        <a href="#cadastrarHospital" class="nav-link">Cadastrar Hospital</a>
       </nav>
 
       <div class="sidebar-footer">
@@ -53,51 +53,45 @@
     <!-- ===================== CONTEÚDO PRINCIPAL ===================== -->
     <main class="dash-main">
 
-      <!-- ===================== BARRA SUPERIOR ===================== -->
       <header class="dash-topbar">
         <div class="unit-badge">
           <div>
-            <small>Governança Multi-Cliente &amp; Auditoria ITIL</small>
-            <div><strong>Painel Executivo – Admin Geral MagnaSync</strong></div>
+            <small>Governança Multi-Cliente &amp; ITIL</small>
+            <div><strong>Painel do Admin Geral MagnaSync</strong></div>
           </div>
         </div>
 
         <div class="topbar-actions">
-          <span class="live-indicator" id="status-sync-badge">
+          <span class="live-indicator">
             <i></i>
-            <span id="status-sync-texto">Sincronizado</span>
+            <span id="status-sync-texto">Conectando...</span>
           </span>
-          <button type="button" class="topbar-button" id="btn-atualizar-agora" title="Consultar dados atualizados do banco">
-            Atualizar Agora
-          </button>
+          <button type="button" class="topbar-button" id="btn-atualizar-agora" title="Consultar o banco agora">Atualizar Agora</button>
           <a href="../index.html" class="topbar-button">Página Inicial</a>
         </div>
       </header>
 
-      <!-- ===================== CORPO DO DASHBOARD ===================== -->
       <div class="dash-content">
 
-        <!-- ===================== VIEW 1: VISÃO EXECUTIVA & AUDITORIA ===================== -->
+        <!-- ============================================================
+             TELA 1 — DASHBOARD: somente KPIs e gráficos
+             ============================================================ -->
         <section id="view-overview" class="dash-view daniel-view">
           <div class="content-header">
             <div>
-              <h1>Monitoramento Global de Clientes &amp; Auditoria de Alertas</h1>
-              <p>Visão consolidada da carteira de hospitais, incidentes críticos PACS e verificação de entrega Slack/Jira (ITIL).</p>
+              <h1>Visão Geral da Carteira de Clientes</h1>
+              <p>Indicadores globais e gráficos de incidentes e de entrega de notificações (Slack/Jira) de todos os hospitais.</p>
             </div>
-            <div class="header-meta-right">
-              <span class="badge-count" id="ultima-atualizacao-label">Atualizando...</span>
-            </div>
+            <span class="badge-count" id="ultima-atualizacao-label">Atualizando...</span>
           </div>
 
-          <!-- 4 KPIs GLOBAIS -->
           <section class="kpi-grid">
             <div class="kpi-card">
               <span>Total de Clientes Ativos</span>
               <div class="kpi-row">
                 <strong id="kpi-clientes-ativos">--</strong>
-                <span class="kpi-badge normal">Hospitais SaaS</span>
+                <span class="kpi-badge normal">Hospitais</span>
               </div>
-              <small class="kpi-meta">Unidades hospitalares cadastradas</small>
             </div>
 
             <div class="kpi-card">
@@ -106,7 +100,6 @@
                 <strong id="kpi-parque-total">--</strong>
                 <span class="kpi-badge up">Servidores PACS</span>
               </div>
-              <small class="kpi-meta">Equipamentos integrados à telemetria</small>
             </div>
 
             <div class="kpi-card">
@@ -115,7 +108,6 @@
                 <strong id="kpi-clientes-criticos">--</strong>
                 <span class="kpi-badge critical" id="kpi-criticos-badge">Crítico</span>
               </div>
-              <small class="kpi-meta">Com alertas críticos nos últimos 7 dias</small>
             </div>
 
             <div class="kpi-card">
@@ -124,41 +116,35 @@
                 <strong id="kpi-volume-24h">--</strong>
                 <span class="kpi-badge warn" id="kpi-divergencias-badge">-- divergências</span>
               </div>
-              <small class="kpi-meta">Alertas &amp; incidentes disparados em 24h</small>
             </div>
           </section>
 
-          <!-- ÁREA CENTRAL DE GRÁFICOS (CHART.JS) -->
           <section class="daniel-charts-grid">
             <article class="dash-card daniel-chart-card">
               <div class="card-title">
                 <div>
                   <h2>Ranking de Clientes por Incidentes</h2>
-                  <small>Top hospitais por alertas Críticos e de Atenção</small>
+                  <small>Alertas Críticos e de Atenção por hospital</small>
                 </div>
               </div>
-              <div class="daniel-chart-box">
-                <canvas id="chartRankingIncidentes"></canvas>
-              </div>
+              <div class="daniel-chart-box"><canvas id="chartRankingIncidentes"></canvas></div>
             </article>
 
             <article class="dash-card daniel-chart-card">
               <div class="card-title">
                 <div>
-                  <h2>Alertas Gerados vs. Entregues com Sucesso</h2>
-                  <small>Comparativo horário nas últimas 24 horas</small>
+                  <h2>Alertas Gerados vs. Entregues</h2>
+                  <small>Por hora, últimas 24 horas</small>
                 </div>
               </div>
-              <div class="daniel-chart-box">
-                <canvas id="chartGeradosVsEntregues"></canvas>
-              </div>
+              <div class="daniel-chart-box"><canvas id="chartGeradosVsEntregues"></canvas></div>
             </article>
 
-            <article class="dash-card daniel-chart-card daniel-donut-card">
+            <article class="dash-card daniel-chart-card">
               <div class="card-title">
                 <div>
                   <h2>Auditoria de Chamados e Notificações</h2>
-                  <small>Taxa de confirmação de entrega externa</small>
+                  <small>Situação de entrega dos alertas</small>
                 </div>
               </div>
               <div class="daniel-donut-body">
@@ -173,127 +159,64 @@
               </div>
             </article>
           </section>
-
-          <!-- PAINEL DE AUDITORIA DE DIVERGÊNCIA E LOGS -->
-          <section class="dash-card audit-panel-card">
-            <div class="audit-panel-header">
-              <div class="card-title">
-                <div>
-                  <h2>Auditoria de Divergência &amp; Logs da Aplicação</h2>
-                  <small>Monitoramento de alertas marcados como enviados no sistema sem confirmação de entrega externa</small>
-                </div>
-              </div>
-
-              <div class="audit-controls">
-                <div class="audit-filter-group" role="group" aria-label="Filtrar registros de auditoria">
-                  <button type="button" class="filter-pill active" data-filter="todos">
-                    Todos (<span id="count-todos">0</span>)
-                  </button>
-                  <button type="button" class="filter-pill danger" data-filter="divergencias">
-                    Apenas Divergências/Falhas (<span id="count-divergencias">0</span>)
-                  </button>
-                  <button type="button" class="filter-pill success" data-filter="entregues">
-                    Entregues (<span id="count-entregues">0</span>)
-                  </button>
-                </div>
-
-                <input
-                  type="text"
-                  id="ipt-busca-auditoria"
-                  class="audit-search-input"
-                  placeholder="Buscar por cliente, MAC, componente ou log..."
-                />
-              </div>
-            </div>
-
-            <div class="table-scroll-wrapper">
-              <table class="audit-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Cliente (Hospital)</th>
-                    <th>Máquina / Componente</th>
-                    <th>Horário</th>
-                    <th>Status no Sistema</th>
-                    <th>Status Real</th>
-                    <th>Log da Aplicação</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody-auditoria-logs">
-                  <tr>
-                    <td colspan="7" class="table-empty">Carregando registros de auditoria...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
         </section>
 
-        <!-- ===================== VIEW 2: RELATÓRIO EXECUTIVO ITIL ===================== -->
+        <!-- ============================================================
+             TELA 2 — RELATÓRIOS: Saúde da carteira + Auditoria de divergências
+             ============================================================ -->
         <section id="view-relatorio" class="dash-view daniel-view" style="display: none;">
           <div class="print-only-header">
             <img src="../assets/imgs/logo.png" alt="MagnaSync" />
             <div>
-              <h2>MagnaSync — Relatório Executivo de Saúde da Carteira &amp; Auditoria ITIL</h2>
-              <p id="print-timestamp">Emitido pela Governança Admin Geral</p>
+              <h2>MagnaSync — Relatório Executivo da Carteira &amp; Auditoria de Notificações</h2>
+              <p id="print-timestamp"></p>
             </div>
           </div>
 
           <div class="content-header no-print">
             <div>
-              <h1>Relatório Executivo da Carteira &amp; SLA ITIL</h1>
-              <p>Consolidado gerencial de clientes, disponibilidade de servidores PACS, taxa de entrega e falhas de comunicação.</p>
+              <h1>Relatórios</h1>
+              <p>Duas visões: a saúde de cada cliente (Bloco 1) e a conferência se os alertas realmente chegaram ao destino (Bloco 2).</p>
             </div>
             <div class="relatorio-actions">
-              <button type="button" class="btn-secondary" id="btn-exportar-csv">
-                Exportar CSV (Excel)
-              </button>
-              <button type="button" class="btn-primary" id="btn-imprimir-pdf">
-                Imprimir / Salvar PDF
-              </button>
+              <button type="button" class="btn-secondary" id="btn-exportar-csv">Exportar CSV (Excel)</button>
+              <button type="button" class="btn-primary" id="btn-imprimir-pdf">Imprimir / Salvar PDF</button>
             </div>
           </div>
 
-          <!-- RESUMO EXECUTIVO -->
-          <section class="kpi-grid">
-            <div class="kpi-card">
-              <span>Taxa Média de Entrega</span>
-              <div class="kpi-row">
-                <strong id="rel-taxa-entrega">--%</strong>
-                <span class="kpi-badge up">SLA Notificação</span>
-              </div>
-            </div>
-            <div class="kpi-card">
-              <span>Servidores PACS Auditados</span>
-              <div class="kpi-row">
-                <strong id="rel-total-maquinas">--</strong>
-                <span class="kpi-badge normal">Parque SaaS</span>
-              </div>
-            </div>
-            <div class="kpi-card">
-              <span>Incidentes Críticos Totais</span>
-              <div class="kpi-row">
-                <strong id="rel-total-criticos">--</strong>
-                <span class="kpi-badge critical">Severidade Alta</span>
-              </div>
-            </div>
-            <div class="kpi-card">
-              <span>Divergências de Webhook</span>
-              <div class="kpi-row">
-                <strong id="rel-total-divergencias">--</strong>
-                <span class="kpi-badge warn">Gestão Problemas</span>
-              </div>
-            </div>
-          </section>
-
-          <!-- TABELA CONSOLIDADA DE CLIENTES -->
+          <!-- BLOCO 1 -->
           <article class="dash-card">
             <div class="card-title">
               <div>
-                <h2>Saúde da Carteira por Cliente Hospitalar</h2>
-                <small>Consolidação de parque monitorado, severidade de alertas e confiabilidade de entrega</small>
+                <h2>Bloco 1 — Saúde da Carteira por Cliente</h2>
+                <small>Gestão de Nível de Serviço (SLA)</small>
               </div>
             </div>
+            <p class="explicacao-bloco">
+              <strong>O que esta seção faz:</strong> resume, para cada hospital cliente, quantos servidores PACS são monitorados,
+              quantos incidentes (Críticos e de Atenção) foram gerados e qual percentual desses alertas teve a
+              <em>entrega confirmada</em> no Slack/Jira. Serve para identificar quais clientes estão com mais problemas
+              e quais estão com notificações falhando. O botão <em>Exportar CSV</em> baixa esta tabela.
+            </p>
+
+            <section class="kpi-grid kpi-grid-compact">
+              <div class="kpi-card">
+                <span>Taxa Média de Entrega</span>
+                <div class="kpi-row"><strong id="rel-taxa-entrega">--%</strong></div>
+              </div>
+              <div class="kpi-card">
+                <span>Servidores PACS</span>
+                <div class="kpi-row"><strong id="rel-total-maquinas">--</strong></div>
+              </div>
+              <div class="kpi-card">
+                <span>Incidentes Críticos</span>
+                <div class="kpi-row"><strong id="rel-total-criticos">--</strong></div>
+              </div>
+              <div class="kpi-card">
+                <span>Divergências de Envio</span>
+                <div class="kpi-row"><strong id="rel-total-divergencias">--</strong></div>
+              </div>
+            </section>
 
             <div class="table-scroll-wrapper">
               <table class="audit-table">
@@ -301,51 +224,122 @@
                   <tr>
                     <th>Cliente</th>
                     <th>CNPJ</th>
-                    <th>Servidores PACS</th>
+                    <th>Servidores</th>
                     <th>Críticos</th>
                     <th>Atenção</th>
                     <th>Total Alertas</th>
                     <th>Entregas OK</th>
                     <th>Divergências</th>
-                    <th>Taxa Entrega</th>
+                    <th>Taxa de Entrega</th>
                   </tr>
                 </thead>
                 <tbody id="tbody-relatorio-executivo">
-                  <tr>
-                    <td colspan="9" class="table-empty">Carregando consolidado executivo...</td>
-                  </tr>
+                  <tr><td colspan="9" class="table-empty">Carregando...</td></tr>
                 </tbody>
               </table>
             </div>
           </article>
 
-          <!-- LOGS DE FALHAS PARA GESTÃO DE PROBLEMAS -->
-          <article class="dash-card">
+          <!-- BLOCO 2 -->
+          <article class="dash-card audit-panel-card">
             <div class="card-title">
               <div>
-                <h2>Resumo de Falhas de Comunicação (Divergências Ativas)</h2>
-                <small>Registros onde o sistema sinalizou envio, porém sem confirmação de entrega externa</small>
+                <h2>Bloco 2 — Auditoria de Divergência e Logs da Aplicação</h2>
+                <small>Gestão de Problemas</small>
               </div>
             </div>
+            <p class="explicacao-bloco">
+              <strong>O que esta seção faz:</strong> compara o que o sistema <em>diz</em> que fez (alerta marcado como enviado)
+              com o que a API externa (Slack/Jira) <em>confirmou</em>. Linhas em vermelho são <strong>divergências</strong>:
+              o MagnaSync disparou o alerta, mas ele não foi entregue (ex.: timeout ou limite de requisições). A coluna
+              <em>Log da Aplicação</em> mostra o erro técnico para investigação. Use os filtros para ver só as falhas ou só as entregas.
+            </p>
+
+            <div class="audit-controls no-print">
+              <div class="audit-filter-group" role="group" aria-label="Filtrar registros de auditoria">
+                <button type="button" class="filter-pill active" data-filter="todos">Todos (<span id="count-todos">0</span>)</button>
+                <button type="button" class="filter-pill danger" data-filter="divergencias">Apenas Divergências/Falhas (<span id="count-divergencias">0</span>)</button>
+                <button type="button" class="filter-pill success" data-filter="entregues">Entregues (<span id="count-entregues">0</span>)</button>
+              </div>
+              <input type="text" id="ipt-busca-auditoria" class="audit-search-input" placeholder="Buscar por cliente, servidor, componente ou log..." />
+            </div>
+
             <div class="table-scroll-wrapper">
               <table class="audit-table">
                 <thead>
                   <tr>
                     <th>Alerta</th>
                     <th>Cliente</th>
-                    <th>Canal</th>
+                    <th>Servidor / Componente</th>
                     <th>Horário</th>
-                    <th>Log Técnico da Aplicação</th>
+                    <th>Status no Sistema</th>
+                    <th>Status Real</th>
+                    <th>Log da Aplicação</th>
                   </tr>
                 </thead>
-                <tbody id="tbody-relatorio-falhas">
-                  <tr>
-                    <td colspan="5" class="table-empty">Carregando falhas de comunicação...</td>
-                  </tr>
+                <tbody id="tbody-auditoria-logs">
+                  <tr><td colspan="7" class="table-empty">Carregando...</td></tr>
                 </tbody>
               </table>
             </div>
           </article>
+        </section>
+
+        <!-- ============================================================
+             TELA 3 — CADASTRAR HOSPITAL (mesma sidebar e topbar)
+             ============================================================ -->
+        <section id="view-cadastrarHospital" class="dash-view daniel-view" style="display: none;">
+          <div class="content-header">
+            <div>
+              <h1>Cadastrar Hospital</h1>
+              <p>Cadastre um novo cliente da MagnaSync. Ele passa a aparecer nos indicadores e relatórios.</p>
+            </div>
+          </div>
+
+          <div class="dash-card cadastro-card hospital-card">
+            <div class="card-title"><h2>Novo Hospital</h2></div>
+
+            <div id="hospital-feedback" class="feedback-box" style="display: none;"></div>
+
+            <form id="form-hospital" class="cadastro-form" onsubmit="return false;" autocomplete="off">
+              <div class="form-group">
+                <label for="hosp-nome">Nome do hospital</label>
+                <input type="text" id="hosp-nome" maxlength="150" placeholder="Ex: Hospital Central" />
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="hosp-cnpj">CNPJ</label>
+                  <input type="text" id="hosp-cnpj" maxlength="14" inputmode="numeric" placeholder="Somente números (14 dígitos)" />
+                </div>
+                <div class="form-group">
+                  <label for="hosp-telefone">Telefone</label>
+                  <input type="tel" id="hosp-telefone" maxlength="20" placeholder="Ex: (11) 3456-7890" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="hosp-email">E-mail</label>
+                <input type="email" id="hosp-email" maxlength="150" placeholder="Ex: contato@hospitalcentral.com.br" />
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="hosp-cep">CEP</label>
+                  <input type="text" id="hosp-cep" maxlength="8" inputmode="numeric" placeholder="Somente números (8 dígitos)" />
+                </div>
+                <div class="form-group">
+                  <label for="hosp-numero">Número</label>
+                  <input type="text" id="hosp-numero" maxlength="10" placeholder="Ex: 1200" />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" id="btn-limpar-hospital" class="btn-secondary">Limpar</button>
+                <button type="button" id="btn-cadastrar-hospital" class="btn-primary">Cadastrar Hospital</button>
+              </div>
+            </form>
+          </div>
         </section>
 
       </div>
