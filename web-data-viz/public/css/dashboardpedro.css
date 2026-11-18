@@ -1,0 +1,221 @@
+/* ==========================================================================
+   MagnaSync — Dashboard de Memória RAM
+   Arquivo: dashboard-ram.css
+   Complementa o dashboard.css do grupo (carregar DEPOIS dele).
+   Todas as regras novas são escopadas por classes .ram-* ou body.ram-page
+   para não afetar as outras telas.
+   ========================================================================== */
+
+/* ---------- Atributo hidden precisa vencer o display:flex de .dash-view ---------- */
+body.ram-page .dash-view[hidden] {
+  display: none !important;
+}
+
+/* ---------- Topbar: horário da última leitura ---------- */
+.ram-updated {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5B7396;
+  white-space: nowrap;
+}
+
+/* ---------- Grade principal ----------
+   Duas colunas independentes. Na direita, o card de saúde tem altura
+   natural (tudo visível, sem scroll) e os alertas ocupam o que sobrar. */
+.ram-grid {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+.ram-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  min-width: 0;
+}
+
+.ram-historico { flex: 1.4 1 0; }
+.ram-processos { flex: 1 1 0; }
+
+.ram-saude {
+  flex: 0 0 auto;
+  overflow: visible;
+  padding: 12px 18px;
+  gap: 6px;
+}
+
+.ram-alertas { flex: 1 1 0; }
+
+.ram-historico .chart-wrapper {
+  min-height: 0;
+}
+
+/* Saúde compacta: reduz o medidor e o espaçamento dos itens */
+.ram-saude .gauge-wrapper { padding: 0; }
+.ram-saude .gauge-score { font-size: 32px; }
+.ram-saude .gauge-score small { font-size: 15px; }
+.ram-saude .gauge-label { margin-top: 2px; font-size: 12px; }
+.ram-saude .health-status-list { gap: 5px; }
+.ram-saude .status-item { padding: 6px 12px; }
+
+/* ---------- Barra de progresso (saúde) ---------- */
+.ram-bar {
+  height: 6px;
+  border-radius: 99px;
+  background-color: #E2E8F0;
+  margin: 6px auto 0;
+  max-width: 260px;
+  overflow: hidden;
+}
+
+.ram-bar-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 99px;
+  background-color: #10b981;
+  transition: width 0.4s ease, background-color 0.3s ease;
+}
+
+.ram-bar-fill.warn     { background-color: #f59e0b; }
+.ram-bar-fill.critical { background-color: #ef4444; }
+
+/* ---------- Lista de processos ---------- */
+.process-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+.process-item {
+  display: grid;
+  grid-template-columns: minmax(110px, 1.1fr) 3fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background-color: #F8FAFC;
+  border: 1px solid rgba(39, 62, 99, 0.08);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.process-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.process-name strong {
+  font-size: 13px;
+  color: #0B192C;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.process-name small {
+  font-size: 11px;
+  color: #8a9dbf;
+}
+
+.process-track {
+  height: 8px;
+  border-radius: 99px;
+  background-color: #E2E8F0;
+  overflow: hidden;
+}
+
+.process-fill {
+  height: 100%;
+  border-radius: 99px;
+  background-color: #1A4A87;
+}
+
+.process-value {
+  font-weight: 700;
+  color: #0B192C;
+  font-size: 13px;
+  min-width: 70px;
+  text-align: right;
+}
+
+/* ---------- Alertas registrados ---------- */
+.ram-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ram-alert-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background-color: #F2F7FC;
+  border: 1px solid rgba(39, 62, 99, 0.08);
+  border-radius: 6px;
+  font-size: 13px;
+  color: #273E63;
+}
+
+.ram-alert-list li > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ram-alert-list b {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  color: #0B192C;
+}
+
+/* ---------- Acesso negado ---------- */
+.access-denied {
+  justify-content: center;
+}
+
+.access-denied .module-placeholder {
+  flex: 0 1 auto;
+  align-self: center;
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 1100px) {
+  .ram-grid {
+    grid-template-columns: 1fr;
+    flex: 0 0 auto;
+  }
+
+  .ram-historico,
+  .ram-processos,
+  .ram-alertas {
+    flex: 0 0 auto;
+  }
+
+  .ram-historico .chart-wrapper {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 560px) {
+  .process-item {
+    grid-template-columns: 1fr auto;
+  }
+
+  .process-track {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .ram-updated {
+    display: none;
+  }
+}
