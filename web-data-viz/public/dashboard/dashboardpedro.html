@@ -28,7 +28,7 @@
 
       <nav class="sidebar-nav" aria-label="Navegação do Dashboard">
         <a href="dashboard.html#overview" class="nav-link">Visão Geral</a>
-        <a href="dashboard-ram.html" class="nav-link active" aria-current="page">Memória RAM</a>
+        <a href="dashboardpedro.html" class="nav-link active" aria-current="page">Memória RAM</a>
         <a href="dashboard.html#relatorio" class="nav-link">Relatório</a>
         <a href="dashboard.html#suporte" class="nav-link">Suporte</a>
         <a href="dashboard.html#cadastro" class="nav-link">Cadastro</a>
@@ -66,11 +66,9 @@
 
         <div class="topbar-actions">
           <span class="ram-updated" id="ram-atualizado" aria-live="polite">Aguardando dados…</span>
-          <!-- value = equipamento.id no banco (usado no WHERE da consulta) -->
+          <!-- Preenchido pelo JS: value = equipamento.id (rota GET /dashboardpedro/servidores) -->
           <select class="select-unit" id="unit-selector" aria-label="Selecionar Servidor PACS">
-            <option value="1">Servidor PACS 01 – Armazenamento Principal</option>
-            <option value="2">Servidor PACS 02 – Contingência</option>
-            <option value="3">Servidor PACS 03 – Indexação DICOM</option>
+            <option value="">Carregando servidores…</option>
           </select>
           <a href="../index.html" class="topbar-button">Página Inicial</a>
         </div>
@@ -78,8 +76,20 @@
 
       <div class="dash-content">
 
+        <!-- ===================== BLOQUEIO DE ACESSO (só Analista) ===================== -->
+        <section id="acesso-negado" class="dash-view access-denied" hidden>
+          <div class="dash-card module-placeholder">
+            <div class="placeholder-icon">&#128274;</div>
+            <h2>Acesso restrito a Analistas</h2>
+            <p>O monitoramento de memória RAM está disponível apenas para o cargo <strong>Analista</strong>. Se você precisa deste acesso, fale com a administração do seu hospital.</p>
+            <div class="placeholder-actions">
+              <a class="topbar-button" href="dashboard.html">&larr; Voltar para Visão Geral</a>
+            </div>
+          </div>
+        </section>
+
         <!-- ===================== VIEW: MEMÓRIA RAM ===================== -->
-        <section id="ram-conteudo" class="dash-view">
+        <section id="ram-conteudo" class="dash-view" hidden>
 
           <div class="content-header">
             <div>
@@ -196,8 +206,8 @@
                     <b id="alerta-critico-qtd">0</b>
                   </li>
                   <li>
-                    <span><i class="status-dot darkred"></i><span>Pico de consumo detectado</span></span>
-                    <b id="alerta-pico-qtd">0</b>
+                    <span><i class="status-dot darkred"></i><span id="alerta-bloqueio-rotulo">Bloqueio acima de 90%</span></span>
+                    <b id="alerta-bloqueio-qtd">0</b>
                   </li>
                 </ul>
               </article>
