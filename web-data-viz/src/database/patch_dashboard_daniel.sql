@@ -1,149 +1,252 @@
 -- ============================================================================
--- MagnaSync — Patch incremental da Dashboard Executiva (Daniel)
--- Não altera nem apaga nada do script do grupo; pode ser executado mais de uma vez.
+-- MagnaSync — Patch da Dashboard Executiva do Admin Geral (Daniel)
+-- 100% compatível com o script oficial magnasync_script.sql (ZERO tabelas extras)
+-- Pode ser executado várias vezes sem duplicar registros (idempotente).
 -- ============================================================================
 USE magnasync;
 
--- 1. Tabela de auditoria de entrega das notificações (Slack / Jira)
-CREATE TABLE IF NOT EXISTS auditoria_notificacao (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    fkAlerta INT NOT NULL UNIQUE,
-    fkChamado INT NULL,
-    canal_destino VARCHAR(60) NOT NULL DEFAULT 'Slack #alertas-pacs',
-    enviado_sistema TINYINT(1) NOT NULL DEFAULT 1,       -- 1 = o sistema marcou como enviado
-    confirmado_entrega TINYINT(1) NOT NULL DEFAULT 0,    -- 1 = a API externa confirmou o recebimento
-    status_auditoria VARCHAR(30) NOT NULL,               -- ENTREGUE | CHAMADO_ABERTO | FALHA_ENVIO
-    log_aplicacao VARCHAR(255) NOT NULL,
-    dt_auditoria DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (fkAlerta) REFERENCES alerta(id),
-    FOREIGN KEY (fkChamado) REFERENCES chamado(id)
+-- 0. Remove tabelas antigas de auditoria/retry caso existam de versões anteriores
+DROP TABLE IF EXISTS log_tentativa_notificacao;
+DROP TABLE IF EXISTS auditoria_notificacao;
+
+-- 1. Garante categorias oficiais de alerta e status oficiais de chamado
+INSERT INTO categoria_alerta (classificacao)
+SELECT v.classificacao
+FROM (
+    SELECT 'Atenção' AS classificacao
+    UNION ALL SELECT 'Crítico'
+    UNION ALL SELECT 'Bloqueio'
+) v
+WHERE NOT EXISTS (
+    SELECT 1 FROM categoria_alerta ca WHERE ca.classificacao = v.classificacao
 );
 
--- 2. Componentes monitorados (só cria se ainda não existirem)
+INSERT INTO status_chamado (descricao)
+SELECT v.descricao
+FROM (
+    SELECT 'Aberto' AS descricao
+    UNION ALL SELECT 'Em Andamento'
+    UNION ALL SELECT 'Finalizado'
+    UNION ALL SELECT 'Cancelado'
+) v
+WHERE NOT EXISTS (
+    SELECT 1 FROM status_chamado sc WHERE sc.descricao = v.descricao
+);
+
+-- 2. Garante componentes monitorados (Processador, Ram, Disco e Rede - Latência)
 INSERT INTO componente (valor, fkTipo, fkUnidade)
 SELECT NULL, tc.id, u.id
 FROM tipoComponente tc
-JOIN unidade u ON u.medida = IF(tc.tipo = 'Rede - Latencia', 'ms', '%')
-WHERE tc.tipo IN ('Processador', 'Ram', 'Disco', 'Rede - Latencia')
+JOIN unidade u ON u.medida = IF(tc.tipo LIKE 'Rede - Lat%ncia', 'ms', '%')
+WHERE tc.tipo IN ('Processador', 'Ram', 'Disco', 'Rede - Latência', 'Rede - Latencia')
   AND NOT EXISTS (SELECT 1 FROM componente c WHERE c.fkTipo = tc.id);
 
--- 3. Hospitais clientes (identificados pelo CNPJ, não duplica)
-INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
-SELECT v.* FROM (
-    SELECT 'Hospital Albert Einstein' nome, '60765823000130' cnpj, '(11) 2151-1233' tel, 'ti.pacs@einstein.br' email, '05652900' cep, '627' num
-    UNION ALL SELECT 'Hospital Sírio-Libanês',     '61590410000124', '(11) 3394-5000', 'infra@hsl.org.br',         '01308050', '91'
-    UNION ALL SELECT 'Hospital Santa Catarina',    '60922168000186', '(11) 3016-4133', 'suporte.dicom@hsc.org.br', '01310000', '200'
-    UNION ALL SELECT 'Hospital São Luiz Rede DOr', '06047087000139', '(11) 3040-1100', 'noc@rededor.com.br',       '04505002', '250'
-    UNION ALL SELECT 'Hospital Oswaldo Cruz',      '60726502000189', '(11) 3549-1000', 'pacs.admin@haoc.com.br',   '01323001', '325'
-    UNION ALL SELECT 'Hospital Das Dores',         '01234567891011', '(11) 11111-1111', 'hospitaldasdores@gmail.com', '05548722', '7980'
-) v
-WHERE NOT EXISTS (SELECT 1 FROM hospital h WHERE h.cnpj = v.cnpj);
+-- 3. Hospitais clientes de demonstração (compatível com ou sem a coluna hospital.cep)
+DROP TEMPORARY TABLE IF EXISTS tmp_hosp_seed;
+CREATE TEMPORARY TABLE tmp_hosp_seed (
+    nome VARCHAR(150),
+    cnpj CHAR(14),
+    tel VARCHAR(20),
+    email VARCHAR(150),
+    cep CHAR(8),
+    num VARCHAR(10)
+);
+INSERT INTO tmp_hosp_seed (nome, cnpj, tel, email, cep, num) VALUES
+('Hospital Albert Einstein',     '60765823000130', '(11) 2151-1233', 'ti.pacs@einstein.br',        '05652900', '627'),
+('Hospital Sírio-Libanês',       '61590410000124', '(11) 3394-5000', 'infra@hsl.org.br',           '01308050', '91'),
+('Hospital Santa Catarina',      '60922168000186', '(11) 3016-4133', 'suporte.dicom@hsc.org.br',   '01310000', '200'),
+('Hospital São Luiz Rede DOr',   '06047087000139', '(11) 3040-1100', 'noc@rededor.com.br',         '04505002', '250'),
+('Hospital Oswaldo Cruz',        '60726502000189', '(11) 3549-1000', 'pacs.admin@haoc.com.br',     '01323001', '325'),
+('Hospital Das Dores',           '01234567891011', '(11) 11111-1111','hospitaldasdores@gmail.com', '05548722', '7980');
 
--- 4. Servidores PACS por hospital (identificados pelo MAC, não duplica)
+SET @tem_cep = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'hospital'
+      AND COLUMN_NAME = 'cep'
+);
+SET @sql_hosp = IF(
+    @tem_cep > 0,
+    'INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero) SELECT t.nome, t.cnpj, t.tel, t.email, t.cep, t.num FROM tmp_hosp_seed t WHERE NOT EXISTS (SELECT 1 FROM hospital h WHERE h.cnpj = t.cnpj)',
+    'INSERT INTO hospital (nome, cnpj, telefone, email, numero) SELECT t.nome, t.cnpj, t.tel, t.email, t.num FROM tmp_hosp_seed t WHERE NOT EXISTS (SELECT 1 FROM hospital h WHERE h.cnpj = t.cnpj)'
+);
+PREPARE stmt_hosp FROM @sql_hosp;
+EXECUTE stmt_hosp;
+DEALLOCATE PREPARE stmt_hosp;
+DROP TEMPORARY TABLE IF EXISTS tmp_hosp_seed;
+
+-- 4. Servidores PACS por hospital (identificados pelo MAC, sem duplicar)
 INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT v.fab, v.mac, h.id FROM (
-    SELECT 'GE Centricity PACS-01' fab, '00:1B:44:11:3A:01' mac, '60765823000130' cnpj
-    UNION ALL SELECT 'GE Centricity PACS-02',        '00:1B:44:11:3A:02', '60765823000130'
-    UNION ALL SELECT 'Dell PowerEdge R750-DICOM',    '00:1B:44:11:3A:03', '60765823000130'
-    UNION ALL SELECT 'HPE ProLiant DL380-Archive',   '00:1B:44:11:3A:04', '60765823000130'
-    UNION ALL SELECT 'GE PACS Storage-SL1',          '00:1B:44:22:4B:01', '61590410000124'
-    UNION ALL SELECT 'Philips IntelliSpace-SL2',     '00:1B:44:22:4B:02', '61590410000124'
-    UNION ALL SELECT 'Dell PowerEdge PACS-SL3',      '00:1B:44:22:4B:03', '61590410000124'
-    UNION ALL SELECT 'GE Centricity PACS-SC1',       '00:1B:44:33:5C:01', '60922168000186'
-    UNION ALL SELECT 'Lenovo ThinkSystem SR650',     '00:1B:44:33:5C:02', '60922168000186'
-    UNION ALL SELECT 'Dell PACS Backup-SC3',         '00:1B:44:33:5C:03', '60922168000186'
-    UNION ALL SELECT 'GE PACS Central-RD1',          '00:1B:44:44:6D:01', '06047087000139'
-    UNION ALL SELECT 'HPE ProLiant PACS-RD2',        '00:1B:44:44:6D:02', '06047087000139'
-    UNION ALL SELECT 'GE Centricity PACS-OC1',       '00:1B:44:55:7E:01', '60726502000189'
-    UNION ALL SELECT 'Dell PACS Index-OC2',          '00:1B:44:55:7E:02', '60726502000189'
-    UNION ALL SELECT 'GE PACS Legado-HD1',           '00:1B:44:66:8F:01', '01234567891011'
+SELECT v.fab, v.mac, h.id
+FROM (
+    SELECT 'GE Centricity PACS-01' AS fab, '00:1B:44:11:3A:01' AS mac, '60765823000130' AS cnpj
+    UNION ALL SELECT 'GE Centricity PACS-02',      '00:1B:44:11:3A:02', '60765823000130'
+    UNION ALL SELECT 'Dell PowerEdge R750-DICOM',  '00:1B:44:11:3A:03', '60765823000130'
+    UNION ALL SELECT 'HPE ProLiant DL380-Archive', '00:1B:44:11:3A:04', '60765823000130'
+    UNION ALL SELECT 'GE PACS Storage-SL1',        '00:1B:44:22:4B:01', '61590410000124'
+    UNION ALL SELECT 'Philips IntelliSpace-SL2',   '00:1B:44:22:4B:02', '61590410000124'
+    UNION ALL SELECT 'Dell PowerEdge PACS-SL3',    '00:1B:44:22:4B:03', '61590410000124'
+    UNION ALL SELECT 'GE Centricity PACS-SC1',     '00:1B:44:33:5C:01', '60922168000186'
+    UNION ALL SELECT 'Lenovo ThinkSystem SR650',   '00:1B:44:33:5C:02', '60922168000186'
+    UNION ALL SELECT 'Dell PACS Backup-SC3',       '00:1B:44:33:5C:03', '60922168000186'
+    UNION ALL SELECT 'GE PACS Central-RD1',        '00:1B:44:44:6D:01', '06047087000139'
+    UNION ALL SELECT 'HPE ProLiant PACS-RD2',      '00:1B:44:44:6D:02', '06047087000139'
+    UNION ALL SELECT 'GE Centricity PACS-OC1',     '00:1B:44:55:7E:01', '60726502000189'
+    UNION ALL SELECT 'Dell PACS Index-OC2',        '00:1B:44:55:7E:02', '60726502000189'
+    UNION ALL SELECT 'GE PACS Legado-HD1',         '00:1B:44:66:8F:01', '01234567891011'
+    UNION ALL SELECT 'GE Centricity PACS-HC1',     '00:1B:44:77:9A:01', '10000000000011'
 ) v
 JOIN hospital h ON h.cnpj = v.cnpj
 WHERE NOT EXISTS (SELECT 1 FROM equipamento e WHERE e.mac_adress = v.mac);
 
--- 5. Parâmetros de cada servidor (a tabela leitura exige essa chave composta)
+-- 5. Parâmetros de monitoramento (a tabela leitura exige esta chave composta)
 INSERT IGNORE INTO parametro (id, fkEquipamento, fkComponente, metrica)
 SELECT 1, e.id, c.id, 80
 FROM equipamento e
-JOIN (SELECT MIN(c.id) id FROM componente c JOIN tipoComponente tc ON tc.id = c.fkTipo
-      WHERE tc.tipo IN ('Processador', 'Ram', 'Disco', 'Rede - Latencia') GROUP BY tc.tipo) c;
+JOIN (
+    SELECT MIN(c.id) AS id
+    FROM componente c
+    JOIN tipoComponente tc ON tc.id = c.fkTipo
+    WHERE tc.tipo IN ('Processador', 'Ram', 'Disco', 'Rede - Latência', 'Rede - Latencia')
+    GROUP BY tc.tipo
+) c;
 
--- 6. Eventos de teste (24): leituras -> alertas -> chamados -> auditoria
--- Só roda se a auditoria ainda estiver vazia.
-SET @precisa_seed = (SELECT COUNT(*) = 0 FROM auditoria_notificacao);
+-- 6. Leituras históricas de baseline (sem gerar alerta) para definir antiguidade real por hospital
+INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
+SELECT
+    e.id,
+    comp.id,
+    1,
+    42.0,
+    NOW() - INTERVAL base.dias DAY
+FROM (
+    SELECT '00:1B:44:77:9A:01' AS mac, 260 AS dias
+    UNION ALL SELECT '00:1B:44:66:8F:01', 240
+    UNION ALL SELECT '00:1B:44:55:7E:01', 195
+    UNION ALL SELECT '00:1B:44:33:5C:01', 150
+    UNION ALL SELECT '00:1B:44:11:3A:01', 115
+    UNION ALL SELECT '00:1B:44:22:4B:01', 70
+    UNION ALL SELECT '00:1B:44:44:6D:01', 28
+) base
+JOIN equipamento e ON e.mac_adress = base.mac
+JOIN (
+    SELECT MIN(c.id) AS id
+    FROM componente c
+    JOIN tipoComponente tc ON tc.id = c.fkTipo
+    WHERE tc.tipo = 'Processador'
+) comp
+JOIN parametro p ON p.fkEquipamento = e.id AND p.fkComponente = comp.id AND p.id = 1
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM leitura l
+    WHERE l.fkEquipamento = e.id
+      AND l.data_hora < NOW() - INTERVAL 10 DAY
+);
+
+-- 7. Eventos recentes de telemetria -> alertas -> chamados (somente se ainda não houver alertas)
+SET @precisa_seed = (SELECT COUNT(*) = 0 FROM alerta);
+SET @agora = NOW();
 
 DROP TEMPORARY TABLE IF EXISTS tmp_evento;
 CREATE TEMPORARY TABLE tmp_evento (
-    mac VARCHAR(17), tipo VARCHAR(45), valor DOUBLE, sev INT,
-    status_aud VARCHAR(30), entregue TINYINT, chamado_status INT,
-    canal VARCHAR(60), log_app VARCHAR(255), dt DATETIME
+    mac VARCHAR(17),
+    tipo VARCHAR(45),
+    valor DOUBLE,
+    sev_nome VARCHAR(45),
+    ch_status_nome VARCHAR(20),
+    duracao_min INT,
+    dt DATETIME
 );
 
--- status_aud: FALHA_ENVIO (divergência) | CHAMADO_ABERTO | ENTREGUE
--- sev: 1 = Atenção, 2 = Crítico | chamado_status: 0 = sem chamado
-INSERT INTO tmp_evento (mac, tipo, valor, sev, status_aud, entregue, chamado_status, canal, log_app, dt)
-SELECT t.mac, t.tipo, t.valor, t.sev, t.st, t.ent, t.ch, t.canal, t.log_app, NOW() - INTERVAL t.min MINUTE
+INSERT INTO tmp_evento (mac, tipo, valor, sev_nome, ch_status_nome, duracao_min, dt)
+SELECT t.mac, t.tipo, t.valor, t.sev_nome, t.ch_status_nome, t.duracao_min, @agora - INTERVAL t.min_atras MINUTE
 FROM (
-    -- Divergências: sistema enviou, API externa NÃO confirmou
-    SELECT '00:1B:44:11:3A:01' mac, 'Processador' tipo, 96.4 valor, 2 sev, 'FALHA_ENVIO' st, 0 ent, 0 ch, 'Slack #noc-einstein' canal, '[ERROR 504] Gateway Timeout ao aguardar confirmação de webhook Slack - Retentativa pendente' log_app, 18 min
-    UNION ALL SELECT '00:1B:44:22:4B:01', 'Disco',           94.8, 2, 'FALHA_ENVIO', 0, 0, 'Jira ITIL ServiceDesk',   '[ERROR 429] Rate Limit Exceeded na API de abertura de incidentes - Fila de reenvio retida', 42
-    UNION ALL SELECT '00:1B:44:11:3A:02', 'Ram',             91.2, 2, 'FALHA_ENVIO', 0, 0, 'Slack #noc-einstein',     '[ERROR 502] Bad Gateway no endpoint de mensageria hospitalar - Sem ACK do destinatário', 120
-    UNION ALL SELECT '00:1B:44:33:5C:01', 'Rede - Latencia', 118,  2, 'FALHA_ENVIO', 0, 0, 'Slack #pacs-santacatarina','[ERROR 408] Request Timeout ao validar certificado TLS do webhook externo - Divergência registrada', 180
-    UNION ALL SELECT '00:1B:44:22:4B:02', 'Processador',     86.5, 1, 'FALHA_ENVIO', 0, 0, 'Slack #alertas-hsl',      '[ERROR 503] Service Unavailable no broker de notificações - Alerta emitido sem confirmação', 300
-    UNION ALL SELECT '00:1B:44:44:6D:01', 'Disco',           93.1, 2, 'FALHA_ENVIO', 0, 0, 'Jira ITIL ServiceDesk',   '[ERROR 504] Timeout na criação automática do ticket ITIL - Aguardando reprocessamento', 480
-    -- Chamados abertos (1 = Aberto, 2 = Em Andamento)
-    UNION ALL SELECT '00:1B:44:11:3A:03', 'Disco',           95.2, 2, 'CHAMADO_ABERTO', 1, 1, 'Slack #noc-einstein / Jira', '[ITIL INCIDENT] Chamado #INC-1041 aberto e atribuído ao Nível 2 - ACK confirmado em 118ms', 60
-    UNION ALL SELECT '00:1B:44:11:3A:04', 'Processador',     94.0, 2, 'CHAMADO_ABERTO', 1, 2, 'Slack #noc-einstein / Jira', '[ITIL INCIDENT] Chamado #INC-1038 em andamento pela Engenharia Clínica - ACK HTTP 200', 360
-    UNION ALL SELECT '00:1B:44:22:4B:03', 'Ram',             89.7, 2, 'CHAMADO_ABERTO', 1, 1, 'Slack #alertas-hsl / Jira', '[ITIL INCIDENT] Chamado #INC-1039 aberto automaticamente - SLA de atendimento iniciado', 240
-    UNION ALL SELECT '00:1B:44:33:5C:02', 'Processador',     92.3, 2, 'CHAMADO_ABERTO', 1, 2, 'Slack #pacs-santacatarina', '[ITIL INCIDENT] Chamado #INC-1035 em análise pelo suporte local - Entrega confirmada', 600
-    UNION ALL SELECT '00:1B:44:44:6D:02', 'Ram',             82.4, 1, 'CHAMADO_ABERTO', 1, 1, 'Jira ITIL ServiceDesk',  '[ITIL INCIDENT] Chamado #INC-1032 aberto na fila de infraestrutura PACS - HTTP 201 Created', 720
-    UNION ALL SELECT '00:1B:44:55:7E:01', 'Processador',     91.8, 2, 'CHAMADO_ABERTO', 1, 2, 'Slack #pacs-haoc / Jira', '[ITIL INCIDENT] Chamado #INC-1029 em tratamento preventivo de CPU - ACK confirmado', 900
-    -- Entregues com sucesso (alguns com chamado já finalizado = 3)
-    UNION ALL SELECT '00:1B:44:11:3A:01', 'Processador',     83.2, 1, 'ENTREGUE', 1, 0, 'Slack #noc-einstein',  '[HTTP 200 OK] Webhook Slack entregue e confirmado pelo canal em 94ms', 30
-    UNION ALL SELECT '00:1B:44:11:3A:02', 'Rede - Latencia', 44,   1, 'ENTREGUE', 1, 0, 'Slack #noc-einstein',  '[HTTP 200 OK] Notificação de latência de rede entregue e validada em 112ms', 180
-    UNION ALL SELECT '00:1B:44:11:3A:03', 'Ram',             79.5, 1, 'ENTREGUE', 1, 3, 'Slack #noc-einstein',  '[HTTP 200 OK] Alerta entregue e incidente #INC-1034 encerrado dentro do SLA', 540
-    UNION ALL SELECT '00:1B:44:22:4B:01', 'Processador',     90.8, 2, 'ENTREGUE', 1, 3, 'Slack #alertas-hsl',   '[HTTP 200 OK] Alerta crítico entregue e mitigado pela equipe do Sírio-Libanês', 420
-    UNION ALL SELECT '00:1B:44:22:4B:02', 'Rede - Latencia', 38.4, 1, 'ENTREGUE', 1, 0, 'Slack #alertas-hsl',   '[HTTP 200 OK] Alerta preventivo entregue com sucesso (latência 38ms)', 840
-    UNION ALL SELECT '00:1B:44:33:5C:03', 'Disco',           86.0, 1, 'ENTREGUE', 1, 0, 'Slack #pacs-santacatarina', '[HTTP 200 OK] Webhook entregue ao canal operacional Santa Catarina em 131ms', 660
-    UNION ALL SELECT '00:1B:44:33:5C:01', 'Ram',             78.2, 1, 'ENTREGUE', 1, 0, 'Slack #pacs-santacatarina', '[HTTP 200 OK] Confirmação de recebimento recebida via Webhook API', 1080
-    UNION ALL SELECT '00:1B:44:44:6D:01', 'Processador',     84.9, 1, 'ENTREGUE', 1, 0, 'Slack #noc-rededor',   '[HTTP 200 OK] Mensagem entregue no canal Rede DOr sem falhas', 960
-    UNION ALL SELECT '00:1B:44:55:7E:02', 'Disco',           85.4, 1, 'ENTREGUE', 1, 0, 'Slack #pacs-haoc',     '[HTTP 200 OK] Webhook Slack #pacs-haoc entregue e confirmado em 105ms', 1140
-    UNION ALL SELECT '00:1B:44:55:7E:01', 'Rede - Latencia', 31.0, 1, 'ENTREGUE', 1, 0, 'Slack #pacs-haoc',     '[HTTP 200 OK] Alerta de rede entregue ao NOC Oswaldo Cruz', 1260
-    UNION ALL SELECT '00:1B:44:66:8F:01', 'Processador',     81.5, 1, 'ENTREGUE', 1, 0, 'Slack #suporte-geral', '[HTTP 200 OK] Notificação entregue ao operador Hospital Das Dores em 88ms', 1200
-    UNION ALL SELECT '00:1B:44:66:8F:01', 'Ram',             77.6, 1, 'ENTREGUE', 1, 0, 'Slack #suporte-geral', '[HTTP 200 OK] Notificação de memória RAM entregue com sucesso', 1320
+    -- Hospital Albert Einstein (7 alertas: mais problemático; gargalo Processador)
+    SELECT '00:1B:44:11:3A:01' AS mac, 'Processador' AS tipo, 99.1 AS valor, 'Bloqueio' AS sev_nome, 'Aberto' AS ch_status_nome, 120 AS duracao_min, 15 AS min_atras
+    UNION ALL SELECT '00:1B:44:11:3A:02', 'Disco',           98.4, 'Bloqueio', 'Em Andamento', 120, 75
+    UNION ALL SELECT '00:1B:44:11:3A:03', 'Processador',     95.6, 'Crítico',  'Aberto',       120, 145
+    UNION ALL SELECT '00:1B:44:11:3A:01', 'Processador',     94.2, 'Crítico',  'Finalizado',   45,  290
+    UNION ALL SELECT '00:1B:44:11:3A:04', 'Ram',             92.0, 'Crítico',  'Finalizado',   68,  470
+    UNION ALL SELECT '00:1B:44:11:3A:02', 'Processador',     84.5, 'Atenção',  'Finalizado',   25,  650
+    UNION ALL SELECT '00:1B:44:11:3A:03', 'Rede - Latência', 46.0, 'Atenção',  NULL,           0,   835
+
+    -- Hospital Sírio-Libanês (5 alertas: gargalo Disco)
+    UNION ALL SELECT '00:1B:44:22:4B:01', 'Disco',           97.8, 'Bloqueio', 'Em Andamento', 120, 45
+    UNION ALL SELECT '00:1B:44:22:4B:02', 'Disco',           94.5, 'Crítico',  'Finalizado',   82,  230
+    UNION ALL SELECT '00:1B:44:22:4B:03', 'Ram',             90.4, 'Crítico',  'Aberto',       120, 410
+    UNION ALL SELECT '00:1B:44:22:4B:01', 'Disco',           86.2, 'Atenção',  'Finalizado',   34,  595
+    UNION ALL SELECT '00:1B:44:22:4B:02', 'Rede - Latência', 39.5, 'Atenção',  'Cancelado',    15,  960
+
+    -- Hospital Santa Catarina (4 alertas: gargalo Rede - Latência)
+    UNION ALL SELECT '00:1B:44:33:5C:01', 'Rede - Latência', 185.0, 'Bloqueio', 'Aberto',       120, 25
+    UNION ALL SELECT '00:1B:44:33:5C:02', 'Rede - Latência', 128.0, 'Crítico',  'Em Andamento', 120, 185
+    UNION ALL SELECT '00:1B:44:33:5C:01', 'Rede - Latência', 62.0,  'Atenção',  'Finalizado',   54,  530
+    UNION ALL SELECT '00:1B:44:33:5C:03', 'Disco',           84.0,  'Atenção',  NULL,           0,   1020
+
+    -- Hospital São Luiz Rede DOr (3 alertas: cliente mais recente; gargalo Ram)
+    UNION ALL SELECT '00:1B:44:44:6D:01', 'Ram',             93.1, 'Crítico',  'Em Andamento', 120, 110
+    UNION ALL SELECT '00:1B:44:44:6D:02', 'Ram',             91.5, 'Crítico',  'Finalizado',   95,  350
+    UNION ALL SELECT '00:1B:44:44:6D:01', 'Processador',     83.8, 'Atenção',  'Cancelado',    15,  775
+
+    -- Hospital Oswaldo Cruz (3 alertas: sem críticos ativos; gargalo Processador)
+    UNION ALL SELECT '00:1B:44:55:7E:01', 'Processador',     91.2, 'Crítico',  'Finalizado',   38,  710
+    UNION ALL SELECT '00:1B:44:55:7E:02', 'Processador',     82.6, 'Atenção',  'Finalizado',   22,  900
+    UNION ALL SELECT '00:1B:44:55:7E:01', 'Disco',           81.9, 'Atenção',  NULL,           0,   1160
+
+    -- Hospital Das Dores (2 alertas: cliente mais antigo, estável; gargalo Disco)
+    UNION ALL SELECT '00:1B:44:66:8F:01', 'Disco',           80.5, 'Atenção',  'Finalizado',   120, 1090
+    UNION ALL SELECT '00:1B:44:66:8F:01', 'Ram',             78.4, 'Atenção',  NULL,           0,   1240
 ) t
 WHERE @precisa_seed = 1;
 
--- Leitura que originou cada alerta
 INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
 SELECT e.id, c.id, 1, t.valor, t.dt
 FROM tmp_evento t
 JOIN equipamento e ON e.mac_adress = t.mac
-JOIN (SELECT MIN(c.id) id, tc.tipo FROM componente c JOIN tipoComponente tc ON tc.id = c.fkTipo GROUP BY tc.tipo) c ON c.tipo = t.tipo;
+JOIN (
+    SELECT MIN(c.id) AS id, tc.tipo
+    FROM componente c
+    JOIN tipoComponente tc ON tc.id = c.fkTipo
+    GROUP BY tc.tipo
+) c ON c.tipo = t.tipo
+JOIN parametro p ON p.fkEquipamento = e.id AND p.fkComponente = c.id AND p.id = 1;
 
--- Alerta (vinculado à leitura pela combinação servidor + componente + horário)
 INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT t.dt, l.id, t.sev
+SELECT t.dt, l.id, ca.id
 FROM tmp_evento t
 JOIN equipamento e ON e.mac_adress = t.mac
-JOIN leitura l ON l.fkEquipamento = e.id AND l.data_hora = t.dt AND l.valor = t.valor;
+JOIN (
+    SELECT MIN(c.id) AS id, tc.tipo
+    FROM componente c
+    JOIN tipoComponente tc ON tc.id = c.fkTipo
+    GROUP BY tc.tipo
+) c ON c.tipo = t.tipo
+JOIN leitura l ON l.fkEquipamento = e.id AND l.fkComponente = c.id AND l.data_hora = t.dt AND l.valor = t.valor
+JOIN categoria_alerta ca ON ca.classificacao = t.sev_nome;
 
--- Chamado (somente para eventos que abriram ticket)
 INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
-SELECT 'C08MAGNASYNC', CONCAT(UNIX_TIMESTAMP(t.dt), '.000100'), t.dt, t.dt + INTERVAL 3 HOUR, a.id, t.chamado_status
+SELECT
+    'C08MAGNASYNC',
+    CONCAT(UNIX_TIMESTAMP(t.dt), '.000', LPAD(a.id, 3, '0')),
+    t.dt,
+    CASE
+        WHEN t.ch_status_nome IN ('Finalizado', 'Cancelado') THEN t.dt + INTERVAL t.duracao_min MINUTE
+        ELSE t.dt + INTERVAL 2 HOUR
+    END,
+    a.id,
+    sc.id
 FROM tmp_evento t
 JOIN equipamento e ON e.mac_adress = t.mac
-JOIN leitura l ON l.fkEquipamento = e.id AND l.data_hora = t.dt AND l.valor = t.valor
+JOIN (
+    SELECT MIN(c.id) AS id, tc.tipo
+    FROM componente c
+    JOIN tipoComponente tc ON tc.id = c.fkTipo
+    GROUP BY tc.tipo
+) c ON c.tipo = t.tipo
+JOIN leitura l ON l.fkEquipamento = e.id AND l.fkComponente = c.id AND l.data_hora = t.dt AND l.valor = t.valor
 JOIN alerta a ON a.leitura_id = l.id
-WHERE t.chamado_status > 0;
-
--- Auditoria de entrega
-INSERT INTO auditoria_notificacao (fkAlerta, fkChamado, canal_destino, enviado_sistema, confirmado_entrega, status_auditoria, log_aplicacao, dt_auditoria)
-SELECT a.id, ch.id, t.canal, 1, t.entregue, t.status_aud, t.log_app, t.dt + INTERVAL 1 MINUTE
-FROM tmp_evento t
-JOIN equipamento e ON e.mac_adress = t.mac
-JOIN leitura l ON l.fkEquipamento = e.id AND l.data_hora = t.dt AND l.valor = t.valor
-JOIN alerta a ON a.leitura_id = l.id
-LEFT JOIN chamado ch ON ch.fkAlerta = a.id;
+JOIN status_chamado sc ON sc.descricao = t.ch_status_nome
+WHERE t.ch_status_nome IS NOT NULL;
 
 DROP TEMPORARY TABLE IF EXISTS tmp_evento;
