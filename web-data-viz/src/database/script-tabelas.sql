@@ -9,14 +9,23 @@ comandos para mysql server
 CREATE DATABASE IF NOT EXISTS magnasync;
 USE magnasync;
 
+
+
 CREATE TABLE hospital (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(150) NOT NULL,
     cnpj CHAR(14) NOT NULL,
     telefone VARCHAR(20) NOT NULL,
     email VARCHAR(150) NOT NULL,
-    cep CHAR(8) NOT NULL,
     numero VARCHAR(10) NOT NULL
+);
+
+CREATE TABLE endereco (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    cep CHAR(8) NOT NULL,
+    logradouro VARCHAR(150) NOT NULL,
+    numero VARCHAR(45) NOT NULL,
+    complemento VARCHAR(45) NULL
 );
     
 CREATE TABLE cargo (
@@ -27,12 +36,18 @@ CREATE TABLE cargo (
 CREATE TABLE funcionario (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    senha VARCHAR(100) NOT NULL,
     hospital_id INT NOT NULL,
     cargo_id INT NOT NULL,
     FOREIGN KEY (hospital_id) REFERENCES hospital(id),
     FOREIGN KEY (cargo_id) REFERENCES cargo(id)
+);
+
+CREATE TABLE contato (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    telefone VARCHAR(11),
+    email VARCHAR(45),
+    fkFuncionario INT NOT NULL,
+    FOREIGN KEY (fkFuncionario) REFERENCES funcionario(id)
 );
 
 CREATE TABLE equipamento (
@@ -41,21 +56,6 @@ CREATE TABLE equipamento (
     mac_adress CHAR(17) NOT NULL,
     hospital_id INT NOT NULL,
     FOREIGN KEY (hospital_id) REFERENCES hospital(id)
-);
-
-CREATE TABLE categoria_status (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    classificacao VARCHAR(45)
-);
-
-CREATE TABLE status_equipamento (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    data_hora DATETIME NOT NULL,
-    manutencao_id INT NOT NULL,
-    classificacao_status_id INT NOT NULL,
-    equipamento_id INT NOT NULL,
-    FOREIGN KEY (classificacao_status_id) REFERENCES categoria_status(id),
-    FOREIGN KEY (equipamento_id) REFERENCES equipamento(id)
 );
 
 CREATE TABLE unidade (
@@ -84,10 +84,8 @@ CREATE TABLE comandos (
     biblioteca VARCHAR(45),
     comando VARCHAR(45),
     descricao VARCHAR(60) NOT NULL,
-    fkUnidade INT NOT NULL,
     PRIMARY KEY (id, fkTipo),
-    FOREIGN KEY (fkTipo) REFERENCES tipoComponente(id),
-    FOREIGN KEY (fkUnidade) REFERENCES unidade(id)
+    FOREIGN KEY (fkTipo) REFERENCES tipoComponente(id)
 );
 
 CREATE TABLE parametro (
@@ -136,6 +134,7 @@ CREATE TABLE status_chamado (
     descricao VARCHAR(20) NOT NULL 
 );
 
+
 CREATE TABLE chamado (
     id INT PRIMARY KEY AUTO_INCREMENT,
     slack_canal_id VARCHAR(50) NOT NULL,
@@ -148,18 +147,6 @@ CREATE TABLE chamado (
     FOREIGN KEY (fkStatus) REFERENCES status_chamado(id)
 );
 
-INSERT INTO unidade (medida) VALUES ('KB/s'), ('ms');
-
-INSERT INTO tipoComponente (tipo) VALUES
-('Rede - Download'),
-('Rede - Upload'),
-('Rede - Latencia');
-
-INSERT INTO componente (valor, fkTipo, fkUnidade) VALUES
-(NULL, (SELECT id FROM tipoComponente WHERE tipo = 'Rede - Download'), (SELECT id FROM unidade WHERE medida = 'KB/s')),
-(NULL, (SELECT id FROM tipoComponente WHERE tipo = 'Rede - Upload'),   (SELECT id FROM unidade WHERE medida = 'KB/s')),
-(NULL, (SELECT id FROM tipoComponente WHERE tipo = 'Rede - Latencia'), (SELECT id FROM unidade WHERE medida = 'ms'));
-
 INSERT INTO unidade (medida) VALUES 
 ('GB'),
 ('MB'),
@@ -167,12 +154,22 @@ INSERT INTO unidade (medida) VALUES
 ('NucleosFisicos'),
 ('NucleosLogicos'),
 ('%'),
-('Mhz');
+('Mhz'),
+('KB/s'), 
+('ms');
 
 INSERT INTO tipoComponente (tipo) VALUES
 ('Ram'),
 ('Disco'),
-('Processador');
+('Processador'),
+('Rede - Download'),
+('Rede - Upload'),
+('Rede - Latência');
+
+INSERT INTO componente (valor, fkTipo, fkUnidade) VALUES
+(NULL, (SELECT id FROM tipoComponente WHERE tipo = 'Rede - Download'), (SELECT id FROM unidade WHERE medida = 'KB/s')),
+(NULL, (SELECT id FROM tipoComponente WHERE tipo = 'Rede - Upload'),   (SELECT id FROM unidade WHERE medida = 'KB/s')),
+(NULL, (SELECT id FROM tipoComponente WHERE tipo = 'Rede - Latência'), (SELECT id FROM unidade WHERE medida = 'ms'));
 
 
 -- Comandos de monitoramento de cada tipo (é daqui que sai o 2º menu do Python)
@@ -188,23 +185,24 @@ INSERT INTO comandos (fkTipo, biblioteca, comando, descricao, fkUnidade) VALUES
 (3, 'psutil', 'cpu_freq',                 'Frequência atual',  7),
 (3, 'psutil', 'cpu_count',                'Núcleos lógicos',   5);
 
-
-INSERT INTO status_chamado (descricao) VALUES 
-('Aberto'),
-('Em Andamento'),
-('Finalizado'),
-('Cancelado');
-
 insert into cargo (funcao) values
- 	("Enfermeiro"), 
-	("Medico"),	
+ 	("Gerente"), 
+	("Analista"),	
  	("Administração");
     
 -- Hospital que está a máquina
 INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
 VALUES ('Hospital_MagnaSync', '00000000000000', '1100000000', 'magnasync@hospital.com', '00000000', '100');
+INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero)
+VALUES ('Hospital_das_Clinicas', '10000000000011', '1110000000', 'hospitaldasclinicas@hospital.com', '00000090', '101');
     
-INSERT INTO categoria_alerta (classificacao) VALUES ('Atenção'), ('Crítico');
+INSERT INTO categoria_alerta (classificacao) VALUES ('Atenção'), ('Crítico'), ('Bloqueio');
+
+insert into funcionario (nome, email, senha, hospital_id, cargo_id) values 
+("Carlos Magno", "carlosmagno@magnasync.com", "sptech", 1, 3);
+
+insert into funcionario (nome, email, senha, hospital_id, cargo_id) values 
+("Bianca Silva", "bianca@hospital.com", "sptech", 2, 1);
   
   -- Select que ve quando o alerta foi acionado
   
