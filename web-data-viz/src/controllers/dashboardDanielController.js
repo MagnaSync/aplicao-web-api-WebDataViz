@@ -28,59 +28,63 @@ function obterRankingIncidentes(req, res) {
         });
 }
 
-function obterAlertasGeradosVsEntregues(req, res) {
-    dashboardDanielModel.obterAlertasGeradosVsEntregues()
+function obterAlertasVsResolvidos(req, res) {
+    dashboardDanielModel.obterAlertasVsResolvidos()
         .then(function (resultado) {
             res.status(200).json(resultado);
         })
         .catch(function (erro) {
             console.log(erro);
-            console.log("\nHouve um erro ao buscar alertas gerados vs entregues! Erro: ", erro.sqlMessage);
+            console.log("\nHouve um erro ao buscar alertas gerados vs resolvidos! Erro: ", erro.sqlMessage);
             res.status(500).json(erro.sqlMessage);
         });
 }
 
-function obterAuditoriaRosca(req, res) {
-    dashboardDanielModel.obterAuditoriaRosca()
+function obterSituacaoChamados(req, res) {
+    dashboardDanielModel.obterSituacaoChamados()
         .then(function (resultado) {
             if (resultado.length > 0) {
                 res.status(200).json(resultado[0]);
             } else {
                 res.status(200).json({
-                    entregues_sucesso: 0,
-                    chamados_abertos: 0,
-                    retidos_falha: 0,
-                    total_auditado: 0
+                    abertos: 0,
+                    em_andamento: 0,
+                    finalizados: 0,
+                    cancelados: 0,
+                    total_chamados: 0,
+                    mttr_minutos: 0,
+                    servidores_criticos: 0,
+                    total_servidores: 0
                 });
             }
         })
         .catch(function (erro) {
             console.log(erro);
-            console.log("\nHouve um erro ao buscar a auditoria de rosca! Erro: ", erro.sqlMessage);
+            console.log("\nHouve um erro ao buscar a situação dos chamados! Erro: ", erro.sqlMessage);
             res.status(500).json(erro.sqlMessage);
         });
 }
 
-function obterDivergenciasLogs(req, res) {
-    dashboardDanielModel.obterDivergenciasLogs()
+function obterRelatorioCarteira(req, res) {
+    dashboardDanielModel.obterRelatorioCarteira()
         .then(function (resultado) {
             res.status(200).json(resultado);
         })
         .catch(function (erro) {
             console.log(erro);
-            console.log("\nHouve um erro ao buscar logs de divergência! Erro: ", erro.sqlMessage);
+            console.log("\nHouve um erro ao buscar o relatório da carteira! Erro: ", erro.sqlMessage);
             res.status(500).json(erro.sqlMessage);
         });
 }
 
-function obterRelatorioExecutivo(req, res) {
-    dashboardDanielModel.obterRelatorioExecutivo()
+function obterHistoricoIncidentes(req, res) {
+    dashboardDanielModel.obterHistoricoIncidentes()
         .then(function (resultado) {
             res.status(200).json(resultado);
         })
         .catch(function (erro) {
             console.log(erro);
-            console.log("\nHouve um erro ao buscar o relatório executivo! Erro: ", erro.sqlMessage);
+            console.log("\nHouve um erro ao buscar o histórico de incidentes! Erro: ", erro.sqlMessage);
             res.status(500).json(erro.sqlMessage);
         });
 }
@@ -88,8 +92,8 @@ function obterRelatorioExecutivo(req, res) {
 module.exports = {
     obterKpisGlobais,
     obterRankingIncidentes,
-    obterAlertasGeradosVsEntregues,
-    obterAuditoriaRosca,
-    obterDivergenciasLogs,
-    obterRelatorioExecutivo
+    obterAlertasVsResolvidos,
+    obterSituacaoChamados,
+    obterRelatorioCarteira,
+    obterHistoricoIncidentes
 };

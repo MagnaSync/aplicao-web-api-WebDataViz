@@ -11,20 +11,20 @@ router.get("/ranking-incidentes", function (req, res) {
     dashboardDanielController.obterRankingIncidentes(req, res);
 });
 
-router.get("/alertas-gerados-vs-entregues", function (req, res) {
-    dashboardDanielController.obterAlertasGeradosVsEntregues(req, res);
+router.get("/alertas-vs-resolvidos", function (req, res) {
+    dashboardDanielController.obterAlertasVsResolvidos(req, res);
 });
 
-router.get("/auditoria-rosca", function (req, res) {
-    dashboardDanielController.obterAuditoriaRosca(req, res);
+router.get("/situacao-chamados", function (req, res) {
+    dashboardDanielController.obterSituacaoChamados(req, res);
 });
 
-router.get("/divergencias-logs", function (req, res) {
-    dashboardDanielController.obterDivergenciasLogs(req, res);
+router.get("/relatorio-carteira", function (req, res) {
+    dashboardDanielController.obterRelatorioCarteira(req, res);
 });
 
-router.get("/relatorio-executivo", function (req, res) {
-    dashboardDanielController.obterRelatorioExecutivo(req, res);
+router.get("/historico-incidentes", function (req, res) {
+    dashboardDanielController.obterHistoricoIncidentes(req, res);
 });
 
 module.exports = router;
