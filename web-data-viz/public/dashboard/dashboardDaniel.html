@@ -44,7 +44,7 @@
           <div class="user-avatar" id="sidebar-user-avatar">AG</div>
           <div class="user-info">
             <span class="user-name" id="sidebar-user-name">Admin Geral MagnaSync</span>
-            <span class="user-role" id="sidebar-user-role">Governança SaaS &amp; ITIL</span>
+            <span class="user-role" id="sidebar-user-role">Governança Multi-Cliente</span>
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@
       <header class="dash-topbar">
         <div class="unit-badge">
           <div>
-            <small>Governança Multi-Cliente &amp; ITIL</small>
+            <small>Governança Multi-Cliente &amp; SLA</small>
             <div><strong id="topbar-escopo-titulo">Todos os Hospitais – Visão Global</strong></div>
           </div>
         </div>
@@ -72,13 +72,13 @@
       <div class="dash-content">
 
         <!-- ============================================================
-             TELA 1 — DASHBOARD: somente KPIs e gráficos
+             TELA 1 — DASHBOARD: KPIs executivos e gráficos 2x2
              ============================================================ -->
         <section id="view-overview" class="dash-view daniel-view">
           <div class="content-header">
             <div>
               <h1>Visão Geral da Carteira de Clientes</h1>
-              <p>Indicadores globais e gráficos de incidentes e de entrega de notificações (Slack/Jira) de todos os hospitais.</p>
+              <p>Indicadores executivos de saúde da carteira, clientes com mais incidentes e SLA de chamados.</p>
             </div>
           </div>
 
@@ -100,18 +100,18 @@
             </div>
 
             <div class="kpi-card">
-              <span>Clientes em Estado Crítico</span>
+              <span>Taxa de Resolução de Chamados</span>
               <div class="kpi-row">
-                <strong id="kpi-clientes-criticos">--</strong>
-                <span class="kpi-badge critical" id="kpi-criticos-badge">Crítico</span>
+                <strong id="kpi-taxa-resolucao">--</strong>
+                <span class="kpi-badge warn" id="kpi-resolucao-badge">-- resolvidos</span>
               </div>
             </div>
 
             <div class="kpi-card">
-              <span>Volume Global de Chamados (24h)</span>
+              <span>Chamados em Aberto</span>
               <div class="kpi-row">
-                <strong id="kpi-volume-24h">--</strong>
-                <span class="kpi-badge warn" id="kpi-divergencias-badge">-- divergências</span>
+                <strong id="kpi-chamados-abertos">--</strong>
+                <span class="kpi-badge warn" id="kpi-mttr-badge">MTTR: --</span>
               </div>
             </div>
           </section>
@@ -120,18 +120,18 @@
             <article class="dash-card daniel-chart-card daniel-main-chart-card">
               <div class="card-title">
                 <div>
-                  <h2>Alertas Gerados vs. Entregues</h2>
+                  <h2>Alertas Gerados vs. Chamados Resolvidos</h2>
                   <small>Comparativo por hora nas últimas 24 horas</small>
                 </div>
               </div>
-              <div class="daniel-chart-box"><canvas id="chartGeradosVsEntregues"></canvas></div>
+              <div class="daniel-chart-box"><canvas id="chartAlertasVsResolvidos"></canvas></div>
             </article>
 
             <article class="dash-card daniel-chart-card daniel-health-card">
               <div class="card-title">
                 <div>
-                  <h2>Saúde Global da Plataforma</h2>
-                  <small>Índice de entrega e parque</small>
+                  <h2>Saúde Global da Carteira</h2>
+                  <small>Servidores PACS sem alertas críticos ou de bloqueio</small>
                 </div>
               </div>
 
@@ -150,17 +150,17 @@
                 </div>
                 <div class="status-item">
                   <div class="status-item-left">
-                    <i class="status-dot emerald" id="health-slack-dot"></i>
-                    <span>Entrega de Alertas (Slack)</span>
+                    <i class="status-dot emerald" id="health-chamados-dot"></i>
+                    <span>Fila de Chamados Ativos</span>
                   </div>
-                  <span class="status-value" id="health-slack-status">--</span>
+                  <span class="status-value" id="health-chamados-status">--</span>
                 </div>
                 <div class="status-item">
                   <div class="status-item-left">
-                    <i class="status-dot emerald" id="health-falhas-dot"></i>
-                    <span>Fila de Chamados &amp; Falhas</span>
+                    <i class="status-dot emerald" id="health-mttr-dot"></i>
+                    <span>Tempo Médio de Resolução (MTTR)</span>
                   </div>
-                  <span class="status-value" id="health-falhas-status">--</span>
+                  <span class="status-value" id="health-mttr-status">--</span>
                 </div>
               </div>
             </article>
@@ -168,8 +168,8 @@
             <article class="dash-card daniel-chart-card daniel-ranking-card">
               <div class="card-title">
                 <div>
-                  <h2>Ranking de Clientes por Incidentes</h2>
-                  <small>Alertas Críticos e de Atenção por hospital</small>
+                  <h2>Ranking de Clientes com Mais Problemas</h2>
+                  <small>Critério: Bloqueio (&times;3) + Crítico (&times;2) + Atenção (&times;1) · Passe o mouse para ver a causa principal</small>
                 </div>
               </div>
               <div class="daniel-chart-box"><canvas id="chartRankingIncidentes"></canvas></div>
@@ -178,32 +178,32 @@
             <article class="dash-card daniel-chart-card daniel-donut-card">
               <div class="card-title">
                 <div>
-                  <h2>Auditoria de Chamados e Notificações</h2>
-                  <small>Situação de entrega dos alertas</small>
+                  <h2>Situação dos Chamados da Carteira</h2>
+                  <small>Distribuição por status na tabela chamado</small>
                 </div>
               </div>
               <div class="donut-layout daniel-donut-layout">
                 <div class="donut-wrapper">
-                  <canvas id="chartAuditoriaRosca"></canvas>
+                  <canvas id="chartSituacaoChamados"></canvas>
                   <div class="donut-center">
-                    <strong id="donut-total-auditoria">0</strong>
-                    <small>auditados</small>
+                    <strong id="donut-total-chamados">0</strong>
+                    <small>chamados</small>
                   </div>
                 </div>
-                <ul class="donut-legend" id="auditoria-donut-legend"></ul>
+                <ul class="donut-legend" id="chamados-donut-legend"></ul>
               </div>
             </article>
           </section>
         </section>
 
         <!-- ============================================================
-             TELA 2 — RELATÓRIOS: Somente Resumo por Hospital
+             TELA 2 — RELATÓRIOS: Carteira por Hospital + Histórico de Incidentes
              ============================================================ -->
         <section id="view-relatorio" class="dash-view daniel-view" style="display: none;">
           <div class="print-only-header">
             <img src="../assets/imgs/logo.png" alt="MagnaSync" />
             <div>
-              <h2>MagnaSync — Relatório de Saúde e Entrega por Hospital</h2>
+              <h2>MagnaSync — Relatório Executivo da Carteira de Hospitais</h2>
               <p id="print-timestamp"></p>
             </div>
           </div>
@@ -211,10 +211,10 @@
           <div class="content-header no-print">
             <div>
               <h1>Relatórios</h1>
-              <p>Resumo consolidado de servidores, incidentes, falhas de envio e taxa de entrega por hospital.</p>
+              <p>Ranking da carteira por antiguidade e criticidade, gargalos de hardware e histórico de incidentes e chamados.</p>
             </div>
             <div class="relatorio-actions">
-              <button type="button" class="btn-secondary" id="btn-exportar-csv">Exportar CSV (Excel)</button>
+              <button type="button" class="btn-secondary" id="btn-exportar-csv">Exportar Carteira (CSV)</button>
               <button type="button" class="btn-primary" id="btn-imprimir-pdf">Imprimir / Salvar PDF</button>
             </div>
           </div>
@@ -223,30 +223,85 @@
             <div class="audit-panel-header">
               <div class="card-title">
                 <div>
-                  <h2>Resumo por Hospital</h2>
-                  <small>Clique em um hospital para ver detalhes e logs de envio</small>
+                  <h2>Carteira de Clientes (Resumo por Hospital)</h2>
+                  <small>Clique em um hospital para ver detalhes de antiguidade, gargalos e chamados</small>
                 </div>
               </div>
 
               <div class="audit-controls no-print">
+                <select id="sel-ordenar-carteira" class="audit-sort-select" aria-label="Ordenar carteira">
+                  <option value="problematicos">Mais problemáticos</option>
+                  <option value="antigos">Clientes mais antigos</option>
+                  <option value="chamados">Mais chamados abertos</option>
+                  <option value="servidores">Mais servidores PACS</option>
+                </select>
                 <input type="text" id="ipt-busca-hospital" class="audit-search-input" placeholder="Buscar por hospital..." />
               </div>
             </div>
 
-            <div class="table-scroll-wrapper relatorio-table-wrapper">
+            <div class="criterio-legenda">
+              <strong>Critério "Mais problemáticos":</strong> soma ponderada de gravidade (Bloqueio &times;3, Crítico &times;2, Atenção &times;1), destacando o componente causador dominante, servidores afetados e fila de chamados abertos.
+            </div>
+
+            <div class="table-scroll-wrapper">
               <table class="audit-table">
                 <thead>
                   <tr>
                     <th>Hospital</th>
+                    <th>Monitorado Desde</th>
                     <th>Servidores PACS</th>
-                    <th>Alertas Críticos</th>
-                    <th>Alertas Atenção</th>
-                    <th>Falhas de Envio</th>
-                    <th>Taxa de Entrega</th>
+                    <th>Bloqueio / Críticos</th>
+                    <th>Atenção</th>
+                    <th>Chamados Abertos</th>
+                    <th>Motivo Principal</th>
+                    <th>MTTR</th>
                   </tr>
                 </thead>
-                <tbody id="tbody-relatorio-executivo">
-                  <tr><td colspan="6" class="table-empty">Carregando...</td></tr>
+                <tbody id="tbody-relatorio-carteira">
+                  <tr><td colspan="8" class="table-empty">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="dash-card audit-panel-card" id="card-historico-incidentes">
+            <div class="audit-panel-header">
+              <div class="card-title">
+                <div>
+                  <h2>Histórico de Incidentes &amp; Chamados da Carteira</h2>
+                  <small>Alertas gerados pelo monitoramento com vínculo de severidade e andamento do chamado</small>
+                </div>
+              </div>
+
+              <div class="no-print">
+                <button type="button" class="btn-secondary" id="btn-exportar-incidentes-csv">Exportar Incidentes (CSV)</button>
+              </div>
+            </div>
+
+            <div class="audit-controls no-print">
+              <div class="audit-filter-group" role="group" aria-label="Filtrar histórico de incidentes">
+                <button type="button" class="filter-pill danger active" data-filtro-incidente="criticos">Crítico / Bloqueio</button>
+                <button type="button" class="filter-pill warn" data-filtro-incidente="abertos">Chamados Abertos</button>
+                <button type="button" class="filter-pill success" data-filtro-incidente="finalizados">Finalizados</button>
+                <button type="button" class="filter-pill" data-filtro-incidente="todos">Todos</button>
+              </div>
+              <input type="text" id="ipt-busca-incidente" class="audit-search-input" placeholder="Buscar por hospital, servidor, componente ou chamado..." />
+            </div>
+
+            <div class="table-scroll-wrapper">
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th>Horário</th>
+                    <th>Hospital / Servidor</th>
+                    <th>Componente / Leitura</th>
+                    <th>Severidade</th>
+                    <th>Status do Chamado</th>
+                    <th>Resolução (SLA)</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-historico-incidentes">
+                  <tr><td colspan="6" class="table-empty">Carregando histórico de incidentes...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -272,33 +327,47 @@
             <form id="form-hospital" class="cadastro-form" onsubmit="return false;" autocomplete="off">
               <div class="form-group">
                 <label for="hosp-nome">Nome do hospital</label>
-                <input type="text" id="hosp-nome" maxlength="150" placeholder="Ex: Hospital Central" />
+                <input type="text" id="hosp-nome" maxlength="150" placeholder="Ex: Hospital Central" required />
               </div>
 
               <div class="form-row-2">
                 <div class="form-group">
                   <label for="hosp-cnpj">CNPJ</label>
-                  <input type="text" id="hosp-cnpj" maxlength="14" inputmode="numeric" placeholder="Somente números (14 dígitos)" />
+                  <input type="text" id="hosp-cnpj" maxlength="14" inputmode="numeric" pattern="\d{14}" title="Digite os 14 números do CNPJ, sem pontos ou traços" placeholder="Somente números (14 dígitos)" required />
                 </div>
                 <div class="form-group">
                   <label for="hosp-telefone">Telefone</label>
-                  <input type="tel" id="hosp-telefone" maxlength="20" placeholder="Ex: (11) 3456-7890" />
+                  <input type="tel" id="hosp-telefone" maxlength="20" placeholder="Ex: (11) 3456-7890" required />
                 </div>
               </div>
 
               <div class="form-group">
                 <label for="hosp-email">E-mail</label>
-                <input type="email" id="hosp-email" maxlength="150" placeholder="Ex: contato@hospitalcentral.com.br" />
+                <input type="email" id="hosp-email" maxlength="150" placeholder="Ex: contato@hospitalcentral.com.br" required />
               </div>
 
               <div class="form-row-2">
                 <div class="form-group">
                   <label for="hosp-cep">CEP</label>
-                  <input type="text" id="hosp-cep" maxlength="8" inputmode="numeric" placeholder="Somente números (8 dígitos)" />
+                  <input type="text" id="hosp-cep" maxlength="8" inputmode="numeric" pattern="\d{8}" title="Digite os 8 números do CEP, sem traço" placeholder="Somente números (8 dígitos)" required />
                 </div>
                 <div class="form-group">
                   <label for="hosp-numero">Número</label>
-                  <input type="text" id="hosp-numero" maxlength="10" placeholder="Ex: 1200" />
+                  <input type="text" id="hosp-numero" maxlength="10" placeholder="Ex: 1200" required />
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="hosp-representante">Nome do representante</label>
+                  <input type="text" id="hosp-representante" maxlength="100" placeholder="Ex: Nome completo do representante" required />
+                </div>
+                <div class="form-group">
+                  <label for="hosp-senha">Senha de Acesso</label>
+                  <div class="pass-wrapper">
+                    <input type="password" id="hosp-senha" maxlength="100" placeholder="Mínimo 6 caracteres" required />
+                    <button type="button" class="btn-toggle-eye" id="toggle-hosp-senha" title="Mostrar/ocultar senha">&#128065;</button>
+                  </div>
                 </div>
               </div>
 
@@ -326,22 +395,28 @@
         <button type="button" class="daniel-modal-close" id="btn-fechar-modal" aria-label="Fechar modal">&times;</button>
       </div>
 
+      <div id="modal-hosp-diagnostico" class="modal-diagnostico-box" style="display: none;"></div>
+
       <div class="daniel-modal-kpis">
         <div class="daniel-modal-kpi">
           <span>Servidores PACS</span>
           <strong id="modal-hosp-maquinas">0</strong>
+          <small class="modal-kpi-sub" id="modal-hosp-maquinas-sub">--</small>
         </div>
         <div class="daniel-modal-kpi">
           <span>Total de Alertas</span>
           <strong id="modal-hosp-alertas">0</strong>
+          <small class="modal-kpi-sub" id="modal-hosp-alertas-sub">--</small>
         </div>
         <div class="daniel-modal-kpi">
-          <span>Falhas de Envio</span>
-          <strong id="modal-hosp-falhas">0</strong>
+          <span>Chamados (Total / Status)</span>
+          <strong id="modal-hosp-abertos">0</strong>
+          <small class="modal-kpi-sub" id="modal-hosp-chamados-sub">--</small>
         </div>
         <div class="daniel-modal-kpi">
-          <span>Taxa de Entrega</span>
-          <strong id="modal-hosp-taxa">100%</strong>
+          <span>MTTR Médio</span>
+          <strong id="modal-hosp-mttr">--</strong>
+          <small class="modal-kpi-sub" id="modal-hosp-mttr-sub">--</small>
         </div>
       </div>
 
@@ -352,11 +427,11 @@
               <th>Horário</th>
               <th>Servidor / Componente</th>
               <th>Severidade</th>
-              <th>Situação</th>
-              <th>Log da Aplicação</th>
+              <th>Status do Chamado</th>
+              <th>Resolução (SLA)</th>
             </tr>
           </thead>
-          <tbody id="tbody-modal-hospital-logs">
+          <tbody id="tbody-modal-hospital-incidentes">
             <tr><td colspan="5" class="table-empty">Carregando...</td></tr>
           </tbody>
         </table>

@@ -107,40 +107,14 @@
 
       </section>
       </div>
-
-      <!-- ===================== VIEW: DASHBOARD ===================== -->
-      <section id="view-dashboard" class="dash-view" style="display: none;">
-        <div class="content-header">
-          <div>
-            <h1>Dashboard</h1>
-            <p>Visão consolidada dos hospitais cadastrados e dos Servidores PACS monitorados pela MagnaSync.</p>
-          </div>
-        </div>
-        <div class="dash-card module-placeholder">
-          <div class="placeholder-icon">
-            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align: -0.125em;">
-              <rect x="5" y="11" width="3.2" height="6.5" rx="0.4" />
-              <rect x="10.4" y="4.5" width="3.2" height="13" rx="0.4" />
-              <rect x="15.8" y="8" width="3.2" height="9.5" rx="0.4" />
-              <rect x="3" y="19" width="18" height="2" rx="0.4" />
-            </svg>
-          </div>
-          <h2>Disponível em breve</h2>
-          <p>Estamos preparando o Dashboard administrativo da MagnaSync. Em breve você poderá acompanhar todos os hospitais por aqui.</p>
-          <div class="placeholder-actions">
-            <button class="topbar-button" onclick="switchView('cadastrarHospital')">&larr; Voltar para Cadastrar Hospital</button>
-          </div>
-        </div>
-      </section>
     </main>
   </div>
 
   <script>
-    const views = {
-      cadastrarHospital: document.getElementById('view-cadastrarHospital'),
-      dashboard: document.getElementById('view-dashboard')
+    var views = {
+      cadastrarHospital: document.getElementById('view-cadastrarHospital')
     };
-    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+    var navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
 
     function switchView(target) {
       if (target === 'dashboard') {
@@ -159,8 +133,8 @@
 
     navLinks.forEach(function (l) {
       l.addEventListener('click', function (e) {
-        const href = l.getAttribute('href');
-        if (href && href.startsWith('#')) {
+        var href = l.getAttribute('href');
+        if (href && href.indexOf('#') === 0) {
           e.preventDefault();
           switchView(href.substring(1));
         }
