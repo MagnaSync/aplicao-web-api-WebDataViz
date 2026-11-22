@@ -104,9 +104,70 @@ function listarFuncionarios(req, res) {
         );
 }
 
+function cadastrarCargo(req, res) {
+    var funcao = req.body.funcaoServer;
+
+    if (funcao == undefined || funcao.trim() == "") {
+        res.status(400).send("A função do cargo está undefined!");
+    } else {
+        usuarioModel.cadastrarCargo(funcao)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
+}
+
+function editarCargo(req, res) {
+    var id = req.params.id;
+    var funcao = req.body.funcaoServer;
+
+    if (id == undefined) {
+        res.status(400).send("O id do cargo está undefined!");
+    } else if (funcao == undefined || funcao.trim() == "") {
+        res.status(400).send("A função do cargo está undefined!");
+    } else {
+        usuarioModel.editarCargo(id, funcao)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
+}
+
+function deletarCargo(req, res) {
+    var id = req.params.id;
+
+    if (id == undefined) {
+        res.status(400).send("O id do cargo está undefined!");
+    } else {
+        usuarioModel.deletarCargo(id)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                if (erro.code === "ER_ROW_IS_REFERENCED_2") {
+                    res.status(409).send("Não é possível excluir um cargo com funcionários vinculados.");
+                } else {
+                    res.status(500).json(erro.sqlMessage);
+                }
+            });
+    }
+}
+
 module.exports = {
     autenticar,
     listarCargos,
     listarFuncionarios,
-    cadastrar
+    cadastrar,
+    cadastrarCargo,
+    editarCargo,
+    deletarCargo
 };

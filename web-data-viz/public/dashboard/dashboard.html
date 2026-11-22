@@ -233,13 +233,17 @@
 
         <!-- ===================== VIEW: CADASTRO DE FUNCIONÁRIOS ===================== -->
         <section id="view-cadastro" class="dash-view" style="display: none;">
-          <div class="content-header">
-            <div>
-              <h1>Cadastro de Funcionários</h1>
+            <div class="content-header">
+              <div>
+                <h1 id="titulo-secao-cadastro">Cadastro de Funcionários</h1>
+              </div>
+              <div class="time-filter">
+                <button type="button" class="time-btn active" id="tab-btn-funcionarios" onclick="alternarAbaCadastro('funcionarios')">Funcionários</button>
+                <button type="button" class="time-btn" id="tab-btn-cargos" onclick="alternarAbaCadastro('cargos')">Cargos</button>
+              </div>
             </div>
-          </div>
 
-          <div class="cadastro-grid">
+          <div id="subview-funcionarios" class="cadastro-grid">
             <div class="dash-card cadastro-card">
               <div class="card-title">
                 <div>
@@ -317,10 +321,53 @@
               <div class="funcionarios-list-container" id="funcionarios-list-container"></div>
             </div>
           </div>
-        </section>
-
+        
         <!-- ===================== VIEW: CADASTRO DE CARGOS ===================== -->
+          <div id="subview-cargos" class="cadastro-grid" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div class="dash-card cadastro-card">
+                <div class="card-title">
+                  <h2 id="titulo-form-cargo">Novo Cargo</h2>
+                </div>
+                <div id="cargo-feedback" class="feedback-box" style="display: none;"></div>
+                <form id="form-cadastro-cargo" class="cadastro-form" onsubmit="return false;">
+                  <div class="form-group">
+                    <label for="cargo_funcao_input">Função</label>
+                    <input type="text" id="cargo_funcao_input" placeholder="Ex: Engenharia Clínica, Analista PACS" required />
+                  </div>
+                  <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="limparFormularioCargo()">Limpar</button>
+                    <button type="button" class="btn-primary" id="btn-salvar-cargo" onclick="salvarCargo()">Cadastrar Cargo</button>
+                  </div>
+                </form>
+              </div>
 
+              <div class="form-row-2">
+                <div class="kpi-card">
+                  <span>Cargos Ativos</span>
+                  <div class="kpi-row">
+                    <strong id="kpi-total-cargos">0</strong>
+                  </div>
+                </div>
+                <div class="kpi-card">
+                  <span>Maior Equipe</span>
+                  <div class="kpi-row">
+                    <strong id="kpi-cargo-maior" style="font-size: 16px;">-</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card cadastro-card">
+              <div class="card-title">
+                <h2>Cargos Cadastrados</h2>
+                <span class="badge-count" id="badge-total-cargos">0 cargos</span>
+              </div>
+              <div class="funcionarios-list-container" id="cargos-list-container"></div>
+            </div>
+          </div>
+      </section>
+      
         <!-- ===================== VIEW: RELATÓRIOS ===================== -->
         <section id="view-relatorio" class="dash-view" style="display: none;">
           <div class="content-header">

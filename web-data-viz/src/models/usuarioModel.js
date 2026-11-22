@@ -53,9 +53,40 @@ function listarFuncionarios() {
     return database.executar(instrucaoSql);
 }
 
+function cadastrarCargo(funcao) {
+    var instrucaoSql = `
+        INSERT INTO cargo (funcao) VALUES ('${funcao}');
+    `;
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql);
+}
+
+function editarCargo(id, funcao) {
+    console.log("ACESSEI O USUARIO MODEL - function editarCargo():", id, funcao);
+    var instrucaoSql = `
+        UPDATE cargo SET funcao = '${funcao}' WHERE id = ${id};
+    `;
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql);
+}
+
+function deletarCargo(id) {
+    console.log("ACESSEI O USUARIO MODEL - function deletarCargo():", id);
+    var instrucaoSql = `
+        DELETE FROM cargo WHERE id = ${id};
+    `;
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql);
+}
+
 module.exports = {
     autenticar,
     listarCargos,
     listarFuncionarios,
-    cadastrar
+    cadastrar,
+    cadastrarCargo,
+    editarCargo,
+    deletarCargo
 };
+
+

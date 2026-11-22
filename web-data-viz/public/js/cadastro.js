@@ -1,6 +1,7 @@
 var listaFuncionariosGlobal = [];
 var timerFeedbackCadastro = null;
 var timerMensagemHospital = null;
+var idCargoEmEdicao = null;
 
 function mostrarFeedbackCadastro(msg, tipo) {
     var box = document.getElementById("cadastro-feedback");
@@ -18,6 +19,29 @@ function mostrarFeedbackCadastro(msg, tipo) {
         clearTimeout(timerFeedbackCadastro);
     }
     timerFeedbackCadastro = setTimeout(esconderFeedback, 5000);
+}
+
+function alternarAbaCadastro(aba) {
+    var subviewFunc = document.getElementById("subview-funcionarios");
+    var subviewCargos = document.getElementById("subview-cargos");
+    var btnFunc = document.getElementById("tab-btn-funcionarios");
+    var btnCargos = document.getElementById("tab-btn-cargos");
+    var titulo = document.getElementById("titulo-secao-cadastro");
+
+    if (aba === "cargos") {
+        subviewFunc.style.display = "none";
+        subviewCargos.style.display = "grid";
+        btnFunc.classList.remove("active");
+        btnCargos.classList.add("active");
+        titulo.textContent = "Cadastro de Cargos";
+        listarCargos();
+    } else {
+        subviewCargos.style.display = "none";
+        subviewFunc.style.display = "grid";
+        btnCargos.classList.remove("active");
+        btnFunc.classList.add("active");
+        titulo.textContent = "Cadastro de Funcionários";
+    }
 }
 
 function esconderFeedback() {
@@ -136,6 +160,8 @@ function listarCargos() {
                 cargoSelect.innerHTML +=
                     `<option value="${cargo.id}">${cargo.funcao}</option>`;
             });
+
+            renderizarCargos(cargos);
         })
         .catch(function (erro) {
             console.log("#ERRO:", erro);
@@ -154,6 +180,8 @@ function listarFuncionarios() {
         .then(function (funcionarios) {
             listaFuncionariosGlobal = Array.isArray(funcionarios) ? funcionarios : [];
             renderizarFuncionarios(listaFuncionariosGlobal);
+        
+            listarCargos();
         })
         .catch(function (erro) {
             console.log("#ERRO:", erro);
@@ -200,9 +228,6 @@ function renderizarFuncionarios(funcionarios) {
                 <div class="funcionario-avatar">${iniciais}</div>
                 <div class="funcionario-info">
                     <span class="funcionario-nome">${nome}</span>
-                    <div class="funcionario-meta">
-                        <span>${hospital}</span>
-                    </div>
                 </div>
             </div>
             <span class="funcionario-badge role">${funcao}</span>
@@ -215,6 +240,60 @@ function renderizarFuncionarios(funcionarios) {
         var qtd = funcionarios.length;
         badgeTotal.innerText = qtd + (qtd === 1 ? " colaborador" : " colaboradores");
     }
+}
+
+function renderizarCargos(cargos) {
+    var container = document.getElementById("cargos-list-container");
+    var badgeTotal = document.getElementById("badge-total-cargos");
+    var kpiTotal = document.getElementById("kpi-total-cargos");
+    var kpiMaior = document.getElementById("kpi-cargo-maior");
+
+    if (badgeTotal) badgeTotal.textContent = cargos.length + (cargos.length === 1 ? " cargo" : " cargos");
+    if (kpiTotal) kpiTotal.textContent = cargos.length;
+
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (cargos.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <p>Nenhum cargo cadastrado</p>
+            </div>
+        `;
+        return;
+    }
+
+    var cargoMaisComum = "-";
+    var maiorQtd = -1;
+
+    cargos.forEach(function (cargo) {
+        var qtdNoCargo = listaFuncionariosGlobal.filter(function (f) {
+            return f["Função"] === cargo.funcao;
+        }).length;
+
+        if (qtdNoCargo > maiorQtd) {
+            maiorQtd = qtdNoCargo;
+            cargoMaisComum = cargo.funcao;
+        }
+
+        container.innerHTML += `
+            <div class="funcionario-item">
+                <div class="funcionario-item-left">
+                    <div class="funcionario-avatar">${obterIniciais(cargo.funcao)}</div>
+                    <div class="funcionario-info">
+                        <span class="funcionario-nome">${cargo.funcao}</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span class="funcionario-badge role">${qtdNoCargo} ${qtdNoCargo === 1 ? "membro" : "membros"}</span>
+                    <button type="button" class="btn-toggle-eye" style="position: static;" title="Editar cargo" onclick="prepararEdicaoCargo(${cargo.id}, '${cargo.funcao.replace(/'/g, "\\'")}')">&#9998;</button>
+                    <button type="button" class="btn-toggle-eye" style="position: static; color: #e11d48;" title="Excluir cargo" onclick="deletarCargo(${cargo.id}, '${cargo.funcao.replace(/'/g, "\\'")}')">&#128465;</button>
+                </div>
+            </div>
+        `;
+    });
+
+    if (kpiMaior) kpiMaior.textContent = maiorQtd > 0 ? cargoMaisComum : "-";
 }
 
 function filtrarFuncionarios() {
@@ -381,3 +460,106 @@ if (btnLimparHospital) {
 configurarToggleSenha("toggle-senha-btn", "senha_input");
 configurarToggleSenha("toggle-confirmar-senha-btn", "confirmacao_senha_input");
 sincronizarPerfilSidebar();
+
+function limparFormularioCargo() {
+    idCargoEmEdicao = null;
+    var input = document.getElementById("cargo_funcao_input");
+    var titulo = document.getElementById("titulo-form-cargo");
+    var btn = document.getElementById("btn-salvar-cargo");
+    var box = document.getElementById("cargo-feedback");
+
+    if (input) input.value = "";
+    if (titulo) titulo.textContent = "Novo Cargo";
+    if (btn) btn.textContent = "Cadastrar Cargo";
+    if (box) {
+        box.style.display = "none";
+        box.innerHTML = "";
+    }
+}
+
+function mostrarFeedbackCargo(msg, tipo) {
+    var box = document.getElementById("cargo-feedback");
+    if (!box) return;
+    box.className = "feedback-box " + (tipo || "success");
+    var icone = tipo === "error" ? "&#9888;" : "&#10003;";
+    box.innerHTML = "<span>" + icone + "</span><span>" + msg + "</span>";
+    box.style.display = "flex";
+    setTimeout(function () { box.style.display = "none"; }, 5000);
+}
+
+function prepararEdicaoCargo(id, funcaoAtual) {
+    idCargoEmEdicao = id;
+    var input = document.getElementById("cargo_funcao_input");
+    var titulo = document.getElementById("titulo-form-cargo");
+    var btn = document.getElementById("btn-salvar-cargo");
+
+    if (input) {
+        input.value = funcaoAtual;
+        input.focus();
+    }
+    if (titulo) titulo.textContent = "Editar Cargo";
+    if (btn) btn.textContent = "Salvar Alteração";
+}
+
+function salvarCargo() {
+    var funcaoVar = document.getElementById("cargo_funcao_input").value.trim();
+
+    if (funcaoVar == "") {
+        mostrarFeedbackCargo("Informe o nome do cargo.", "error");
+        return false;
+    }
+
+    var url = idCargoEmEdicao
+        ? `/usuarios/editarCargo/${idCargoEmEdicao}`
+        : "/usuarios/cadastrarCargo";
+    var metodo = idCargoEmEdicao ? "PUT" : "POST";
+    var msgSucesso = idCargoEmEdicao
+        ? "Cargo atualizado com sucesso!"
+        : "Cargo cadastrado com sucesso!";
+
+    fetch(url, {
+        method: metodo,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ funcaoServer: funcaoVar })
+    })
+        .then(function (resposta) {
+            if (resposta.ok) {
+                limparFormularioCargo();
+                mostrarFeedbackCargo(msgSucesso, "success");
+                listarCargos();
+            } else {
+                throw "Erro ao salvar cargo";
+            }
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
+            mostrarFeedbackCargo("Não foi possível salvar o cargo.", "error");
+        });
+
+    return false;
+}
+
+function deletarCargo(id, funcao) {
+    if (!confirm(`Deseja realmente excluir o cargo "${funcao}"?`)) {
+        return;
+    }
+
+    fetch(`/usuarios/deletarCargo/${id}`, {
+        method: "DELETE"
+    })
+        .then(function (resposta) {
+            if (resposta.ok) {
+                if (idCargoEmEdicao === id) limparFormularioCargo();
+                mostrarFeedbackCargo("Cargo excluído com sucesso!", "success");
+                listarCargos();
+            } else if (resposta.status === 409) {
+                mostrarFeedbackCargo("Não é possível excluir: há colaboradores neste cargo.", "warn");
+            } else {
+                throw "Erro ao excluir cargo";
+            }
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
+            mostrarFeedbackCargo("Não foi possível excluir o cargo.", "error");
+        });
+}
