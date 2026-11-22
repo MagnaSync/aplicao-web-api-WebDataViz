@@ -262,20 +262,15 @@
                   <span class="field-hint" id="hint-email"></span>
                 </div>
 
-                <div class="form-row-2">
+                
                   <div class="form-group">
                     <label for="cargo_select">Cargo / Função em TI</label>
                     <select id="cargo_select" required>
                       <option value="null">Selecione um cargo...</option>
                     </select>
                   </div>
-
-                  <div class="form-group">
-                    <label for="hospital_input">Hospital Vinculado</label>
-                    <input type="text" id="hospital_input" value="Hospital Central (ID: 1)" readonly class="input-readonly" title="Vinculado automaticamente ao seu hospital atual" />
-                    <input type="hidden" id="ipt_id_empresa" value="1" />
-                  </div>
-                </div>
+                  <input type="hidden" id="ipt_id_empresa" value="1" />
+              
 
                 <div class="form-row-2">
                   <div class="form-group">
@@ -323,6 +318,8 @@
             </div>
           </div>
         </section>
+
+        <!-- ===================== VIEW: CADASTRO DE CARGOS ===================== -->
 
         <!-- ===================== VIEW: RELATÓRIOS ===================== -->
         <section id="view-relatorio" class="dash-view" style="display: none;">

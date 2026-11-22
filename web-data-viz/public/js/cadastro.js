@@ -53,19 +53,9 @@ function sincronizarHospitalSessao() {
     var idHospital = sessionStorage.ID_HOSPITAL || "1";
     var nomeHospital = sessionStorage.NOME_HOSPITAL;
     var iptIdHospital = document.getElementById("ipt_id_empresa");
-    var hospitalDisplay = document.getElementById("hospital_input");
-
+    
     if (iptIdHospital) {
         iptIdHospital.value = idHospital;
-    }
-    if (hospitalDisplay) {
-        if (nomeHospital) {
-            hospitalDisplay.value = nomeHospital + " (ID: " + idHospital + ")";
-        } else {
-            hospitalDisplay.value = idHospital === "1"
-                ? "Hospital Central (ID: 1)"
-                : "Hospital Vinculado (ID: " + idHospital + ")";
-        }
     }
 }
 
