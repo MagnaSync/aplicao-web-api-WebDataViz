@@ -35,6 +35,12 @@ Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size = 12;
 Chart.defaults.color = COR.azulEscuro;
 
+// Janela do histórico (em minutos). Cada ponto = 1 leitura por minuto.
+const JANELA_HISTORICO_MIN = 60;
+
+// Duração de cada período do ranking de sobrecarga (em minutos)
+const PERIODO_RANKING_MIN = 30;
+
 // Guarda as instâncias para atualizar (e não duplicar) ao trocar de servidor
 const graficos = {};
 
@@ -70,30 +76,38 @@ async function obterKpis(servidorId) {
 }
 
 /**
- * Histórico de uso de CPU (gráfico de linhas).
- * @returns {Promise<{labels:string[], valores:number[]}>}  valores em %
+ * Histórico de uso de CPU (gráfico de linhas) — 1 leitura por minuto.
+ * Mesmo formato da tabela `leitura` (data_hora + valor), então a resposta do
+ * banco pode ser repassada direto, sem mapeamento.
+ * @returns {Promise<Array<{data_hora:string, valor:number}>>}
+ *          data_hora = momento da captura (DATETIME/ISO), em ordem crescente; valor = % de CPU
  */
 async function obterHistoricoCpu(servidorId) {
   // TODO API: const r = await fetch(`/cpu/historico/${servidorId}`); return r.json();
-  const base = [32, 28, 25, 24, 27, 35, 48, 61, 74, 82, 91, 94, 88, 79, 72, 85, 93, 87, 70, 58, 49, 42, 38, 34];
-  return {
-    labels: base.map((_, h) => `${String(h).padStart(2, '0')}h`),
-    valores: base.map((v) => limitar(v + ajuste(servidorId)))
-  };
+  // MOCK: últimos JANELA_HISTORICO_MIN minutos, um ponto por minuto
+  const agora = new Date();
+  agora.setSeconds(0, 0);
+  let uso = 40 + ajuste(servidorId);
+  const leituras = [];
+  for (let i = JANELA_HISTORICO_MIN - 1; i >= 0; i--) {
+    uso = limitar(uso + (Math.random() * 14 - 6.5)); // passeio aleatório suave
+    leituras.push({ data_hora: new Date(agora.getTime() - i * 60000).toISOString(), valor: uso });
+  }
+  return leituras;
 }
 
 /**
- * Top períodos com maior sobrecarga (ranking).
- * @returns {Promise<Array<{data:string, horaInicio:number, horaFim:number, usoMedio:number}>>}
- *          data no formato ISO (YYYY-MM-DD), ordenado do maior para o menor usoMedio
+ * Top períodos com maior sobrecarga (ranking) — janelas de PERIODO_RANKING_MIN (30 min).
+ * @returns {Promise<Array<{data:string, inicio:string, fim:string, usoMedio:number}>>}
+ *          data ISO (YYYY-MM-DD); inicio/fim "HH:MM"; ordenado do maior para o menor usoMedio
  */
 async function obterRankingSobrecarga(servidorId) {
   // TODO API: const r = await fetch(`/cpu/ranking/${servidorId}`); return r.json();
   const a = ajuste(servidorId);
   return [
-    { data: '2026-11-11', horaInicio: 10, horaFim: 11, usoMedio: limitar(94.2 + a / 2) },
-    { data: '2026-11-12', horaInicio: 14, horaFim: 15, usoMedio: limitar(91.7 + a / 2) },
-    { data: '2026-11-16', horaInicio: 16, horaFim: 17, usoMedio: limitar(89.3 + a / 2) }
+    { data: '2026-11-11', inicio: '10:00', fim: '10:30', usoMedio: limitar(94.2 + a / 2) },
+    { data: '2026-11-12', inicio: '14:30', fim: '15:00', usoMedio: limitar(91.7 + a / 2) },
+    { data: '2026-11-16', inicio: '16:00', fim: '16:30', usoMedio: limitar(89.3 + a / 2) }
   ];
 }
 
@@ -175,7 +189,7 @@ function renderizarRanking(lista) {
     li.className = 'ranking-item';
     li.innerHTML = `
       <span class="pos">${i + 1}</span>
-      <span class="periodo">${formatarData(item.data)} &middot; ${item.horaInicio}h – ${item.horaFim}h</span>
+      <span class="periodo">${formatarData(item.data)} &middot; ${item.inicio} – ${item.fim}</span>
       <span class="valor">${item.usoMedio}%</span>`;
     ul.appendChild(li);
   });
@@ -200,8 +214,16 @@ const escalaY = (titulo, max) => ({
   border: { display: false }
 });
 
-/** GRÁFICO DE LINHAS — histórico de uso de CPU + linhas de limite. */
-function renderizarHistorico({ labels, valores }) {
+/** "2026-11-16T19:05:00" -> "19:05" (hora da captura, no fuso do navegador) */
+function formatarHoraCaptura(dataHora) {
+  return new Date(dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+/** GRÁFICO DE LINHAS — uso de CPU a cada 1 min + linhas de limite. */
+function renderizarHistorico(leituras) {
+  const labels = leituras.map((l) => formatarHoraCaptura(l.data_hora));
+  const valores = leituras.map((l) => l.valor);
+
   const limite = (valor, cor, nome) => ({
     label: nome,
     data: labels.map(() => valor),
@@ -224,7 +246,7 @@ function renderizarHistorico({ labels, valores }) {
           fill: true,
           tension: 0.35,
           borderWidth: 2.5,
-          pointRadius: 2,
+          pointRadius: 0,       // 60 pontos: só mostra o marcador ao passar o mouse
           pointHoverRadius: 5
         },
         limite(LIMITES_CPU.atencao, COR.ambar, 'Atenção (80%)'),
@@ -236,7 +258,10 @@ function renderizarHistorico({ labels, valores }) {
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } },
-      scales: { x: { grid: { display: false } }, y: escalaY('%', 100) }
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 12, maxRotation: 0 } }, // ~1 rótulo a cada 5 min
+        y: escalaY('%', 100)
+      }
     }
   });
 }
