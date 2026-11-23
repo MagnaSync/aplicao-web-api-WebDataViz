@@ -1,7 +1,15 @@
 var cpuModel = require("../models/cpuModel");
 
 function historicoDados(req, res) {
-    cpuModel.historicoDados()
+    var id_equipamento = Number(req.params.id_equipamento);
+
+    if (!Number.isSafeInteger(id_equipamento) || id_equipamento <= 0) {
+        return res.status(400).json({
+            erro: "ID do equipamento inválido"
+        });
+    }
+
+    cpuModel.historicoDados(id_equipamento)
         .then(
             function (resultado) {
                 res.json(resultado);
@@ -16,7 +24,9 @@ function historicoDados(req, res) {
 }
 
 function alertasCpu7dias(req, res) {
-    cpuModel.alertasCpu7dias()
+    var id_equipamento = req.params.id_equipamento;
+
+    cpuModel.alertasCpu7dias(id_equipamento)
         .then(
             function (resultado) {
                 res.json(resultado);
@@ -31,7 +41,10 @@ function alertasCpu7dias(req, res) {
 }
 
 function usoMedioCpu(req, res){
-    cpuModel.usoMedioCpu()
+    var id_equipamento = req.params.id_equipamento;
+
+
+    cpuModel.usoMedioCpu(id_equipamento)
         .then(
             function (resultado){
                 res.json(resultado);
@@ -46,7 +59,9 @@ function usoMedioCpu(req, res){
 }
 
 function picoCpu(req, res){
-    cpuModel.picoCpu()
+    var id_equipamento = req.params.id_equipamento;
+
+    cpuModel.picoCpu(id_equipamento)
         .then(
             function (resultado){
                 res.json(resultado);
@@ -61,7 +76,9 @@ function picoCpu(req, res){
 }
 
 function rankingCpu(req, res){
-        cpuModel.rankingCpu()
+    var id_equipamento = req.params.id_equipamento;
+
+        cpuModel.rankingCpu(id_equipamento)
         .then(
             function (resultado){
                 res.json(resultado);
@@ -76,7 +93,9 @@ function rankingCpu(req, res){
 }
 
 function histogramaCpu(req, res){
-        cpuModel.histogramaCpu()
+    var id_equipamento = req.params.id_equipamento;
+
+        cpuModel.histogramaCpu(id_equipamento)
         .then(
             function (resultado){
                 res.json(resultado);

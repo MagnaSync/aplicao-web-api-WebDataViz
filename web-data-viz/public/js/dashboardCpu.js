@@ -61,7 +61,9 @@ function classificarCpu(pct) {
    ========================================================================== */
 
 // Pequena variação por servidor só para o seletor parecer "vivo" no mock
-const AJUSTE_MOCK = { 'pacs-01': 0, 'pacs-02': 8, 'pacs-03': -6 };
+let proximaAtualizacao;
+
+const AJUSTE_MOCK = { '1': 0, '2': 8, '3': -6 };
 const ajuste = (id) => AJUSTE_MOCK[id] ?? 0;
 const limitar = (v) => Math.max(1, Math.min(100, Math.round(v)));
 
@@ -69,9 +71,9 @@ const limitar = (v) => Math.max(1, Math.min(100, Math.round(v)));
  * KPIs do topo.
  * @returns {Promise<{alertas7d:number, usoMedio:number, pico:number, minutosEmAlerta:number}>}
  */
-async function obterKpis(servidorId) {
+async function obterKpis(id_equipamento) {
   // TODO API: const r = await fetch(`/cpu/kpis/${servidorId}`); return r.json();
-  const a = ajuste(servidorId);
+  const a = ajuste(id_equipamento);
   return { alertas7d: 14 + a, usoMedio: limitar(47 + a), pico: limitar(96 + a / 2), minutosEmAlerta: 205 + a * 6 };
 }
 
@@ -82,18 +84,27 @@ async function obterKpis(servidorId) {
  * @returns {Promise<Array<{data_hora:string, valor:number}>>}
  *          data_hora = momento da captura (DATETIME/ISO), em ordem crescente; valor = % de CPU
  */
-async function obterHistoricoCpu(servidorId) {
-  // TODO API: const r = await fetch(`/cpu/historico/${servidorId}`); return r.json();
-  // MOCK: últimos JANELA_HISTORICO_MIN minutos, um ponto por minuto
-  const agora = new Date();
-  agora.setSeconds(0, 0);
-  let uso = 40 + ajuste(servidorId);
-  const leituras = [];
-  for (let i = JANELA_HISTORICO_MIN - 1; i >= 0; i--) {
-    uso = limitar(uso + (Math.random() * 14 - 6.5)); // passeio aleatório suave
-    leituras.push({ data_hora: new Date(agora.getTime() - i * 60000).toISOString(), valor: uso });
-  }
-  return leituras;
+
+
+async function obterHistoricoCpu(id_equipamento) {
+    const response = await fetch(
+        `/cpu/historicoDados/${id_equipamento}`,
+        { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            `Erro HTTP ${response.status} ao buscar histórico da CPU`
+        );
+    }
+
+    const resposta = await response.json();
+
+    if (!Array.isArray(resposta)) {
+        throw new Error("A API não retornou um array de leituras");
+    }
+
+    return resposta;
 }
 
 /**
@@ -115,12 +126,12 @@ async function obterRankingSobrecarga(servidorId) {
  * Distribuição por faixa (histograma). Faixas de 10 em 10 pontos percentuais.
  * @returns {Promise<{faixas:string[], quantidades:number[]}>}
  */
-async function obterDistribuicaoCpu(servidorId) {
+async function obterDistribuicaoCpu(id_equipamento) {
   // TODO API: const r = await fetch(`/cpu/distribuicao/${servidorId}`); return r.json();
   const faixas = ['0-10', '10-20', '20-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '90-100'];
   const quantidades = [12, 48, 96, 134, 112, 86, 64, 38, 21, 9];
   // Mock: desloca a distribuição conforme o servidor
-  const desloc = Math.round(ajuste(servidorId) / 8);
+  const desloc = Math.round(ajuste(id_equipamento) / 8);
   const ajustadas = quantidades.map((_, i) => quantidades[Math.max(0, Math.min(9, i - desloc))]);
   return { faixas, quantidades: ajustadas };
 }
@@ -129,9 +140,9 @@ async function obterDistribuicaoCpu(servidorId) {
  * Alertas por dia (gráfico de barras).
  * @returns {Promise<{labels:string[], valores:number[]}>}
  */
-async function obterAlertasPorDia(servidorId) {
+async function obterAlertasPorDia(id_equipamento) {
   // TODO API: const r = await fetch(`/cpu/alertas-por-dia/${servidorId}`); return r.json();
-  const a = Math.round(ajuste(servidorId) / 4);
+  const a = Math.round(ajuste(id_equipamento) / 4);
   return {
     labels: ['10/11', '11/11', '12/11', '13/11', '14/11', '15/11', '16/11'],
     valores: [1, 3, 4, 0, 1, 2, 3].map((v) => Math.max(0, v + a))
@@ -220,50 +231,108 @@ function formatarHoraCaptura(dataHora) {
 }
 
 /** GRÁFICO DE LINHAS — uso de CPU a cada 1 min + linhas de limite. */
-function renderizarHistorico(leituras) {
-  const labels = leituras.map((l) => formatarHoraCaptura(l.data_hora));
-  const valores = leituras.map((l) => l.valor);
+function renderizarHistorico(resposta) {
 
-  const limite = (valor, cor, nome) => ({
-    label: nome,
-    data: labels.map(() => valor),
-    borderColor: cor,
-    borderDash: [6, 4],
-    borderWidth: 1.2,
-    pointRadius: 0
-  });
-
-  criarOuAtualizar('historico', 'chartHistoricoCpu', {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Uso de CPU (%)',
-          data: valores,
-          borderColor: COR.azul,
-          backgroundColor: 'rgba(26, 74, 135, 0.12)',
-          fill: true,
-          tension: 0.35,
-          borderWidth: 2.5,
-          pointRadius: 0,       // 60 pontos: só mostra o marcador ao passar o mouse
-          pointHoverRadius: 5
-        },
-        limite(LIMITES_CPU.atencao, COR.ambar, 'Atenção (80%)'),
-        limite(LIMITES_CPU.critico, COR.vermelho, 'Crítico (90%)')
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } },
-      scales: {
-        x: { grid: { display: false }, ticks: { maxTicksLimit: 12, maxRotation: 0 } }, // ~1 rótulo a cada 5 min
-        y: escalaY('%', 100)
-      }
+    if (!Array.isArray(resposta) || resposta.length === 0) {
+        console.warn("Nenhuma leitura de CPU encontrada.");
+        return;
     }
-  });
+
+    // Transformando os dados recebidos do MySQL
+    const labels = resposta.map((leitura) =>
+        formatarHoraCaptura(leitura.data_hora)
+    );
+
+    const valores = resposta.map((leitura) =>
+        Number(leitura.valor)
+    );
+
+    // Exibindo os dados no console
+    console.log("--------------------------------");
+    console.log("Dados recebidos do backend:", resposta);
+    console.log("Horários das leituras:", labels);
+    console.log("Valores de CPU:", valores);
+    console.log("--------------------------------");
+
+    // Função para criar as linhas de limite
+    const limite = (valor, cor, nome) => ({
+        label: nome,
+        data: labels.map(() => valor),
+        borderColor: cor,
+        borderDash: [6, 4],
+        borderWidth: 1.2,
+        pointRadius: 0
+    });
+
+    // Criando ou atualizando o gráfico
+    criarOuAtualizar('historico', 'chartHistoricoCpu', {
+
+        type: 'line',
+
+        data: {
+            labels: labels,
+
+            datasets: [
+                {
+                    label: 'Uso de CPU (%)',
+                    data: valores,
+                    borderColor: COR.azul,
+                    backgroundColor: 'rgba(26, 74, 135, 0.12)',
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 2.5,
+                    pointRadius: 0,
+                    pointHoverRadius: 5
+                },
+
+                limite(
+                    LIMITES_CPU.atencao,
+                    COR.ambar,
+                    'Atenção (80%)'
+                ),
+
+                limite(
+                    LIMITES_CPU.critico,
+                    COR.vermelho,
+                    'Crítico (90%)'
+                )
+            ]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 8
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 12,
+                        maxRotation: 0
+                    }
+                },
+
+                y: escalaY('%', 100)
+            }
+        }
+    });
 }
 
 /** HISTOGRAMA — barras coladas, cor por faixa de severidade. */
@@ -320,14 +389,14 @@ function renderizarAlertasPorDia({ labels, valores }) {
    ========================================================================== */
 
 /** Busca todos os dados em paralelo e renderiza a tela. */
-async function carregarTela(servidorId) {
+async function carregarTela(id_equipamento) {
   try {
     const [kpis, historico, ranking, distribuicao, alertasDia] = await Promise.all([
-      obterKpis(servidorId),
-      obterHistoricoCpu(servidorId),
-      obterRankingSobrecarga(servidorId),
-      obterDistribuicaoCpu(servidorId),
-      obterAlertasPorDia(servidorId)
+      obterKpis(id_equipamento),
+      obterHistoricoCpu(id_equipamento),
+      obterRankingSobrecarga(id_equipamento),
+      obterDistribuicaoCpu(id_equipamento),
+      obterAlertasPorDia(id_equipamento)
     ]);
 
     renderizarKpis(kpis);
@@ -364,4 +433,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   carregarTela(seletor.value);
+
+  setInterval(() => {
+    carregarTela(seletor.value);
+}, 60000);
 });
