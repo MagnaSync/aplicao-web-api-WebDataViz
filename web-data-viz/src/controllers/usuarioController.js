@@ -194,6 +194,28 @@ function deletarCargo(req, res) {
     }
 }
 
+function redefinirSenha(req, res) {
+    var email = req.body.emailServer;
+    var novaSenha = req.body.novaSenhaServer;
+
+    if (!email || !novaSenha) {
+        res.status(400).send("E-mail e nova senha são obrigatórios!");
+    } else {
+        usuarioModel.redefinirSenha(email, novaSenha)
+            .then(function (resultado) {
+                if (resultado.affectedRows === 0) {
+                    res.status(404).send("E-mail não encontrado no sistema.");
+                } else {
+                    res.json({ mensagem: "Senha redefinida com sucesso!" });
+                }
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
+}
+
 module.exports = {
     autenticar,
     listarCargos,
@@ -203,5 +225,6 @@ module.exports = {
     cadastrar,
     cadastrarCargo,
     editarCargo,
-    deletarCargo
+    deletarCargo,
+    redefinirSenha
 };

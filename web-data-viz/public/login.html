@@ -40,8 +40,10 @@
         </div>
         <div class="container">
             <div class="card-login">
-                <h2>Olá de volta!</h2>
-                <div class="formulario">
+                <h2 id="titulo-card-login">Olá de volta!</h2>
+
+                <!-- FORMULÁRIO DE LOGIN -->
+                <div class="formulario" id="form-login-principal">
                     <div class="campo">
                         <span>E-mail Corporativo:</span>
                         <input id="email_input" type="text" placeholder="exemplo@hospital.com.br">
@@ -49,8 +51,33 @@
                     <div class="campo">
                         <span>Senha:</span>
                         <input id="senha_input" type="password" placeholder="******">
+                        <a href="#" onclick="alternarRecuperacaoSenha(true); return false;"
+                            style="display: block; text-align: right; font-size: 0.85rem; margin-top: 6px; color: #1d4ed8; text-decoration: none;">
+                            Esqueci minha senha
+                        </a>
                     </div>
                     <button class="botao" onclick="entrar()">Entrar no Sistema</button>
+                </div>
+
+                <!-- FORMULÁRIO DE REDEFINIÇÃO DE SENHA -->
+                <div class="formulario" id="form-recuperar-senha" style="display: none;">
+                    <div class="campo">
+                        <span>E-mail Cadastrado:</span>
+                        <input id="recuperar_email_input" type="email" placeholder="exemplo@hospital.com.br">
+                    </div>
+                    <div class="campo">
+                        <span>Nova Senha:</span>
+                        <input id="recuperar_nova_senha_input" type="password" placeholder="******">
+                    </div>
+                    <div class="campo">
+                        <span>Confirmar Nova Senha:</span>
+                        <input id="recuperar_confirmar_senha_input" type="password" placeholder="******">
+                    </div>
+                    <button class="botao" onclick="redefinirSenha()">Salvar Nova Senha</button>
+                    <a href="#" onclick="alternarRecuperacaoSenha(false); return false;"
+                        style="display: block; text-align: center; font-size: 0.85rem; margin-top: 10px; color: #64748b; text-decoration: none;">
+                        &larr; Voltar para o login
+                    </a>
                 </div>
 
                 <div id="div_aguardar" class="loading-div">
@@ -140,6 +167,79 @@
 
         function sumirMensagem() {
             cardErro.style.display = "none";
+        }
+
+        function alternarRecuperacaoSenha(mostrarRecuperacao) {
+            sumirMensagem();
+            var formLogin = document.getElementById("form-login-principal");
+            var formRecuperar = document.getElementById("form-recuperar-senha");
+            var titulo = document.getElementById("titulo-card-login");
+
+            if (mostrarRecuperacao) {
+                formLogin.style.display = "none";
+                formRecuperar.style.display = "flex";
+                titulo.textContent = "Redefinir Senha";
+                // Preenche automaticamente se o usuário já digitou o e-mail no login
+                if (email_input.value.trim() !== "") {
+                    recuperar_email_input.value = email_input.value.trim();
+                }
+            } else {
+                formRecuperar.style.display = "none";
+                formLogin.style.display = "flex";
+                titulo.textContent = "Olá de volta!";
+            }
+        }
+
+        function exibirAlertaLogin(texto, sucesso) {
+            cardErro.style.display = "block";
+            cardErro.style.borderColor = sucesso ? "#16a34a" : "";
+            cardErro.style.color = sucesso ? "#15803d" : "";
+            mensagem_erro.innerHTML = texto;
+            agendarSumirMensagem();
+        }
+
+        function redefinirSenha() {
+            var emailVar = recuperar_email_input.value.trim();
+            var novaSenhaVar = recuperar_nova_senha_input.value;
+            var confirmarVar = recuperar_confirmar_senha_input.value;
+
+            if (!emailVar || !novaSenhaVar || !confirmarVar) {
+                exibirAlertaLogin("Preencha o e-mail e a nova senha.", false);
+                return false;
+            }
+            if (novaSenhaVar !== confirmarVar) {
+                exibirAlertaLogin("As senhas digitadas não coincidem.", false);
+                return false;
+            }
+
+            fetch("/usuarios/redefinirSenha", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    emailServer: emailVar,
+                    novaSenhaServer: novaSenhaVar
+                })
+            })
+                .then(function (resposta) {
+                    if (resposta.ok) {
+                        email_input.value = emailVar;
+                        senha_input.value = "";
+                        recuperar_nova_senha_input.value = "";
+                        recuperar_confirmar_senha_input.value = "";
+                        alternarRecuperacaoSenha(false);
+                        exibirAlertaLogin("Senha alterada com sucesso! Faça login com a nova senha.", true);
+                    } else {
+                        resposta.text().then(function (texto) {
+                            exibirAlertaLogin(texto || "Não foi possível redefinir a senha.", false);
+                        });
+                    }
+                })
+                .catch(function (erro) {
+                    console.log(erro);
+                    exibirAlertaLogin("Erro ao conectar ao servidor.", false);
+                });
+
+            return false;
         }
     </script>
 

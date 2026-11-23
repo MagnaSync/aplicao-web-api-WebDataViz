@@ -105,6 +105,15 @@ function deletarCargo(id) {
     return database.executar(instrucaoSql);
 }
 
+function redefinirSenha(email, novaSenha) {
+    console.log("ACESSEI O USUARIO MODEL - function redefinirSenha():", email);
+    var instrucaoSql = `
+        UPDATE funcionario SET senha = '${novaSenha}' WHERE email = '${email}';
+    `;
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql);
+}
+
 module.exports = {
     autenticar,
     listarCargos,
@@ -114,7 +123,8 @@ module.exports = {
     cadastrar,
     cadastrarCargo,
     editarCargo,
-    deletarCargo
+    deletarCargo,
+    redefinirSenha
 };
 
 

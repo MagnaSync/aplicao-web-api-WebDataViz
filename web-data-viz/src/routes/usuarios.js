@@ -39,4 +39,8 @@ router.delete("/deletar/:id", function (req, res) {
     usuarioController.deletar(req, res);
 });
 
+router.put("/redefinirSenha", function (req, res) {
+    usuarioController.redefinirSenha(req, res);
+});
+
 module.exports = router;
