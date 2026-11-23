@@ -7,9 +7,9 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: hidden;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden !important;
 }
 
 body {
@@ -21,6 +21,8 @@ body {
 
 .imagem-login {
   flex: 0 0 60%;
+  height: 100vh;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
   background-color: #0B192C;
@@ -45,10 +47,13 @@ body {
 .login {
   flex: 1 1 40%;
   min-width: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(32px, 5vw, 48px) clamp(24px, 5vw, 40px);
+  padding: 18px clamp(24px, 4vw, 36px);
   background-color: var(--cor-fundo-escuro);
   box-sizing: border-box;
 }
@@ -66,7 +71,7 @@ body {
   justify-content: space-between;
   width: 100%;
   max-width: 430px;
-  margin: 0 auto 22px auto;
+  margin: 0 auto 14px auto;
 }
 
 .voltar {
@@ -95,33 +100,33 @@ body {
   background: rgba(16, 40, 72, 0.35);
   border: 1px solid rgba(126, 168, 216, 0.2);
   border-radius: 14px;
-  padding: clamp(24px, 4vw, 34px) clamp(20px, 4vw, 28px);
+  padding: 20px 24px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
 }
 
 .card-login h2 {
-  font-size: clamp(24px, 3.5vw, 28px);
+  font-size: clamp(22px, 3vw, 25px);
   font-weight: 800;
   color: var(--cor-branca);
   letter-spacing: -0.02em;
-  margin-bottom: 18px;
+  margin: 0 0 12px 0;
 }
 
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 11px;
 }
 
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .formulario span {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -129,13 +134,13 @@ body {
 }
 
 .formulario input {
-  height: 48px;
-  padding: 0 15px;
+  height: 40px;
+  padding: 0 14px;
   border: 1px solid var(--borda-suave);
   border-radius: 8px;
   background-color: rgba(39, 62, 99, 0.25);
   color: var(--cor-branca);
-  font-size: 15px;
+  font-size: 14.5px;
   outline: 0;
   transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
   width: 100%;
@@ -153,20 +158,20 @@ body {
 }
 
 .botao {
-  height: 48px;
+  height: 42px;
   border: 1px solid rgba(147, 197, 253, 0.4);
   border-radius: 8px;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
   color: var(--cor-branca);
   font-family: var(--fonte-principal);
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 700;
   letter-spacing: 0.02em;
   box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   cursor: pointer;
   transition: all 0.25s ease;
   width: 100%;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .botao:hover {
@@ -185,16 +190,16 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 18px;
-  padding: 12px 18px;
+  margin-top: 12px;
+  padding: 10px 16px;
   border-radius: 8px;
   background-color: rgba(26, 74, 135, 0.2);
   border: 1px solid rgba(126, 168, 216, 0.28);
 }
 
 .spinner {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border: 2.5px solid rgba(126, 168, 216, 0.25);
   border-top-color: var(--cor-destaque);
   border-radius: 50%;
@@ -203,7 +208,7 @@ body {
 
 .loading-div span {
   font-family: var(--fonte-principal);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--cor-texto-claro);
   letter-spacing: 0.02em;
@@ -218,20 +223,20 @@ body {
 #div_erros_login {
   display: none;
   justify-content: center;
-  margin-top: 14px;
+  margin-top: 10px;
   color: #fca5a5;
   font-size: var(--texto-pequeno);
 }
 
 .alerta_erro {
   width: 100%;
-  max-width: 450px;
-  margin: 0 auto 16px auto;
+  max-width: 430px;
+  margin: 0 auto 10px auto;
 }
 
 .card_erro {
   display: none;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 8px;
   background-color: rgba(220, 38, 38, 0.15);
   border: 1px solid rgba(220, 38, 38, 0.4);
@@ -241,12 +246,12 @@ body {
 }
 
 .ajuda-login {
-  max-width: 450px;
-  margin: 22px auto 0 auto;
+  max-width: 430px;
+  margin: 14px auto 0 auto;
   text-align: center;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--cor-texto-cinza);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .ajuda-login a {
@@ -269,11 +274,17 @@ body {
 
   .login {
     flex: 0 0 50%;
-    padding: 28px 24px;
+    padding: 18px 24px;
   }
 }
 
 @media (max-width: 860px) {
+  html, body {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+  }
+
   body {
     flex-direction: column;
     justify-content: center;
@@ -286,8 +297,10 @@ body {
   .login {
     flex: 1;
     width: 100%;
+    height: auto !important;
     min-height: 100vh;
     min-height: 100dvh;
+    overflow: visible !important;
     justify-content: center;
     padding: 28px 20px;
     box-sizing: border-box;
