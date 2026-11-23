@@ -47,6 +47,70 @@ function cadastrar(req, res) {
     }
 }
 
+function listar(req, res) {
+    hospitalModel.listar()
+        .then(function (resultado) {
+            res.json(resultado);
+        })
+        .catch(function (erro) {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
+        });
+}
+
+function editar(req, res) {
+    var id = req.params.id;
+    var nome = req.body.nomeServer;
+    var cnpj = req.body.cnpjServer;
+    var telefone = req.body.telefoneServer;
+    var email = req.body.emailServer;
+    var cep = req.body.cepServer;
+    var numero = req.body.numeroServer;
+
+    if (!id || !nome || !cnpj || !telefone || !email || !cep || !numero) {
+        res.status(400).send("Preencha todos os campos obrigatórios!");
+    } else if (!/^\d{14}$/.test(cnpj)) {
+        res.status(400).send("CNPJ inválido! Informe 14 números.");
+    } else if (!/^\d{8}$/.test(cep)) {
+        res.status(400).send("CEP inválido! Informe 8 números.");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        res.status(400).send("E-mail inválido!");
+    } else {
+        hospitalModel.editar(id, nome, cnpj, telefone, email, cep, numero)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
+}
+
+function deletar(req, res) {
+    var id = req.params.id;
+
+    if (!id || id == 1) {
+        res.status(400).send("ID de hospital inválido para exclusão!");
+    } else {
+        hospitalModel.deletar(id)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                if (erro.code === "ER_ROW_IS_REFERENCED_2") {
+                    res.status(409).send("Não é possível excluir: há funcionários ou equipamentos vinculados a este hospital.");
+                } else {
+                    res.status(500).json(erro.sqlMessage);
+                }
+            });
+    }
+}
+
 module.exports = {
-    cadastrar
+    cadastrar,
+    listar,
+    editar,
+    deletar
 };

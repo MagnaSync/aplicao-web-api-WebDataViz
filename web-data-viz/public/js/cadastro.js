@@ -1,3 +1,19 @@
+(function verificarPermissaoPagina() {
+    var idHospital = sessionStorage.ID_HOSPITAL;
+    if (!idHospital) return;
+
+    var estaNoCadastroHospital = window.location.pathname.includes("cadastroHospital.html");
+    var estaNaDashboard = window.location.pathname.includes("dashboard.html");
+
+    if (estaNoCadastroHospital && String(idHospital) !== "1") {
+        window.location.href = "./dashboard/dashboard.html";
+    } else if (estaNaDashboard && String(idHospital) === "1") {
+        window.location.href = "../cadastroHospital.html";
+    }
+})();
+
+var listaHospitaisGlobal = [];
+var idHospitalEmEdicao = null;
 var listaFuncionariosGlobal = [];
 var timerFeedbackCadastro = null;
 var timerMensagemHospital = null;
@@ -428,10 +444,35 @@ function sumirMensagemHospital() {
 }
 
 function limparFormularioHospital() {
+    idHospitalEmEdicao = null;
     var form = document.getElementById("form-hospital");
     if (form) form.reset();
 
+    var titulo = document.getElementById("titulo-form-hospital");
+    var btn = document.getElementById("btn-cadastrar-hospital");
+    if (titulo) titulo.textContent = "Novo Hospital";
+    if (btn) btn.textContent = "Cadastrar Hospital";
+
     sumirMensagemHospital();
+}
+
+function prepararEdicaoHospital(id) {
+    var hosp = listaHospitaisGlobal.find(function (h) { return h.id === id; });
+    if (!hosp) return;
+
+    idHospitalEmEdicao = id;
+    nome_hospital_input.value = hosp.nome || "";
+    cnpj_hospital_input.value = hosp.cnpj || "";
+    telefone_hospital_input.value = hosp.telefone || "";
+    email_hospital_input.value = hosp.email || "";
+    cep_hospital_input.value = hosp.cep || "";
+    numero_hospital_input.value = hosp.numero || "";
+
+    var titulo = document.getElementById("titulo-form-hospital");
+    var btn = document.getElementById("btn-cadastrar-hospital");
+    if (titulo) titulo.textContent = "Editar Hospital";
+    if (btn) btn.textContent = "Salvar Alterações";
+    nome_hospital_input.focus();
 }
 
 function cadastrarHospital() {
@@ -442,14 +483,7 @@ function cadastrarHospital() {
     var cepVar = cep_hospital_input.value.trim();
     var numeroVar = numero_hospital_input.value.trim();
 
-    if (
-        nomeVar == "" ||
-        cnpjVar == "" ||
-        telefoneVar == "" ||
-        emailVar == "" ||
-        cepVar == "" ||
-        numeroVar == ""
-    ) {
+    if (!nomeVar || !cnpjVar || !telefoneVar || !emailVar || !cepVar || !numeroVar) {
         mostrarMensagemHospital("Preencha todos os campos obrigatórios.", "erro");
         return false;
     } else if (!/^\d{14}$/.test(cnpjVar)) {
@@ -463,11 +497,17 @@ function cadastrarHospital() {
         return false;
     }
 
-    fetch("/hospital/cadastrarHospital", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
+    var url = idHospitalEmEdicao
+        ? `/hospital/editar/${idHospitalEmEdicao}`
+        : "/hospital/cadastrarHospital";
+    var metodo = idHospitalEmEdicao ? "PUT" : "POST";
+    var msgSucesso = idHospitalEmEdicao
+        ? "Hospital atualizado com sucesso!"
+        : "Hospital cadastrado com sucesso!";
+
+    fetch(url, {
+        method: metodo,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             nomeServer: nomeVar,
             cnpjServer: cnpjVar,
@@ -480,17 +520,98 @@ function cadastrarHospital() {
         .then(function (resposta) {
             if (resposta.ok) {
                 limparFormularioHospital();
-                mostrarMensagemHospital("Hospital cadastrado com sucesso!", "sucesso");
+                mostrarMensagemHospital(msgSucesso, "sucesso");
+                listarHospitais();
             } else {
-                throw "Erro ao cadastrar (status " + resposta.status + ")";
+                throw "Erro ao salvar (status " + resposta.status + ")";
             }
         })
         .catch(function (erro) {
             console.log("#ERRO:", erro);
-            mostrarMensagemHospital("Não foi possível cadastrar o hospital. Tente novamente.", "erro");
+            mostrarMensagemHospital("Não foi possível salvar o hospital. Tente novamente.", "erro");
         });
 
     return false;
+}
+
+function listarHospitais() {
+    var container = document.getElementById("hospitais-list-container");
+    if (!container) return;
+
+    fetch("/hospital/listar", { method: "GET" })
+        .then(function (resposta) {
+            if (!resposta.ok) throw "Erro ao listar hospitais";
+            return resposta.json();
+        })
+        .then(function (hospitais) {
+            listaHospitaisGlobal = Array.isArray(hospitais) ? hospitais : [];
+            renderizarHospitais(listaHospitaisGlobal);
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
+            renderizarHospitais([]);
+        });
+}
+
+function renderizarHospitais(hospitais) {
+    var container = document.getElementById("hospitais-list-container");
+    var badgeTotal = document.getElementById("badge-total-hospitais");
+    if (!container) return;
+
+    container.innerHTML = "";
+    if (badgeTotal) {
+        badgeTotal.textContent = hospitais.length + (hospitais.length === 1 ? " hospital" : " hospitais");
+    }
+
+    if (hospitais.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>Nenhum hospital cadastrado</p></div>`;
+        return;
+    }
+
+    hospitais.forEach(function (hosp) {
+        container.innerHTML += `
+            <div class="funcionario-item">
+                <div class="funcionario-item-left">
+                    <div class="funcionario-avatar">${obterIniciais(hosp.nome)}</div>
+                    <div class="funcionario-info">
+                        <span class="funcionario-nome">${hosp.nome}</span>
+                        <div class="funcionario-meta">
+                            <span class="funcionario-email">CNPJ: ${hosp.cnpj} • ${hosp.email}</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button type="button" class="btn-toggle-eye" style="position: static;" title="Editar hospital" onclick="prepararEdicaoHospital(${hosp.id})">&#9998;</button>
+                    <button type="button" class="btn-toggle-eye" style="position: static; color: #e11d48;" title="Excluir hospital" onclick="deletarHospital(${hosp.id}, '${hosp.nome.replace(/'/g, "\\'")}')">&#128465;</button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function deletarHospital(id, nome) {
+    if (!confirm(`Deseja realmente excluir o hospital "${nome}"?`)) return;
+
+    fetch(`/hospital/deletar/${id}`, { method: "DELETE" })
+        .then(function (resposta) {
+            if (resposta.ok) {
+                if (idHospitalEmEdicao === id) limparFormularioHospital();
+                mostrarMensagemHospital("Hospital excluído com sucesso!", "sucesso");
+                listarHospitais();
+            } else if (resposta.status === 409) {
+                mostrarMensagemHospital("Não é possível excluir: há funcionários ou equipamentos vinculados.", "erro");
+            } else {
+                throw "Erro ao excluir";
+            }
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
+            mostrarMensagemHospital("Não foi possível excluir o hospital.", "erro");
+        });
+}
+
+if (document.getElementById("hospitais-list-container")) {
+    listarHospitais();
 }
 
 function sincronizarPerfilSidebar() {
