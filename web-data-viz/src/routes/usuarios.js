@@ -31,4 +31,12 @@ router.delete("/deletarCargo/:id", function (req, res) {
     usuarioController.deletarCargo(req, res);
 });
 
+router.put("/editar/:id", function (req, res) {
+    usuarioController.editar(req, res);
+});
+
+router.delete("/deletar/:id", function (req, res) {
+    usuarioController.deletar(req, res);
+});
+
 module.exports = router;

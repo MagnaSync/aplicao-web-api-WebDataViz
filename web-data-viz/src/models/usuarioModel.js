@@ -37,17 +37,43 @@ function listarCargos() {
     return database.executar(instrucaoSql);
 }
 
-function listarFuncionarios() {
+function listarFuncionarios(idHospital) {
     console.log("ACESSEI O USUARIO MODEL - function listarFuncionarios()");
+    var filtroHospital = idHospital ? `WHERE f.hospital_id = ${idHospital}` : "";
     var instrucaoSql = `
         SELECT 
+            f.id,
+            f.cargo_id,
             f.nome AS "Nome do funcionário", 
             f.email AS "Email",
             h.nome AS "Nome do Hospital", 
             c.funcao AS "Função"
         FROM funcionario AS f
         JOIN cargo AS c ON f.cargo_id = c.id
-        JOIN hospital AS h ON f.hospital_id = h.id;
+        JOIN hospital AS h ON f.hospital_id = h.id
+        ${filtroHospital};
+    `;
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql);
+}
+
+function editar(id, nome, email, cargo_id, senha) {
+    console.log("ACESSEI O USUARIO MODEL - function editar():", id, nome, email, cargo_id);
+    // Se a senha vier preenchida, atualiza junto; se vier vazia, mantém a atual
+    var trechoSenha = senha ? `, senha = '${senha}'` : "";
+    var instrucaoSql = `
+        UPDATE funcionario 
+        SET nome = '${nome}', email = '${email}', cargo_id = ${cargo_id} ${trechoSenha}
+        WHERE id = ${id};
+    `;
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql);
+}
+
+function deletar(id) {
+    console.log("ACESSEI O USUARIO MODEL - function deletar():", id);
+    var instrucaoSql = `
+        DELETE FROM funcionario WHERE id = ${id};
     `;
     console.log("Executando a instrução SQL: \n" + instrucaoSql);
     return database.executar(instrucaoSql);
@@ -83,6 +109,8 @@ module.exports = {
     autenticar,
     listarCargos,
     listarFuncionarios,
+    editar,
+    deletar,
     cadastrar,
     cadastrarCargo,
     editarCargo,

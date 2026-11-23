@@ -2,6 +2,7 @@ var listaFuncionariosGlobal = [];
 var timerFeedbackCadastro = null;
 var timerMensagemHospital = null;
 var idCargoEmEdicao = null;
+var idFuncionarioEmEdicao = null;
 
 function mostrarFeedbackCadastro(msg, tipo) {
     var box = document.getElementById("cadastro-feedback");
@@ -65,22 +66,36 @@ function limparErrosValidacao() {
 }
 
 function limparFormularioCadastro() {
+    idFuncionarioEmEdicao = null;
     var form = document.getElementById("form-cadastro-funcionario");
     if (form) form.reset();
+
+    var titulo = document.getElementById("titulo-form-funcionario");
+    var btnTexto = document.getElementById("btn-cadastrar-text");
+    if (titulo) titulo.textContent = "Novo Colaborador";
+    if (btnTexto) btnTexto.textContent = "Cadastrar Funcionário";
 
     sincronizarHospitalSessao();
     esconderFeedback();
     limparErrosValidacao();
 }
 
-function sincronizarHospitalSessao() {
-    var idHospital = sessionStorage.ID_HOSPITAL || "1";
-    var nomeHospital = sessionStorage.NOME_HOSPITAL;
-    var iptIdHospital = document.getElementById("ipt_id_empresa");
-    
-    if (iptIdHospital) {
-        iptIdHospital.value = idHospital;
-    }
+function prepararEdicaoFuncionario(id) {
+    var func = listaFuncionariosGlobal.find(function (f) { return f.id === id; });
+    if (!func) return;
+
+    idFuncionarioEmEdicao = id;
+    nome_input.value = func["Nome do funcionário"] || "";
+    email_input.value = func["Email"] || "";
+    cargo_select.value = func.cargo_id || "null";
+    senha_input.value = "";
+    confirmacao_senha_input.value = "";
+
+    var titulo = document.getElementById("titulo-form-funcionario");
+    var btnTexto = document.getElementById("btn-cadastrar-text");
+    if (titulo) titulo.textContent = "Editar Colaborador";
+    if (btnTexto) btnTexto.textContent = "Salvar Alterações";
+    nome_input.focus();
 }
 
 function cadastrar() {
@@ -93,13 +108,15 @@ function cadastrar() {
     var cargoVar = cargo_select.value;
     var hospitalIdVar = ipt_id_empresa.value;
 
+    // Na edição, a senha é opcional; no cadastro novo, é obrigatória
+    var senhaObrigatoria = idFuncionarioEmEdicao === null;
+
     if (
         nomeVar == "" ||
         emailVar == "" ||
-        senhaVar == "" ||
-        confirmarSenhaVar == "" ||
         cargoVar == "" ||
-        hospitalIdVar == ""
+        hospitalIdVar == "" ||
+        (senhaObrigatoria && (senhaVar == "" || confirmarSenhaVar == ""))
     ) {
         mostrarFeedbackCadastro("Preencha todos os campos obrigatórios.", "error");
         return false;
@@ -111,11 +128,17 @@ function cadastrar() {
         return false;
     }
 
-    fetch("/usuarios/cadastrar", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
+    var url = idFuncionarioEmEdicao
+        ? `/usuarios/editar/${idFuncionarioEmEdicao}`
+        : "/usuarios/cadastrar";
+    var metodo = idFuncionarioEmEdicao ? "PUT" : "POST";
+    var msgSucesso = idFuncionarioEmEdicao
+        ? "Colaborador atualizado com sucesso!"
+        : "Cadastro realizado com sucesso!";
+
+    fetch(url, {
+        method: metodo,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             nomeServer: nomeVar,
             emailServer: emailVar,
@@ -127,18 +150,106 @@ function cadastrar() {
         .then(function (resposta) {
             if (resposta.ok) {
                 limparFormularioCadastro();
-                mostrarFeedbackCadastro("Cadastro realizado com sucesso!", "success");
+                mostrarFeedbackCadastro(msgSucesso, "success");
                 listarFuncionarios();
             } else {
-                throw "Houve um erro ao tentar realizar o cadastro!";
+                throw "Houve um erro ao tentar salvar!";
             }
         })
         .catch(function (erro) {
             console.log("#ERRO:", erro);
-            mostrarFeedbackCadastro("Não foi possível realizar o cadastro. Verifique a conexão.", "error");
+            mostrarFeedbackCadastro("Não foi possível salvar o colaborador. Verifique a conexão.", "error");
         });
 
     return false;
+}
+
+function deletarFuncionario(id, nome) {
+    if (String(id) === String(sessionStorage.ID_USUARIO)) {
+        mostrarFeedbackCadastro("Você não pode excluir o próprio usuário logado.", "warn");
+        return;
+    }
+    if (!confirm(`Deseja realmente excluir o colaborador "${nome}"?`)) {
+        return;
+    }
+
+    fetch(`/usuarios/deletar/${id}`, { method: "DELETE" })
+        .then(function (resposta) {
+            if (resposta.ok) {
+                if (idFuncionarioEmEdicao === id) limparFormularioCadastro();
+                mostrarFeedbackCadastro("Colaborador excluído com sucesso!", "success");
+                listarFuncionarios();
+            } else {
+                throw "Erro ao excluir";
+            }
+        })
+        .catch(function (erro) {
+            console.log("#ERRO:", erro);
+            mostrarFeedbackCadastro("Não foi possível excluir o colaborador.", "error");
+        });
+}
+
+function renderizarFuncionarios(funcionarios) {
+    var container = document.getElementById("funcionarios-list-container");
+    var badgeTotal = document.getElementById("badge-total-equipe");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (!funcionarios || funcionarios.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">&#128101;</div>
+                <p>Nenhum funcionário encontrado</p>
+            </div>
+        `;
+        if (badgeTotal) badgeTotal.innerText = "0 colaboradores";
+        return;
+    }
+
+    funcionarios.forEach(function (funcionario) {
+        var nome = funcionario["Nome do funcionário"] || "";
+        var email = funcionario["Email"] || "";
+        var funcao = funcionario["Função"] || "";
+        var iniciais = obterIniciais(nome);
+
+        var item = document.createElement("div");
+        item.className = "funcionario-item";
+
+        item.innerHTML = `
+            <div class="funcionario-item-left">
+                <div class="funcionario-avatar">${iniciais}</div>
+                <div class="funcionario-info">
+                    <span class="funcionario-nome">${nome}</span>
+                    <div class="funcionario-meta">
+                        <span class="funcionario-email">${email}</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="funcionario-badge role">${funcao}</span>
+                <button type="button" class="btn-toggle-eye" style="position: static;" title="Editar colaborador" onclick="prepararEdicaoFuncionario(${funcionario.id})">&#9998;</button>
+                <button type="button" class="btn-toggle-eye" style="position: static; color: #e11d48;" title="Excluir colaborador" onclick="deletarFuncionario(${funcionario.id}, '${nome.replace(/'/g, "\\'")}')">&#128465;</button>
+            </div>
+        `;
+
+        container.appendChild(item);
+    });
+
+    if (badgeTotal) {
+        var qtd = funcionarios.length;
+        badgeTotal.innerText = qtd + (qtd === 1 ? " colaborador" : " colaboradores");
+    }
+}
+
+function sincronizarHospitalSessao() {
+    var idHospital = sessionStorage.ID_HOSPITAL || "1";
+    var nomeHospital = sessionStorage.NOME_HOSPITAL;
+    var iptIdHospital = document.getElementById("ipt_id_empresa");
+    
+    if (iptIdHospital) {
+        iptIdHospital.value = idHospital;
+    }
 }
 
 function listarCargos() {
@@ -172,7 +283,10 @@ function listarFuncionarios() {
     var container = document.getElementById("funcionarios-list-container");
     if (!container) return;
 
-    fetch("/usuarios/listarFuncionarios", { method: "GET" })
+    var idHospital = sessionStorage.ID_HOSPITAL || "";
+    var url = idHospital ? `/usuarios/listarFuncionarios?idHospital=${idHospital}` : "/usuarios/listarFuncionarios";
+
+    fetch(url, { method: "GET" })
         .then(function (resposta) {
             if (!resposta.ok) throw "Falha ao listar funcionários";
             return resposta.json();
@@ -180,7 +294,6 @@ function listarFuncionarios() {
         .then(function (funcionarios) {
             listaFuncionariosGlobal = Array.isArray(funcionarios) ? funcionarios : [];
             renderizarFuncionarios(listaFuncionariosGlobal);
-        
             listarCargos();
         })
         .catch(function (erro) {
@@ -194,52 +307,6 @@ function obterIniciais(nomeCompleto) {
     var partes = nomeCompleto.trim().split(" ");
     if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
     return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
-}
-
-function renderizarFuncionarios(funcionarios) {
-    var container = document.getElementById("funcionarios-list-container");
-    var badgeTotal = document.getElementById("badge-total-equipe");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    if (!funcionarios || funcionarios.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">&#128101;</div>
-                <p>Nenhum funcionário encontrado</p>
-            </div>
-        `;
-        if (badgeTotal) badgeTotal.innerText = "0 colaboradores";
-        return;
-    }
-
-    funcionarios.forEach(function (funcionario) {
-        var nome = funcionario["Nome do funcionário"] || "";
-        var hospital = funcionario["Nome do Hospital"] || "";
-        var funcao = funcionario["Função"] || "";
-        var iniciais = obterIniciais(nome);
-
-        var item = document.createElement("div");
-        item.className = "funcionario-item";
-
-        item.innerHTML = `
-            <div class="funcionario-item-left">
-                <div class="funcionario-avatar">${iniciais}</div>
-                <div class="funcionario-info">
-                    <span class="funcionario-nome">${nome}</span>
-                </div>
-            </div>
-            <span class="funcionario-badge role">${funcao}</span>
-        `;
-
-        container.appendChild(item);
-    });
-
-    if (badgeTotal) {
-        var qtd = funcionarios.length;
-        badgeTotal.innerText = qtd + (qtd === 1 ? " colaborador" : " colaboradores");
-    }
 }
 
 function renderizarCargos(cargos) {

@@ -87,21 +87,53 @@ function listarCargos(req, res) {
 }
 
 function listarFuncionarios(req, res) {
-    usuarioModel.listarFuncionarios()
-        .then(
-            function (resultado) {
+    var idHospital = req.query.idHospital;
+    usuarioModel.listarFuncionarios(idHospital)
+        .then(function (resultado) {
+            res.json(resultado);
+        })
+        .catch(function (erro) {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
+        });
+}
+
+function editar(req, res) {
+    var id = req.params.id;
+    var nome = req.body.nomeServer;
+    var email = req.body.emailServer;
+    var cargo_id = req.body.cargoServer;
+    var senha = req.body.senhaServer;
+
+    if (!id || !nome || !email || !cargo_id || cargo_id == "null") {
+        res.status(400).send("Dados obrigatórios para edição estão faltando!");
+    } else {
+        usuarioModel.editar(id, nome, email, cargo_id, senha)
+            .then(function (resultado) {
                 res.json(resultado);
-            }
-        ).catch(
-            function (erro) {
+            })
+            .catch(function (erro) {
                 console.log(erro);
-                console.log(
-                    "\nHouve um erro ao buscar os funcionários! Erro: ",
-                    erro.sqlMessage
-                );
                 res.status(500).json(erro.sqlMessage);
-            }
-        );
+            });
+    }
+}
+
+function deletar(req, res) {
+    var id = req.params.id;
+
+    if (!id) {
+        res.status(400).send("O id do funcionário está undefined!");
+    } else {
+        usuarioModel.deletar(id)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
 }
 
 function cadastrarCargo(req, res) {
@@ -166,6 +198,8 @@ module.exports = {
     autenticar,
     listarCargos,
     listarFuncionarios,
+    editar,
+    deletar,
     cadastrar,
     cadastrarCargo,
     editarCargo,
