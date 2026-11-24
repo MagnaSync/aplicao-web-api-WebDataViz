@@ -69,13 +69,81 @@ const limitar = (v) => Math.max(1, Math.min(100, Math.round(v)));
 
 /**
  * KPIs do topo.
- * @returns {Promise<{alertas7d:number, usoMedio:number, pico:number, minutosEmAlerta:number}>}
+ * @returns {Promise<{alertas7d:number, usoMedio:number, Pico_Leituras:number, minutosEmAlerta:number}>}
  */
 async function obterKpis(id_equipamento) {
-  // TODO API: const r = await fetch(`/cpu/kpis/${servidorId}`); return r.json();
-  const a = ajuste(id_equipamento);
-  return { alertas7d: 14 + a, usoMedio: limitar(47 + a), pico: limitar(96 + a / 2), minutosEmAlerta: 205 + a * 6 };
+    const a = ajuste(id_equipamento);
+
+    const [respostaAlertas, respostaMedia, respostaPico, respostaTempo] = await Promise.all([
+        obterAlertasCpu7dias(id_equipamento),
+        obterUsoMedio(id_equipamento),
+        obterPicoCpu(id_equipamento),
+        obterTempoAcumuladoAlerta(id_equipamento)
+    ]);
+
+    return {
+        alertas7d: Number(respostaAlertas[0]?.Total_Alertas ?? 0),
+        usoMedio: Number(respostaMedia[0]?.usoMedio ?? 0),
+        pico: Number(respostaPico[0]?.Pico_Leituras ?? 0),
+        minutosEmAlerta: Number(respostaTempo[0]?.minutosEmAlerta ?? 0)
+    };
 }
+
+async function obterUsoMedio(id_equipamento) {
+  const response = await fetch(
+    `/cpu/usoMedioCpu/${id_equipamento}`,
+    { cache: 'no-store' }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Erro HTTP ${response.status}`);
+  }
+
+  const resposta = await response.json();
+
+  return resposta;
+}
+
+async function obterPicoCpu(id_equipamento) {
+    const response = await fetch(
+        `/cpu/picoCpu/${id_equipamento}`,
+        { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+async function obterAlertasCpu7dias(id_equipamento) {
+    const response = await fetch(
+        `/cpu/alertasCpu7dias/${id_equipamento}`,
+        { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+async function obterTempoAcumuladoAlerta(id_equipamento) {
+    const response = await fetch(
+        `/cpu/tempoAcumuladoAlerta/${id_equipamento}`,
+        { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+
 
 /**
  * Histórico de uso de CPU (gráfico de linhas) — 1 leitura por minuto.
@@ -112,14 +180,39 @@ async function obterHistoricoCpu(id_equipamento) {
  * @returns {Promise<Array<{data:string, inicio:string, fim:string, usoMedio:number}>>}
  *          data ISO (YYYY-MM-DD); inicio/fim "HH:MM"; ordenado do maior para o menor usoMedio
  */
-async function obterRankingSobrecarga(servidorId) {
-  // TODO API: const r = await fetch(`/cpu/ranking/${servidorId}`); return r.json();
-  const a = ajuste(servidorId);
-  return [
-    { data: '2026-11-11', inicio: '10:00', fim: '10:30', usoMedio: limitar(94.2 + a / 2) },
-    { data: '2026-11-12', inicio: '14:30', fim: '15:00', usoMedio: limitar(91.7 + a / 2) },
-    { data: '2026-11-16', inicio: '16:00', fim: '16:30', usoMedio: limitar(89.3 + a / 2) }
-  ];
+async function obterRanking(id_equipamento) {
+    const response = await fetch(
+        `/cpu/rankingCpu/${id_equipamento}`,
+        { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}`);
+    }
+
+    const resposta = await response.json();
+
+    return resposta.map((registro) => {
+        const [data, inicio] = registro.intervalo_30_min.split(' ');
+
+        const [hora, minuto] = inicio.split(':').map(Number);
+
+        const minutosFim = hora * 60 + minuto + 30;
+
+        const horaFim = Math.floor(minutosFim / 60) % 24;
+        const minutoFim = minutosFim % 60;
+
+        const fim =
+            String(horaFim).padStart(2, '0') + ':' +
+            String(minutoFim).padStart(2, '0');
+
+        return {
+            data: data,
+            inicio: inicio,
+            fim: fim,
+            usoMedio: Number(registro.media_uso)
+        };
+    });
 }
 
 /**
@@ -127,13 +220,36 @@ async function obterRankingSobrecarga(servidorId) {
  * @returns {Promise<{faixas:string[], quantidades:number[]}>}
  */
 async function obterDistribuicaoCpu(id_equipamento) {
-  // TODO API: const r = await fetch(`/cpu/distribuicao/${servidorId}`); return r.json();
-  const faixas = ['0-10', '10-20', '20-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '90-100'];
-  const quantidades = [12, 48, 96, 134, 112, 86, 64, 38, 21, 9];
-  // Mock: desloca a distribuição conforme o servidor
-  const desloc = Math.round(ajuste(id_equipamento) / 8);
-  const ajustadas = quantidades.map((_, i) => quantidades[Math.max(0, Math.min(9, i - desloc))]);
-  return { faixas, quantidades: ajustadas };
+    const response = await fetch(
+        `/cpu/histogramaCpu/${id_equipamento}`,
+        { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}`);
+    }
+
+    const resposta = await response.json();
+
+    const faixas = [
+        '0-10', '10-20', '20-30', '30-40',
+        '40-50', '50-60', '60-70', '70-80',
+        '80-90', '90-100'
+    ];
+
+    const quantidades = Array(10).fill(0);
+
+    resposta.forEach((registro) => {
+        const indice = Number(registro.inicio_intervalo) / 10;
+
+        quantidades[indice] = Number(registro.numero_leituras);
+    });
+
+    console.log("Dados do histograma:", resposta);
+    console.log("Faixas:", faixas);
+    console.log("Quantidades:", quantidades);
+
+    return { faixas, quantidades };
 }
 
 /**
@@ -141,12 +257,47 @@ async function obterDistribuicaoCpu(id_equipamento) {
  * @returns {Promise<{labels:string[], valores:number[]}>}
  */
 async function obterAlertasPorDia(id_equipamento) {
-  // TODO API: const r = await fetch(`/cpu/alertas-por-dia/${servidorId}`); return r.json();
-  const a = Math.round(ajuste(id_equipamento) / 4);
-  return {
-    labels: ['10/11', '11/11', '12/11', '13/11', '14/11', '15/11', '16/11'],
-    valores: [1, 3, 4, 0, 1, 2, 3].map((v) => Math.max(0, v + a))
-  };
+    const response = await fetch(
+        `/cpu/alertasPorDia/${id_equipamento}`,
+        { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}`);
+    }
+
+    const resposta = await response.json();
+
+    const labels = [];
+    const valores = [];
+
+    for (let i = 6; i >= 0; i--) {
+        const data = new Date();
+
+        data.setDate(data.getDate() - i);
+
+        const ano = data.getFullYear();
+        const mes = String(data.getMonth() + 1).padStart(2, '0');
+        const dia = String(data.getDate()).padStart(2, '0');
+
+        const dataCompleta = `${ano}-${mes}-${dia}`;
+
+        const registro = resposta.find(
+            (r) => r.dia === dataCompleta
+        );
+
+        labels.push(`${dia}/${mes}`);
+
+        valores.push(
+            registro ? Number(registro.quantidade_alertas) : 0
+        );
+    }
+
+    console.log("Alertas por dia:", resposta);
+    console.log("Labels:", labels);
+    console.log("Valores:", valores);
+
+    return { labels, valores };
 }
 
 /* ==========================================================================
@@ -394,7 +545,7 @@ async function carregarTela(id_equipamento) {
     const [kpis, historico, ranking, distribuicao, alertasDia] = await Promise.all([
       obterKpis(id_equipamento),
       obterHistoricoCpu(id_equipamento),
-      obterRankingSobrecarga(id_equipamento),
+      obterRanking(id_equipamento),
       obterDistribuicaoCpu(id_equipamento),
       obterAlertasPorDia(id_equipamento)
     ]);
