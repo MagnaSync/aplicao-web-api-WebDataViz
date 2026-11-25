@@ -1,0 +1,236 @@
+/* ==========================================================================
+   MagnaSync — Visão Rede
+   Arquivo: dashboard-rede.css
+
+   Este arquivo COMPLEMENTA o dashboard.css (carregue-o ANTES deste).
+   Aqui ficam apenas os estilos exclusivos da tela:
+     - Grade principal conforme o wireframe (gráficos à esquerda, ranking à direita)
+     - Lista do ranking de picos
+     - Pequenos ajustes de acessibilidade
+
+   Paleta herdada: #0B192C | #1A4A87 | #273E63 | #F2F7FC | #FFFFFF
+   Tipografia herdada: Inter (texto) + Plus Jakarta Sans (títulos/números)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Grade principal (wireframe)
+
+     ┌────────────────────────┬───────────────┐
+     │ Tráfego Rx vs. Tx      │               │
+     │ (linhas duplas)        │   Ranking de  │
+     ├────────────────────────┤   maiores     │
+     │ Previsão de latência   │   picos       │
+     └────────────────────────┴───────────────┘
+
+   Proporção 1.65fr / 1fr = mesma usada em .telemetry-grid do dashboard.css.
+   -------------------------------------------------------------------------- */
+.rede-grid {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  flex: 1;
+  /* Em telas baixas a área rola (.dash-view) em vez de esmagar os gráficos */
+  min-height: 560px;
+}
+
+.rede-card-history {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.rede-card-distribution {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.rede-card-ranking {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+/* O .chart-wrapper (dashboard.css) já define flex:1 e position:relative,
+   necessários para o Chart.js redimensionar corretamente */
+.rede-grid .chart-wrapper {
+  min-height: 160px;
+}
+
+/* O canvas sai do fluxo: quem define a altura é o container, nunca o gráfico.
+   Evita que o Chart.js "cresça" o card a cada redimensionamento. */
+.rede-grid .chart-wrapper canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Ranking de maiores picos
+   -------------------------------------------------------------------------- */
+.ranking-title {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ranking-sort {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  color: #273E63;
+  flex-shrink: 0;
+}
+
+.ranking-sort small {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8a9dbf;
+  white-space: nowrap;
+}
+
+.ranking-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ranking-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.ranking-list::-webkit-scrollbar-thumb {
+  background: rgba(39, 62, 99, 0.2);
+  border-radius: 99px;
+}
+
+/* Linha do ranking — mesmo padrão visual de .funcionario-item */
+.ranking-item {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background-color: #F8FAFC;
+  border: 1px solid rgba(39, 62, 99, 0.08);
+  border-radius: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ranking-item:hover {
+  background-color: #ffffff;
+  border-color: rgba(26, 74, 135, 0.3);
+  box-shadow: 0 2px 8px rgba(11, 25, 44, 0.04);
+}
+
+/* Posição no ranking: o 1º lugar recebe destaque em azul sólido */
+.ranking-pos {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #1A4A87;
+  background-color: rgba(26, 74, 135, 0.08);
+}
+
+.ranking-item:first-child .ranking-pos {
+  color: #ffffff;
+  background-color: #1A4A87;
+}
+
+.ranking-when {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ranking-when strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0B192C;
+}
+
+.ranking-when small {
+  font-size: 12px;
+  color: #5B7396;
+}
+
+.ranking-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ranking-value strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0B192C;
+}
+
+/* --------------------------------------------------------------------------
+   Acessibilidade: foco visível para navegação por teclado
+   -------------------------------------------------------------------------- */
+.nav-link:focus-visible,
+.button-exit:focus-visible,
+.topbar-button:focus-visible,
+.select-unit:focus-visible {
+  outline: 2px solid #1A4A87;
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsivo
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  /* Empilha tudo em uma coluna: gráficos primeiro, ranking por último */
+  .rede-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    /* Deixa a grade crescer com o conteúdo; a rolagem fica em .dash-view */
+    flex: none;
+    min-height: 0;
+  }
+
+  .rede-card-history,
+  .rede-card-distribution,
+  .rede-card-ranking {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .rede-card-history,
+  .rede-card-distribution {
+    min-height: 340px;
+  }
+
+  .rede-card-ranking {
+    min-height: auto;
+  }
+
+  .rede-grid .chart-wrapper {
+    min-height: 240px;
+  }
+
+  .ranking-list {
+    overflow-y: visible;
+  }
+}
+
+@media (max-width: 560px) {
+  .ranking-item {
+    grid-template-columns: 30px 1fr;
+  }
+
+  .ranking-value {
+    grid-column: 2;
+  }
+}
