@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,12 +8,14 @@
   <link rel="icon" type="image/png" href="./assets/imgs/logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
   <link rel="stylesheet" href="./css/style.css" />
   <script src="https://unpkg.com/aos@2.3.4/dist/aos.js" defer></script>
   <script src="./js/script.js" defer></script>
 </head>
+
 <body>
   <div id="inicio" class="site-container">
 
@@ -35,10 +38,40 @@
         </nav>
 
         <div class="cabecalho-acoes">
-          <a href="login.html" class="button button-secundario">Login</a>
-          <a href="#contato" class="button button-primary">Solicitar Demonstração</a>
+          <a href="login.html" class="button button-secundario botao-login-header">Login</a>
+          <a href="#contato" class="button button-primary botao-demo-header">Solicitar Demonstração</a>
+          <button class="menu-hamburguer" id="btn-menu-mobile" type="button" aria-label="Abrir menu de navegação"
+            aria-expanded="false" aria-controls="menu-mobile">
+            <span class="linha-hamburguer"></span>
+            <span class="linha-hamburguer"></span>
+            <span class="linha-hamburguer"></span>
+          </button>
         </div>
       </div>
+
+      <!-- Menu móvel (gaveta / drawer) -->
+      <div class="menu-mobile-backdrop" id="menu-mobile-backdrop"></div>
+      <nav class="menu-mobile" id="menu-mobile" aria-label="Navegação mobile">
+        <div class="menu-mobile-cabecalho">
+          <div class="logo">
+            <img src="assets/imgs/logo.png" alt="Logo MagnaSync" class="logo-img" />
+            <span>Magna<span>Sync</span></span>
+          </div>
+          <button class="menu-mobile-fechar" id="btn-fechar-menu" type="button"
+            aria-label="Fechar menu">&times;</button>
+        </div>
+        <div class="menu-mobile-links">
+          <a href="#inicio" class="link-menu-mobile">Início</a>
+          <a href="#desafios-solucoes" class="link-menu-mobile">Problemas e Soluções</a>
+          <a href="#metricas" class="link-menu-mobile">O que Monitoramos</a>
+          <a href="#perfis" class="link-menu-mobile">Quem Utiliza</a>
+          <a href="#duvidas" class="link-menu-mobile">Dúvidas Frequentes</a>
+        </div>
+        <div class="menu-mobile-acoes">
+          <a href="login.html" class="button button-secundario">Área de Login</a>
+          <a href="#contato" class="button button-primary link-menu-mobile">Solicitar Demonstração</a>
+        </div>
+      </nav>
     </header>
 
     <main>
@@ -55,9 +88,13 @@
           <div class="container hero-grid">
 
             <div class="hero-texto">
-              <span class="etiqueta-secao" data-aos="fade-down" data-aos-offset="0">Infraestrutura de TI · Servidores PACS</span>
-              <h1 data-aos="fade-right" data-aos-delay="100" data-aos-offset="0">Monitoramento contínuo de hardware para Servidores PACS.</h1>
-              <p data-aos="fade-right" data-aos-delay="200" data-aos-offset="0">Acompanhe CPU, memória RAM, disco e tráfego de rede dos Servidores PACS. Identifique gargalos e saturação de recursos antes que a recepção e o armazenamento de exames do tipo DICOM sejam afetados.</p>
+              <span class="etiqueta-secao" data-aos="fade-down" data-aos-offset="0">Infraestrutura de TI · Servidores
+                PACS</span>
+              <h1 data-aos="fade-right" data-aos-delay="100" data-aos-offset="0">Monitoramento contínuo de hardware para
+                Servidores PACS.</h1>
+              <p data-aos="fade-right" data-aos-delay="200" data-aos-offset="0">Acompanhe CPU, memória RAM, disco e
+                tráfego de rede dos Servidores PACS. Identifique gargalos e saturação de recursos antes que a recepção e
+                o armazenamento de exames do tipo DICOM sejam afetados.</p>
               <div class="hero-botoes" data-aos="fade-up" data-aos-delay="300" data-aos-offset="0">
                 <a href="#contato" class="button button-primary">Solicitar Demonstração</a>
                 <a href="#metricas" class="button button-secundario">Ver Métricas</a>
@@ -66,7 +103,9 @@
 
             <div class="hero-imagem-container" data-aos="fade-left" data-aos-delay="150" data-aos-offset="0">
               <div class="hero-imagem-moldura">
-                <img src="assets/imgs/dashboard.png" alt="Monitoramento de Servidores PACS MagnaSync" class="hero-imagem" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <img src="assets/imgs/dashboard.png" alt="Monitoramento de Servidores PACS MagnaSync"
+                  class="hero-imagem"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                 <div class="hero-placeholder">
                   <span class="placeholder-tag">PACS &middot; DICOM</span>
                   <p>Insira sua imagem aqui</p>
@@ -87,7 +126,8 @@
             <div class="evolucao-cabecalho">
               <span class="etiqueta-secao" data-aos="fade-down">Cenário Real</span>
               <h2 class="evolucao-titulo" data-aos="fade-up" data-aos-delay="100">Onde sua empresa pode evoluir</h2>
-              <p class="evolucao-subtitulo" data-aos="fade-up" data-aos-delay="200">A diferença prática entre uma rotina reativa e a previsibilidade contínua na infraestrutura dos Servidores PACS.</p>
+              <p class="evolucao-subtitulo" data-aos="fade-up" data-aos-delay="200">A diferença prática entre uma rotina
+                reativa e a previsibilidade contínua na infraestrutura dos Servidores PACS.</p>
             </div>
 
             <div class="tabelas-comparacao-grid">
@@ -101,37 +141,45 @@
                 <div class="tabela-card-divisor" aria-hidden="true"></div>
 
                 <ul class="tabela-card-lista">
-                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="270" data-aos-anchor-placement="top-bottom">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="270"
+                    data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--erro" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                          stroke-linejoin="round" />
                       </svg>
                     </span>
                     <span>Falhas detectadas só após a parada do Servidor PACS</span>
                   </li>
 
-                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="390" data-aos-anchor-placement="top-bottom">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="390"
+                    data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--erro" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                          stroke-linejoin="round" />
                       </svg>
                     </span>
                     <span>Sem visibilidade contínua de CPU, RAM, disco e rede</span>
                   </li>
 
-                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="510" data-aos-anchor-placement="top-bottom">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="510"
+                    data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--erro" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                          stroke-linejoin="round" />
                       </svg>
                     </span>
                     <span>Registros manuais e análises técnicas descentralizadas</span>
                   </li>
 
-                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="630" data-aos-anchor-placement="top-bottom">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="630"
+                    data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--erro" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                          stroke-linejoin="round" />
                       </svg>
                     </span>
                     <span>Risco de lentidão e atrasos no envio ao PACS</span>
@@ -148,37 +196,45 @@
                 <div class="tabela-card-divisor" aria-hidden="true"></div>
 
                 <ul class="tabela-card-lista">
-                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="270" data-aos-anchor-placement="top-bottom">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="270"
+                    data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--sucesso" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6"
+                          stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
                     </span>
                     <span>Alertas em tempo real antes do esgotamento de recursos</span>
                   </li>
 
-                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="390" data-aos-anchor-placement="top-bottom">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="390"
+                    data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--sucesso" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6"
+                          stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
                     </span>
                     <span>Monitoramento contínuo de CPU, RAM, disco e rede no PACS</span>
                   </li>
 
-                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="510" data-aos-anchor-placement="top-bottom">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="510"
+                    data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--sucesso" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6"
+                          stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
                     </span>
                     <span>Histórico técnico centralizado para a equipe de TI</span>
                   </li>
 
-                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="630" data-aos-anchor-placement="top-bottom">
+                  <li class="tabela-card-item" data-aos="fade-up" data-aos-delay="630"
+                    data-aos-anchor-placement="top-bottom">
                     <span class="tabela-icone tabela-icone--sucesso" aria-hidden="true">
                       <svg width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="currentColor" stroke-width="2.6"
+                          stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
                     </span>
                     <span>Estabilidade na recepção e gravação de exames DICOM</span>
@@ -197,14 +253,17 @@
           <div class="container">
             <div class="secao-cabecalho centralizado">
               <span class="etiqueta-secao" data-aos="fade-down">Monitoramento ativo</span>
-              <h2 data-aos="fade-up" data-aos-delay="100">Tudo o que importa, <span>monitorado em tempo real.</span></h2>
-              <p data-aos="fade-up" data-aos-delay="200">O MagnaSync acompanha os principais componentes dos Servidores PACS para identificar alterações antes que elas se tornem problemas.</p>
+              <h2 data-aos="fade-up" data-aos-delay="100">Tudo o que importa, <span>monitorado em tempo real.</span>
+              </h2>
+              <p data-aos="fade-up" data-aos-delay="200">O MagnaSync acompanha os principais componentes dos Servidores
+                PACS para identificar alterações antes que elas se tornem problemas.</p>
             </div>
 
             <div class="metricas-grid">
               <article class="card-metrica" data-aos="zoom-in-up" data-aos-delay="0">
                 <h3>Processador (CPU)</h3>
-                <p>Detecta sobrecarga de processamento no Servidor PACS durante a recepção e a indexação de exames DICOM.</p>
+                <p>Detecta sobrecarga de processamento no Servidor PACS durante a recepção e a indexação de exames
+                  DICOM.</p>
                 <div class="metrica-dados">
                   <span class="metrica-numero">42%</span>
                   <span class="metrica-rotulo">carga atual</span>
@@ -258,7 +317,8 @@
                 </span>
                 <h3>Técnico</h3>
                 <span class="perfil-funcao">Suporte Operacional de Hardware</span>
-                <p>Monitore as métricas de hardware dos Servidores PACS para evitar travamentos ou gargalos na recepção, indexação e armazenamento de exames.</p>
+                <p>Monitore as métricas de hardware dos Servidores PACS para evitar travamentos ou gargalos na recepção,
+                  indexação e armazenamento de exames.</p>
                 <ul>
                   <li>Alertas em tempo real</li>
                   <li>Análise de componentes de hardware</li>
@@ -273,7 +333,8 @@
                 </span>
                 <h3>Analista</h3>
                 <span class="perfil-funcao">Monitoramento e Gestão de Incidentes</span>
-                <p>Atuação preventiva sobre irregularidades de CPU, RAM, disco e rede nos Servidores PACS, com logs de chamados e rastreabilidade técnica.</p>
+                <p>Atuação preventiva sobre irregularidades de CPU, RAM, disco e rede nos Servidores PACS, com logs de
+                  chamados e rastreabilidade técnica.</p>
                 <ul>
                   <li>Monitoramento de métricas</li>
                   <li>Logs e rastreabilidade</li>
@@ -288,7 +349,8 @@
                 </span>
                 <h3>Gerente</h3>
                 <span class="perfil-funcao">Gerente de TI Hospitalar</span>
-                <p>Tomada de decisão com base em relatórios de disponibilidade, capacidade de disco e incidentes dos Servidores PACS.</p>
+                <p>Tomada de decisão com base em relatórios de disponibilidade, capacidade de disco e incidentes dos
+                  Servidores PACS.</p>
                 <ul>
                   <li>Histórico de métricas e relatórios</li>
                   <li>Cumprimento de SLAs</li>
@@ -327,7 +389,10 @@
                 <span>O que o MagnaSync monitora?</span>
               </button>
               <div class="resposta-duvida">
-                Exclusivamente a infraestrutura de hardware dos Servidores PACS (Picture Archiving and Communication System): CPU, memória RAM, armazenamento em disco para exames e tráfego de rede do servidor, com histórico contínuo para análise técnica. O MagnaSync não monitora parâmetros clínicos de pacientes nem interpreta o conteúdo dos exames.
+                Exclusivamente a infraestrutura de hardware dos Servidores PACS (Picture Archiving and Communication
+                System): CPU, memória RAM, armazenamento em disco para exames e tráfego de rede do servidor, com
+                histórico contínuo para análise técnica. O MagnaSync não monitora parâmetros clínicos de pacientes nem
+                interpreta o conteúdo dos exames.
               </div>
             </div>
 
@@ -337,7 +402,9 @@
                 <span>Onde o MagnaSync é instalado?</span>
               </button>
               <div class="resposta-duvida">
-                Exclusivamente nos Servidores PACS da infraestrutura de TI hospitalar, por meio de um cliente leve de coleta que monitora CPU, memória RAM, armazenamento em disco e tráfego de rede sem interferir na recepção ou persistência dos exames. O acompanhamento centralizado é realizado pela aplicação web.
+                Exclusivamente nos Servidores PACS da infraestrutura de TI hospitalar, por meio de um cliente leve de
+                coleta que monitora CPU, memória RAM, armazenamento em disco e tráfego de rede sem interferir na
+                recepção ou persistência dos exames. O acompanhamento centralizado é realizado pela aplicação web.
               </div>
             </div>
 
@@ -347,7 +414,8 @@
                 <span>Como funcionam as notificações e avisos de problema?</span>
               </button>
               <div class="resposta-duvida">
-                Os alertas são disparados automaticamente quando CPU, memória RAM, ocupação de disco ou tráfego de rede dos Servidores PACS atingem níveis de atenção ou criticidade.
+                Os alertas são disparados automaticamente quando CPU, memória RAM, ocupação de disco ou tráfego de rede
+                dos Servidores PACS atingem níveis de atenção ou criticidade.
               </div>
             </div>
           </div>
@@ -362,7 +430,8 @@
           <div class="contato-texto" data-aos="fade-right" data-aos-offset="100">
             <span class="etiqueta-secao">Demonstração técnica</span>
             <h2>Garanta a disponibilidade contínua dos seus Servidores PACS.</h2>
-            <p>Descubra como o MagnaSync ajuda a evitar paradas não planejadas, saturação de armazenamento por arquivos de imagem do tipo DICOM e gargalos de rede nos Servidores PACS.</p>
+            <p>Descubra como o MagnaSync ajuda a evitar paradas não planejadas, saturação de armazenamento por arquivos
+              de imagem do tipo DICOM e gargalos de rede nos Servidores PACS.</p>
           </div>
 
           <div id="area-formulario" data-aos="fade-left" data-aos-delay="150" data-aos-offset="100">
@@ -426,4 +495,5 @@
 
   </div>
 </body>
+
 </html>

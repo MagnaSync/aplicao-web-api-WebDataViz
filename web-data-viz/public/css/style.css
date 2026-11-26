@@ -99,6 +99,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -108,6 +110,7 @@ body {
   background-color: var(--cor-fundo-escuro);
   color: var(--cor-fundo-escuro);
   overflow-x: hidden;
+  width: 100%;
 }
 
 h1, h2, h3, h4 {
@@ -139,7 +142,7 @@ button, input {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 clamp(24px, 4vw, 36px);
 }
 
 .secao {
@@ -386,6 +389,155 @@ button, input {
   justify-self: end;
 }
 
+/* --- Botão Hambúrguer Mobile --- */
+.menu-hamburguer {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(126, 168, 216, 0.28);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  z-index: 60;
+}
+
+.menu-hamburguer:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--cor-destaque);
+}
+
+.linha-hamburguer {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: var(--cor-branca);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.menu-hamburguer.aberto .linha-hamburguer:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-hamburguer.aberto .linha-hamburguer:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-hamburguer.aberto .linha-hamburguer:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* --- Backdrop e Gaveta Mobile --- */
+.menu-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 25, 44, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.menu-mobile-backdrop.ativo {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-mobile {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 86%;
+  max-width: 360px;
+  height: 100vh;
+  height: 100dvh;
+  background-color: #0B192C;
+  border-left: 1px solid rgba(39, 62, 99, 0.6);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.55);
+  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+}
+
+.menu-mobile.aberto {
+  right: 0;
+}
+
+.menu-mobile-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(39, 62, 99, 0.5);
+}
+
+.menu-mobile-fechar {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(126, 168, 216, 0.25);
+  border-radius: 8px;
+  color: var(--cor-branca);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.menu-mobile-fechar:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--cor-destaque);
+}
+
+.menu-mobile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 24px 0;
+}
+
+.menu-mobile-links a {
+  padding: 12px 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #a8c0d8;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.menu-mobile-links a:hover,
+.menu-mobile-links a.ativo {
+  color: var(--cor-branca);
+  background: rgba(26, 74, 135, 0.35);
+}
+
+.menu-mobile-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(39, 62, 99, 0.5);
+}
+
+.menu-mobile-acoes .button {
+  width: 100%;
+  justify-content: center;
+}
+
 /* ==========================================================================
    5. FUNDO DEGRADÊ ESCURO CONTÍNUO (Hero até Perfis de Usuário)
    ========================================================================== */
@@ -422,21 +574,25 @@ button, input {
    ========================================================================== */
 .secao-hero {
   background: transparent;
-  padding: 112px 0 52px 0;
+  padding: 124px 0 56px 0;
 }
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 0.92fr 1.08fr;
+  grid-template-columns: 0.95fr 1.05fr;
   align-items: center;
-  gap: 40px;
+  gap: clamp(32px, 5vw, 48px);
+}
+
+.hero-texto {
+  max-width: 580px;
 }
 
 h1 {
-  margin-top: 16px;
-  font-size: var(--texto-hero);
-  line-height: 1.15;
-  letter-spacing: -0.04em;
+  margin: 12px 0 16px 0;
+  font-size: clamp(32px, 3.8vw, 48px);
+  line-height: 1.18;
+  letter-spacing: -0.03em;
   color: var(--cor-branca);
 }
 
@@ -446,9 +602,9 @@ h1 span {
 
 .hero-texto p {
   color: #cbd5e1;
-  font-size: var(--texto-lead);
-  line-height: 1.65;
-  margin: 18px 0 24px 0;
+  font-size: 16.5px;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
 }
 
 .hero-botoes {
@@ -456,6 +612,7 @@ h1 span {
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
 .hero-imagem-container {
@@ -1251,29 +1408,40 @@ h1 span {
    ========================================================================== */
 
 @media (max-width: 1100px) {
+  .container {
+    padding: 0 clamp(24px, 4vw, 36px);
+  }
+
   .hero-grid {
     grid-template-columns: 1fr;
-    padding: 70px 0 30px 0;
+    padding: 0;
     gap: 36px;
   }
 
+  .hero-texto {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
   h1 {
-    font-size: 42px;
+    font-size: clamp(30px, 4vw, 38px);
+    line-height: 1.2;
   }
 
   .secao-cabecalho h2,
   .evolucao-titulo,
   .duvidas-intro h2,
   .contato-texto h2 {
-    font-size: 32px;
+    font-size: clamp(26px, 3.5vw, 32px);
   }
 
   .hero-imagem-moldura {
-    max-width: 680px;
+    max-width: 620px;
   }
 
   .metricas-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 
   .tabelas-comparacao-grid {
@@ -1281,11 +1449,11 @@ h1 span {
   }
 
   .perfis-grid {
-    gap: 28px;
+    gap: 24px;
   }
 
   .card-perfil {
-    padding: 32px 28px 28px 28px;
+    padding: 30px 24px 26px 24px;
   }
 
   .duvidas-grid {
@@ -1299,18 +1467,22 @@ h1 span {
   }
 
   .menu-navegacao a {
-    font-size: 13px;
+    font-size: 13.5px;
   }
 
   .button-primary {
     padding: 0 16px;
-    font-size: 13px;
+    font-size: 13.5px;
   }
 }
 
 @media (max-width: 880px) {
   .container {
-    padding: 0 16px;
+    padding: 0 clamp(22px, 4vw, 32px);
+  }
+
+  .cabecalho {
+    height: 68px;
   }
 
   .cabecalho-conteudo {
@@ -1320,77 +1492,220 @@ h1 span {
   }
 
   .menu-navegacao {
-    display: none;
+    display: none !important;
+  }
+
+  .menu-hamburguer {
+    display: flex;
+  }
+
+  .secao-hero {
+    padding: 104px 0 44px 0;
+  }
+
+  .hero-grid {
+    padding: 0;
+    gap: 30px;
+  }
+
+  .hero-texto {
+    max-width: 580px;
   }
 
   h1 {
-    font-size: 36px;
+    font-size: clamp(26px, 4.2vw, 32px);
+    line-height: 1.22;
+    margin: 0 0 14px 0;
+  }
+
+  .hero-texto p {
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 22px 0;
+    max-width: 520px;
+  }
+
+  .hero-botoes {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 24px 0;
+  }
+
+  .hero-botoes .button {
+    height: 44px;
+    padding: 0 22px;
+    font-size: 14px;
+    width: auto;
+    min-width: 180px;
+    justify-content: center;
+  }
+
+  .hero-imagem-container {
+    margin-top: 16px;
+  }
+
+  .hero-imagem-moldura {
+    max-width: 560px;
+    animation: none;
+    transform: none;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+    border-radius: 14px;
   }
 
   .secao-cabecalho h2,
   .evolucao-titulo,
   .duvidas-intro h2,
   .contato-texto h2 {
-    font-size: 30px;
+    font-size: 27px;
   }
 
   .secao-evolucao {
-    padding: 52px 0 56px 0;
+    padding: 48px 0 52px 0;
   }
 
   .evolucao-cabecalho {
-    margin-bottom: 34px;
+    margin-bottom: 30px;
   }
 
   .tabelas-comparacao-grid {
-    grid-template-columns: minmax(0, 480px);
-    gap: 26px;
+    grid-template-columns: minmax(0, 520px);
+    justify-content: center;
+    gap: 24px;
   }
 
   .perfis-grid {
     grid-template-columns: minmax(0, 500px);
     justify-content: center;
-    gap: 36px;
+    gap: 26px;
   }
 
   .duvidas-grid {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 32px;
+  }
+
+  .card-suporte {
+    width: 100%;
+    max-width: 320px;
   }
 
   .contato-container {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 32px;
   }
 
   .rodape-grid {
-    grid-template-columns: 1.3fr 1fr;
-    gap: 36px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+
+  .rodape-marca {
+    grid-column: span 2;
   }
 }
 
 @media (max-width: 640px) {
+  .container {
+    padding: 0 clamp(20px, 4.5vw, 26px);
+  }
+
+  .cabecalho {
+    height: 64px;
+  }
+
+  /* Oculta botão longo de demonstração do topo em telas menores para nunca quebrar */
+  .botao-demo-header {
+    display: none !important;
+  }
+
+  .botao-login-header {
+    padding: 0 14px;
+    font-size: 13px;
+    min-height: 38px;
+  }
+
   .secao {
-    padding: 48px 0;
+    padding: 44px 0;
   }
 
-  .secao-evolucao {
-    padding: 44px 0 48px 0;
+  .secao-hero {
+    padding: 92px 0 36px 0;
   }
 
-  .menu-navegacao {
-    display: none;
+  .hero-grid {
+    padding: 0;
+    gap: 24px;
+  }
+
+  .hero-texto {
+    max-width: 100%;
+  }
+
+  .etiqueta-secao {
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    display: inline-flex;
   }
 
   h1 {
-    font-size: 30px;
+    font-size: clamp(22px, 5.2vw, 26px);
+    line-height: 1.25;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-texto p {
+    font-size: 14.5px;
+    line-height: 1.55;
+    margin: 0 0 20px 0;
+    max-width: 480px;
+    color: #cbd5e1;
+  }
+
+  .hero-botoes {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 20px 0;
+  }
+
+  .hero-botoes .button {
+    height: 42px;
+    padding: 0 18px;
+    font-size: 13.5px;
+    width: auto;
+    min-width: unset;
+  }
+
+  .hero-imagem-container {
+    margin-top: 14px;
+  }
+
+  .hero-imagem-moldura {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .secao-evolucao {
+    padding: 40px 0 44px 0;
+  }
+
+  .secao-cabecalho.centralizado {
+    margin-bottom: 28px;
   }
 
   .secao-cabecalho h2,
   .evolucao-titulo,
   .duvidas-intro h2,
   .contato-texto h2 {
-    font-size: 26px;
+    font-size: clamp(21px, 4.8vw, 25px);
+    line-height: 1.25;
   }
 
   .hero-texto p,
@@ -1398,65 +1713,202 @@ h1 span {
   .evolucao-subtitulo,
   .duvidas-intro p,
   .contato-texto p {
-    font-size: var(--texto-corpo);
+    font-size: 14.5px;
+    line-height: 1.55;
   }
 
   .tabelas-comparacao-grid {
     grid-template-columns: 1fr;
-    gap: 22px;
+    max-width: 480px;
+    margin: 0 auto;
+    gap: 18px;
+  }
+
+  .tabela-card-topo {
+    padding: 16px 18px;
+  }
+
+  .tabela-card-titulo {
+    font-size: 18px;
   }
 
   .tabela-card-lista {
-    padding: 0 20px;
-    gap: 14px;
+    padding: 0 18px 18px 18px;
+    gap: 12px;
   }
 
   .tabela-card-item {
-    font-size: var(--texto-pequeno);
+    font-size: 13.5px;
+    gap: 10px;
   }
 
   .metricas-grid {
     grid-template-columns: 1fr;
-    gap: 18px;
+    max-width: 440px;
+    margin: 0 auto;
+    gap: 14px;
   }
 
   .card-metrica {
-    padding: 24px 22px;
+    padding: 20px 18px;
+    border-radius: 14px;
   }
 
   .metrica-dados .metrica-numero {
-    font-size: 30px;
+    font-size: 26px;
+  }
+
+  .perfis-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    margin: 0 auto;
+    gap: 18px;
   }
 
   .card-perfil {
     padding: 24px 20px;
+    border-radius: 14px;
+  }
+
+  .perfil-icone {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 14px;
+  }
+
+  .perfil-icone img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .duvidas-grid {
+    gap: 28px;
+  }
+
+  .item-duvida button {
+    grid-template-columns: 26px 1fr 18px;
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .item-duvida button span:nth-child(2) {
+    font-size: 14.5px;
+    line-height: 1.35;
+  }
+
+  .resposta-duvida {
+    padding: 0 0 16px 26px;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+
+  .contato-container {
+    gap: 28px;
+  }
+
+  .formulario-contato {
+    padding: 20px 18px;
+    border-radius: 12px;
+    max-width: 480px;
+    margin: 0 auto;
   }
 
   .formulario-campo-grupo {
     flex-direction: column;
-    gap: 8px;
-    padding: 8px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    gap: 10px;
   }
 
   .formulario-contato input {
-    height: 44px;
+    height: 46px;
     width: 100%;
+    background: var(--cor-branca);
+    border: 1px solid var(--borda-suave);
+    border-radius: 8px;
+    font-size: 15px;
+    padding: 0 14px;
   }
 
   .formulario-contato button {
     width: 100%;
+    height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
   }
 
   .rodape-grid {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 24px;
+  }
+
+  .rodape-marca {
+    grid-column: span 1;
   }
 
   .rodape-inferior {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     gap: 12px;
-    padding: 20px 0;
+    padding: 18px 0;
+    font-size: 12.5px;
+  }
+
+  .rodape-termos {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 440px) {
+  .hero-botoes {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto 20px auto;
+  }
+
+  .hero-botoes .button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .logo {
+    font-size: 17px;
+    gap: 6px;
+  }
+
+  .logo-img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .menu-hamburguer {
+    width: 36px;
+    height: 36px;
+  }
+
+  .cabecalho-acoes {
+    gap: 8px;
+  }
+
+  h1 {
+    font-size: 21px;
+  }
+
+  .card-perfil li {
+    font-size: 13px;
   }
 }
 

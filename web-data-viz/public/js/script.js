@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (ativo) link.setAttribute('aria-current', 'true');
       else link.removeAttribute('aria-current');
     });
+
+    const linksMobileAtivo = Array.from(document.querySelectorAll('.link-menu-mobile[href^="#"]'));
+    linksMobileAtivo.forEach((link) => {
+      const ativo = atual && link.getAttribute('href') === '#' + atual.id;
+      link.classList.toggle('ativo', ativo);
+    });
   }
 
   if (secoesMenu.length) {
@@ -37,6 +43,63 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', atualizarMenuAtivo);
     atualizarMenuAtivo();
   }
+
+  // --- Menu Mobile (Gaveta) ---
+  const btnMenuMobile = document.getElementById('btn-menu-mobile');
+  const btnFecharMenu = document.getElementById('btn-fechar-menu');
+  const menuMobile = document.getElementById('menu-mobile');
+  const menuMobileBackdrop = document.getElementById('menu-mobile-backdrop');
+  const linksMobile = Array.from(document.querySelectorAll('.link-menu-mobile'));
+
+  function abrirMenuMobile() {
+    if (!menuMobile) return;
+    menuMobile.classList.add('aberto');
+    if (menuMobileBackdrop) menuMobileBackdrop.classList.add('ativo');
+    if (btnMenuMobile) {
+      btnMenuMobile.classList.add('aberto');
+      btnMenuMobile.setAttribute('aria-expanded', 'true');
+    }
+    document.body.style.overflow = 'hidden';
+  }
+
+  function fecharMenuMobile() {
+    if (!menuMobile) return;
+    menuMobile.classList.remove('aberto');
+    if (menuMobileBackdrop) menuMobileBackdrop.classList.remove('ativo');
+    if (btnMenuMobile) {
+      btnMenuMobile.classList.remove('aberto');
+      btnMenuMobile.setAttribute('aria-expanded', 'false');
+    }
+    document.body.style.overflow = '';
+  }
+
+  if (btnMenuMobile) {
+    btnMenuMobile.addEventListener('click', () => {
+      if (menuMobile && menuMobile.classList.contains('aberto')) {
+        fecharMenuMobile();
+      } else {
+        abrirMenuMobile();
+      }
+    });
+  }
+
+  if (btnFecharMenu) {
+    btnFecharMenu.addEventListener('click', fecharMenuMobile);
+  }
+
+  if (menuMobileBackdrop) {
+    menuMobileBackdrop.addEventListener('click', fecharMenuMobile);
+  }
+
+  linksMobile.forEach((link) => {
+    link.addEventListener('click', fecharMenuMobile);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menuMobile && menuMobile.classList.contains('aberto')) {
+      fecharMenuMobile();
+    }
+  });
 
   // --- Acordeão de Dúvidas (FAQ) ---
   const itensDuvida = Array.from(document.querySelectorAll('.item-duvida'));
