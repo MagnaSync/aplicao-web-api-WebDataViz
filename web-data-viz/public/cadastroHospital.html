@@ -119,8 +119,51 @@
             </div>
             <div class="funcionarios-list" id="hospitais-list-container" style="max-height: 410px; overflow-y: auto;">
             </div>
-          </section>
-        </div>
+          </div>
+
+          <div class="campo">
+            <label for="email_hospital_input">E-mail</label>
+            <input type="email" id="email_hospital_input" name="email" maxlength="150"
+                   placeholder="Ex: contato@hospitalcentral.com.br" required>
+          </div>
+
+          <div class="linha">
+            <div class="campo">
+              <label for="cep_hospital_input">CEP</label>
+              <input type="text" id="cep_hospital_input" name="cep" maxlength="8"
+                     inputmode="numeric" pattern="\d{8}"
+                     title="Digite os 8 números do CEP, sem traço"
+                     placeholder="Somente números (8 dígitos)" required>
+            </div>
+
+            <div class="campo">
+              <label for="numero_hospital_input">Número</label>
+              <input type="text" id="numero_hospital_input" name="numero" maxlength="10"
+                     placeholder="Ex: 1200" required>
+            </div>
+
+            <div class="campo">
+            <label for="nome_representante_input">Nome do representante</label>
+            <input type="text" id="nome_representante_input" name="nome_representante" maxlength="150"
+                   placeholder="Ex: Nome completo do representante" required>
+            
+            </div>
+
+            <div class="campo">
+            <label for="nome_hospital_input">Senha:</label>
+            <input type="password" id="nome_hospital_input" name="nome" maxlength="150"
+                   placeholder="Ex: Hospital Central" required>
+          </div>
+
+          </div>
+
+          <div class="acoes">
+            <button type="button" id="btn-limpar-hospital" class="btn btn--secundario">Limpar</button>
+            <button type="button" id="btn-cadastrar-hospital" onclick="cadastrarHospital()" class="btn btn--primario">Cadastrar Hospital</button>
+          </div>
+        </form>
+
+      </section>
       </div>
 
       <!-- ===================== VIEW: DASHBOARD ===================== -->
