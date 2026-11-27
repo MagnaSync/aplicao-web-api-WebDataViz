@@ -92,7 +92,7 @@
             </div>
 
             <div class="kpi-card">
-              <span>Parque Total Monitorado</span>
+              <span>Total Monitorado</span>
               <div class="kpi-row">
                 <strong id="kpi-parque-total">--</strong>
                 <span class="kpi-badge up">Servidores PACS</span>
@@ -144,7 +144,7 @@
                 <div class="status-item">
                   <div class="status-item-left">
                     <i class="status-dot emerald" id="health-parque-dot"></i>
-                    <span>Parque de Servidores PACS</span>
+                    <span>Servidores PACS</span>
                   </div>
                   <span class="status-value" id="health-parque-status">--</span>
                 </div>
@@ -197,25 +197,16 @@
         </section>
 
         <!-- ============================================================
-             TELA 2 — RELATÓRIOS: Carteira por Hospital + Histórico de Incidentes
+             TELA 2 — RELATÓRIOS (Versão Simplificada)
              ============================================================ -->
         <section id="view-relatorio" class="dash-view daniel-view" style="display: none;">
-          <div class="print-only-header">
-            <img src="../assets/imgs/logo.png" alt="MagnaSync" />
+          <div class="content-header">
             <div>
-              <h2>MagnaSync — Relatório Executivo da Carteira de Hospitais</h2>
-              <p id="print-timestamp"></p>
-            </div>
-          </div>
-
-          <div class="content-header no-print">
-            <div>
-              <h1>Relatórios</h1>
-              <p>Ranking da carteira por antiguidade e criticidade, gargalos de hardware e histórico de incidentes e chamados.</p>
+              <h1>Relatório de Clientes</h1>
+              <p>Visão resumida dos hospitais monitorados, alertas críticos e chamados em aberto.</p>
             </div>
             <div class="relatorio-actions">
-              <button type="button" class="btn-secondary" id="btn-exportar-csv">Exportar Carteira (CSV)</button>
-              <button type="button" class="btn-primary" id="btn-imprimir-pdf">Imprimir / Salvar PDF</button>
+              <button type="button" class="btn-secondary" id="btn-exportar-csv">Exportar CSV</button>
             </div>
           </div>
 
@@ -223,24 +214,14 @@
             <div class="audit-panel-header">
               <div class="card-title">
                 <div>
-                  <h2>Carteira de Clientes (Resumo por Hospital)</h2>
-                  <small>Clique em um hospital para ver detalhes de antiguidade, gargalos e chamados</small>
+                  <h2>Resumo por Hospital</h2>
+                  <small>Clique em um hospital para ver o histórico detalhado</small>
                 </div>
               </div>
 
-              <div class="audit-controls no-print">
-                <select id="sel-ordenar-carteira" class="audit-sort-select" aria-label="Ordenar carteira">
-                  <option value="problematicos">Mais problemáticos</option>
-                  <option value="antigos">Clientes mais antigos</option>
-                  <option value="chamados">Mais chamados abertos</option>
-                  <option value="servidores">Mais servidores PACS</option>
-                </select>
-                <input type="text" id="ipt-busca-hospital" class="audit-search-input" placeholder="Buscar por hospital..." />
+              <div class="audit-controls">
+                <input type="text" id="ipt-busca-hospital" class="audit-search-input" placeholder="Buscar hospital..." />
               </div>
-            </div>
-
-            <div class="criterio-legenda">
-              <strong>Critério "Mais problemáticos":</strong> soma ponderada de gravidade (Bloqueio &times;3, Crítico &times;2, Atenção &times;1), destacando o componente causador dominante, servidores afetados e fila de chamados abertos.
             </div>
 
             <div class="table-scroll-wrapper">
@@ -250,58 +231,13 @@
                     <th>Hospital</th>
                     <th>Monitorado Desde</th>
                     <th>Servidores PACS</th>
-                    <th>Bloqueio / Críticos</th>
-                    <th>Atenção</th>
+                    <th>Alertas Críticos</th>
                     <th>Chamados Abertos</th>
-                    <th>Motivo Principal</th>
-                    <th>MTTR</th>
+                    <th>Principal Gargalo</th>
                   </tr>
                 </thead>
                 <tbody id="tbody-relatorio-carteira">
-                  <tr><td colspan="8" class="table-empty">Carregando...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="dash-card audit-panel-card" id="card-historico-incidentes">
-            <div class="audit-panel-header">
-              <div class="card-title">
-                <div>
-                  <h2>Histórico de Incidentes &amp; Chamados da Carteira</h2>
-                  <small>Alertas gerados pelo monitoramento com vínculo de severidade e andamento do chamado</small>
-                </div>
-              </div>
-
-              <div class="no-print">
-                <button type="button" class="btn-secondary" id="btn-exportar-incidentes-csv">Exportar Incidentes (CSV)</button>
-              </div>
-            </div>
-
-            <div class="audit-controls no-print">
-              <div class="audit-filter-group" role="group" aria-label="Filtrar histórico de incidentes">
-                <button type="button" class="filter-pill danger active" data-filtro-incidente="criticos">Crítico / Bloqueio</button>
-                <button type="button" class="filter-pill warn" data-filtro-incidente="abertos">Chamados Abertos</button>
-                <button type="button" class="filter-pill success" data-filtro-incidente="finalizados">Finalizados</button>
-                <button type="button" class="filter-pill" data-filtro-incidente="todos">Todos</button>
-              </div>
-              <input type="text" id="ipt-busca-incidente" class="audit-search-input" placeholder="Buscar por hospital, servidor, componente ou chamado..." />
-            </div>
-
-            <div class="table-scroll-wrapper">
-              <table class="audit-table">
-                <thead>
-                  <tr>
-                    <th>Horário</th>
-                    <th>Hospital / Servidor</th>
-                    <th>Componente / Leitura</th>
-                    <th>Severidade</th>
-                    <th>Status do Chamado</th>
-                    <th>Resolução (SLA)</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody-historico-incidentes">
-                  <tr><td colspan="6" class="table-empty">Carregando histórico de incidentes...</td></tr>
+                  <tr><td colspan="6" class="table-empty">Carregando...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -395,40 +331,36 @@
         <button type="button" class="daniel-modal-close" id="btn-fechar-modal" aria-label="Fechar modal">&times;</button>
       </div>
 
-      <div id="modal-hosp-diagnostico" class="modal-diagnostico-box" style="display: none;"></div>
-
       <div class="daniel-modal-kpis">
         <div class="daniel-modal-kpi">
           <span>Servidores PACS</span>
           <strong id="modal-hosp-maquinas">0</strong>
-          <small class="modal-kpi-sub" id="modal-hosp-maquinas-sub">--</small>
         </div>
         <div class="daniel-modal-kpi">
-          <span>Total de Alertas</span>
+          <span>Alertas Críticos</span>
           <strong id="modal-hosp-alertas">0</strong>
-          <small class="modal-kpi-sub" id="modal-hosp-alertas-sub">--</small>
         </div>
         <div class="daniel-modal-kpi">
-          <span>Chamados (Total / Status)</span>
+          <span>Chamados Abertos</span>
           <strong id="modal-hosp-abertos">0</strong>
-          <small class="modal-kpi-sub" id="modal-hosp-chamados-sub">--</small>
         </div>
         <div class="daniel-modal-kpi">
-          <span>MTTR Médio</span>
+          <span>Tempo Médio (MTTR)</span>
           <strong id="modal-hosp-mttr">--</strong>
-          <small class="modal-kpi-sub" id="modal-hosp-mttr-sub">--</small>
         </div>
       </div>
+
+      <h3 class="modal-section-title">Histórico de Incidentes</h3>
 
       <div class="table-scroll-wrapper modal-table-wrapper">
         <table class="audit-table">
           <thead>
             <tr>
-              <th>Horário</th>
-              <th>Servidor / Componente</th>
+              <th>Data / Hora</th>
+              <th>Servidor PACS</th>
+              <th>Componente</th>
               <th>Severidade</th>
-              <th>Status do Chamado</th>
-              <th>Resolução (SLA)</th>
+              <th>Situação do Chamado</th>
             </tr>
           </thead>
           <tbody id="tbody-modal-hospital-incidentes">

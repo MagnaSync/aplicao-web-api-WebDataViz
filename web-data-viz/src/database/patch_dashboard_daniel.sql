@@ -1,252 +1,212 @@
 -- ============================================================================
--- MagnaSync — Patch da Dashboard Executiva do Admin Geral (Daniel)
--- 100% compatível com o script oficial magnasync_script.sql (ZERO tabelas extras)
--- Pode ser executado várias vezes sem duplicar registros (idempotente).
+-- MagnaSync — Dados de demonstração e Views da Dashboard Executiva (Daniel)
+-- Execute depois de rodar o script oficial magnasync_script.sql (em um banco limpo).
 -- ============================================================================
 USE magnasync;
 
--- 0. Remove tabelas antigas de auditoria/retry caso existam de versões anteriores
-DROP TABLE IF EXISTS log_tentativa_notificacao;
-DROP TABLE IF EXISTS auditoria_notificacao;
+-- 1. Componentes monitorados que faltam no script oficial (1 a 5 já são de Rede)
+-- IDs que vamos usar nas leituras: 3 = Rede - Latência (ms), 6 = Processador (%), 7 = Ram (%), 8 = Disco (%)
+INSERT INTO componente (id, valor, fkTipo, fkUnidade) VALUES
+(6, NULL, 3, 6),
+(7, NULL, 1, 6),
+(8, NULL, 2, 6);
 
--- 1. Garante categorias oficiais de alerta e status oficiais de chamado
-INSERT INTO categoria_alerta (classificacao)
-SELECT v.classificacao
-FROM (
-    SELECT 'Atenção' AS classificacao
-    UNION ALL SELECT 'Crítico'
-    UNION ALL SELECT 'Bloqueio'
-) v
-WHERE NOT EXISTS (
-    SELECT 1 FROM categoria_alerta ca WHERE ca.classificacao = v.classificacao
-);
+-- 2. Hospitais clientes (IDs 1 e 2 já existem no script oficial)
+INSERT INTO hospital (id, nome, cnpj, telefone, email) VALUES
+(3, 'Hospital Albert Einstein',   '60765823000130', '(11) 2151-1233', 'ti.pacs@einstein.br'),
+(4, 'Hospital Sírio-Libanês',     '61590410000124', '(11) 3394-5000', 'infra@hsl.org.br'),
+(5, 'Hospital Santa Catarina',    '60922168000186', '(11) 3016-4133', 'suporte.dicom@hsc.org.br'),
+(6, 'Hospital São Luiz Rede DOr', '06047087000139', '(11) 3040-1100', 'noc@rededor.com.br'),
+(7, 'Hospital Oswaldo Cruz',      '60726502000189', '(11) 3549-1000', 'pacs.admin@haoc.com.br'),
+(8, 'Hospital Das Dores',         '01234567891011', '(11) 11111-1111','hospitaldasdores@gmail.com');
 
-INSERT INTO status_chamado (descricao)
-SELECT v.descricao
-FROM (
-    SELECT 'Aberto' AS descricao
-    UNION ALL SELECT 'Em Andamento'
-    UNION ALL SELECT 'Finalizado'
-    UNION ALL SELECT 'Cancelado'
-) v
-WHERE NOT EXISTS (
-    SELECT 1 FROM status_chamado sc WHERE sc.descricao = v.descricao
-);
+-- 3. Servidores PACS (equipamentos) de cada hospital
+INSERT INTO equipamento (id, fabricante, mac_adress, hospital_id) VALUES
+(1,  'GE Centricity PACS-01',      '00:1B:44:11:3A:01', 3),
+(2,  'GE Centricity PACS-02',      '00:1B:44:11:3A:02', 3),
+(3,  'Dell PowerEdge R750-DICOM',  '00:1B:44:11:3A:03', 3),
+(4,  'HPE ProLiant DL380-Archive', '00:1B:44:11:3A:04', 3),
+(5,  'GE PACS Storage-SL1',        '00:1B:44:22:4B:01', 4),
+(6,  'Philips IntelliSpace-SL2',   '00:1B:44:22:4B:02', 4),
+(7,  'Dell PowerEdge PACS-SL3',    '00:1B:44:22:4B:03', 4),
+(8,  'GE Centricity PACS-SC1',     '00:1B:44:33:5C:01', 5),
+(9,  'Lenovo ThinkSystem SR650',   '00:1B:44:33:5C:02', 5),
+(10, 'Dell PACS Backup-SC3',       '00:1B:44:33:5C:03', 5),
+(11, 'GE PACS Central-RD1',        '00:1B:44:44:6D:01', 6),
+(12, 'HPE ProLiant PACS-RD2',      '00:1B:44:44:6D:02', 6),
+(13, 'GE Centricity PACS-OC1',     '00:1B:44:55:7E:01', 7),
+(14, 'Dell PACS Index-OC2',        '00:1B:44:55:7E:02', 7),
+(15, 'GE PACS Legado-HD1',         '00:1B:44:66:8F:01', 8),
+(16, 'GE Centricity PACS-HC1',     '00:1B:44:77:9A:01', 2);
 
--- 2. Garante componentes monitorados (Processador, Ram, Disco e Rede - Latência)
-INSERT INTO componente (valor, fkTipo, fkUnidade)
-SELECT NULL, tc.id, u.id
-FROM tipoComponente tc
-JOIN unidade u ON u.medida = IF(tc.tipo LIKE 'Rede - Lat%ncia', 'ms', '%')
-WHERE tc.tipo IN ('Processador', 'Ram', 'Disco', 'Rede - Latência', 'Rede - Latencia')
-  AND NOT EXISTS (SELECT 1 FROM componente c WHERE c.fkTipo = tc.id);
+-- 4. Parâmetros de monitoramento (a tabela leitura exige esse cadastro antes)
+INSERT INTO parametro (id, fkEquipamento, fkComponente, metrica) VALUES
+(1, 1,  6, 80),
+(1, 2,  6, 80),
+(1, 2,  8, 80),
+(1, 3,  3, 80),
+(1, 3,  6, 80),
+(1, 4,  7, 80),
+(1, 5,  6, 80),
+(1, 5,  8, 80),
+(1, 6,  3, 80),
+(1, 6,  8, 80),
+(1, 7,  7, 80),
+(1, 8,  3, 80),
+(1, 8,  6, 80),
+(1, 9,  3, 80),
+(1, 10, 8, 80),
+(1, 11, 6, 80),
+(1, 11, 7, 80),
+(1, 12, 7, 80),
+(1, 13, 6, 80),
+(1, 13, 8, 80),
+(1, 14, 6, 80),
+(1, 15, 6, 80),
+(1, 15, 7, 80),
+(1, 15, 8, 80),
+(1, 16, 6, 80);
 
--- 3. Hospitais clientes de demonstração (compatível com ou sem a coluna hospital.cep)
-DROP TEMPORARY TABLE IF EXISTS tmp_hosp_seed;
-CREATE TEMPORARY TABLE tmp_hosp_seed (
-    nome VARCHAR(150),
-    cnpj CHAR(14),
-    tel VARCHAR(20),
-    email VARCHAR(150),
-    cep CHAR(8),
-    num VARCHAR(10)
-);
-INSERT INTO tmp_hosp_seed (nome, cnpj, tel, email, cep, num) VALUES
-('Hospital Albert Einstein',     '60765823000130', '(11) 2151-1233', 'ti.pacs@einstein.br',        '05652900', '627'),
-('Hospital Sírio-Libanês',       '61590410000124', '(11) 3394-5000', 'infra@hsl.org.br',           '01308050', '91'),
-('Hospital Santa Catarina',      '60922168000186', '(11) 3016-4133', 'suporte.dicom@hsc.org.br',   '01310000', '200'),
-('Hospital São Luiz Rede DOr',   '06047087000139', '(11) 3040-1100', 'noc@rededor.com.br',         '04505002', '250'),
-('Hospital Oswaldo Cruz',        '60726502000189', '(11) 3549-1000', 'pacs.admin@haoc.com.br',     '01323001', '325'),
-('Hospital Das Dores',           '01234567891011', '(11) 11111-1111','hospitaldasdores@gmail.com', '05548722', '7980');
+-- 5. Leituras antigas (definem há quantos dias cada hospital é cliente)
+INSERT INTO leitura (id, fkEquipamento, fkComponente, fkMetrica, valor, data_hora) VALUES
+(1, 16, 6, 1, 42.0, NOW() - INTERVAL 260 DAY),
+(2, 15, 6, 1, 42.0, NOW() - INTERVAL 240 DAY),
+(3, 13, 6, 1, 42.0, NOW() - INTERVAL 195 DAY),
+(4, 8,  6, 1, 42.0, NOW() - INTERVAL 150 DAY),
+(5, 1,  6, 1, 42.0, NOW() - INTERVAL 115 DAY),
+(6, 5,  6, 1, 42.0, NOW() - INTERVAL 70 DAY),
+(7, 11, 6, 1, 42.0, NOW() - INTERVAL 28 DAY);
 
-SET @tem_cep = (
-    SELECT COUNT(*)
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'hospital'
-      AND COLUMN_NAME = 'cep'
-);
-SET @sql_hosp = IF(
-    @tem_cep > 0,
-    'INSERT INTO hospital (nome, cnpj, telefone, email, cep, numero) SELECT t.nome, t.cnpj, t.tel, t.email, t.cep, t.num FROM tmp_hosp_seed t WHERE NOT EXISTS (SELECT 1 FROM hospital h WHERE h.cnpj = t.cnpj)',
-    'INSERT INTO hospital (nome, cnpj, telefone, email, numero) SELECT t.nome, t.cnpj, t.tel, t.email, t.num FROM tmp_hosp_seed t WHERE NOT EXISTS (SELECT 1 FROM hospital h WHERE h.cnpj = t.cnpj)'
-);
-PREPARE stmt_hosp FROM @sql_hosp;
-EXECUTE stmt_hosp;
-DEALLOCATE PREPARE stmt_hosp;
-DROP TEMPORARY TABLE IF EXISTS tmp_hosp_seed;
+-- 6. Leituras recentes que geraram alertas
+INSERT INTO leitura (id, fkEquipamento, fkComponente, fkMetrica, valor, data_hora) VALUES
+-- Hospital Albert Einstein
+(8,  1, 6, 1, 99.1, NOW() - INTERVAL 15 MINUTE),
+(9,  2, 8, 1, 98.4, NOW() - INTERVAL 75 MINUTE),
+(10, 3, 6, 1, 95.6, NOW() - INTERVAL 145 MINUTE),
+(11, 1, 6, 1, 94.2, NOW() - INTERVAL 290 MINUTE),
+(12, 4, 7, 1, 92.0, NOW() - INTERVAL 470 MINUTE),
+(13, 2, 6, 1, 84.5, NOW() - INTERVAL 650 MINUTE),
+(14, 3, 3, 1, 46.0, NOW() - INTERVAL 835 MINUTE),
+-- Hospital Sírio-Libanês
+(15, 5, 8, 1, 97.8, NOW() - INTERVAL 45 MINUTE),
+(16, 6, 8, 1, 94.5, NOW() - INTERVAL 230 MINUTE),
+(17, 7, 7, 1, 90.4, NOW() - INTERVAL 410 MINUTE),
+(18, 5, 8, 1, 86.2, NOW() - INTERVAL 595 MINUTE),
+(19, 6, 3, 1, 39.5, NOW() - INTERVAL 960 MINUTE),
+-- Hospital Santa Catarina
+(20, 8,  3, 1, 185.0, NOW() - INTERVAL 25 MINUTE),
+(21, 9,  3, 1, 128.0, NOW() - INTERVAL 185 MINUTE),
+(22, 8,  3, 1, 62.0,  NOW() - INTERVAL 530 MINUTE),
+(23, 10, 8, 1, 84.0,  NOW() - INTERVAL 1020 MINUTE),
+-- Hospital São Luiz Rede DOr
+(24, 11, 7, 1, 93.1, NOW() - INTERVAL 110 MINUTE),
+(25, 12, 7, 1, 91.5, NOW() - INTERVAL 350 MINUTE),
+(26, 11, 6, 1, 83.8, NOW() - INTERVAL 775 MINUTE),
+-- Hospital Oswaldo Cruz
+(27, 13, 6, 1, 91.2, NOW() - INTERVAL 710 MINUTE),
+(28, 14, 6, 1, 82.6, NOW() - INTERVAL 900 MINUTE),
+(29, 13, 8, 1, 81.9, NOW() - INTERVAL 1160 MINUTE),
+-- Hospital Das Dores
+(30, 15, 8, 1, 80.5, NOW() - INTERVAL 1090 MINUTE),
+(31, 15, 7, 1, 78.4, NOW() - INTERVAL 1240 MINUTE);
 
--- 4. Servidores PACS por hospital (identificados pelo MAC, sem duplicar)
-INSERT INTO equipamento (fabricante, mac_adress, hospital_id)
-SELECT v.fab, v.mac, h.id
-FROM (
-    SELECT 'GE Centricity PACS-01' AS fab, '00:1B:44:11:3A:01' AS mac, '60765823000130' AS cnpj
-    UNION ALL SELECT 'GE Centricity PACS-02',      '00:1B:44:11:3A:02', '60765823000130'
-    UNION ALL SELECT 'Dell PowerEdge R750-DICOM',  '00:1B:44:11:3A:03', '60765823000130'
-    UNION ALL SELECT 'HPE ProLiant DL380-Archive', '00:1B:44:11:3A:04', '60765823000130'
-    UNION ALL SELECT 'GE PACS Storage-SL1',        '00:1B:44:22:4B:01', '61590410000124'
-    UNION ALL SELECT 'Philips IntelliSpace-SL2',   '00:1B:44:22:4B:02', '61590410000124'
-    UNION ALL SELECT 'Dell PowerEdge PACS-SL3',    '00:1B:44:22:4B:03', '61590410000124'
-    UNION ALL SELECT 'GE Centricity PACS-SC1',     '00:1B:44:33:5C:01', '60922168000186'
-    UNION ALL SELECT 'Lenovo ThinkSystem SR650',   '00:1B:44:33:5C:02', '60922168000186'
-    UNION ALL SELECT 'Dell PACS Backup-SC3',       '00:1B:44:33:5C:03', '60922168000186'
-    UNION ALL SELECT 'GE PACS Central-RD1',        '00:1B:44:44:6D:01', '06047087000139'
-    UNION ALL SELECT 'HPE ProLiant PACS-RD2',      '00:1B:44:44:6D:02', '06047087000139'
-    UNION ALL SELECT 'GE Centricity PACS-OC1',     '00:1B:44:55:7E:01', '60726502000189'
-    UNION ALL SELECT 'Dell PACS Index-OC2',        '00:1B:44:55:7E:02', '60726502000189'
-    UNION ALL SELECT 'GE PACS Legado-HD1',         '00:1B:44:66:8F:01', '01234567891011'
-    UNION ALL SELECT 'GE Centricity PACS-HC1',     '00:1B:44:77:9A:01', '10000000000011'
-) v
-JOIN hospital h ON h.cnpj = v.cnpj
-WHERE NOT EXISTS (SELECT 1 FROM equipamento e WHERE e.mac_adress = v.mac);
+-- 7. Alertas (categoria_alerta_id: 1 = Atenção, 2 = Crítico, 3 = Bloqueio)
+INSERT INTO alerta (id, data_hora, leitura_id, categoria_alerta_id) VALUES
+(1,  NOW() - INTERVAL 15 MINUTE,   8,  3),
+(2,  NOW() - INTERVAL 75 MINUTE,   9,  3),
+(3,  NOW() - INTERVAL 145 MINUTE,  10, 2),
+(4,  NOW() - INTERVAL 290 MINUTE,  11, 2),
+(5,  NOW() - INTERVAL 470 MINUTE,  12, 2),
+(6,  NOW() - INTERVAL 650 MINUTE,  13, 1),
+(7,  NOW() - INTERVAL 835 MINUTE,  14, 1),
+(8,  NOW() - INTERVAL 45 MINUTE,   15, 3),
+(9,  NOW() - INTERVAL 230 MINUTE,  16, 2),
+(10, NOW() - INTERVAL 410 MINUTE,  17, 2),
+(11, NOW() - INTERVAL 595 MINUTE,  18, 1),
+(12, NOW() - INTERVAL 960 MINUTE,  19, 1),
+(13, NOW() - INTERVAL 25 MINUTE,   20, 3),
+(14, NOW() - INTERVAL 185 MINUTE,  21, 2),
+(15, NOW() - INTERVAL 530 MINUTE,  22, 1),
+(16, NOW() - INTERVAL 1020 MINUTE, 23, 1),
+(17, NOW() - INTERVAL 110 MINUTE,  24, 2),
+(18, NOW() - INTERVAL 350 MINUTE,  25, 2),
+(19, NOW() - INTERVAL 775 MINUTE,  26, 1),
+(20, NOW() - INTERVAL 710 MINUTE,  27, 2),
+(21, NOW() - INTERVAL 900 MINUTE,  28, 1),
+(22, NOW() - INTERVAL 1160 MINUTE, 29, 1),
+(23, NOW() - INTERVAL 1090 MINUTE, 30, 1),
+(24, NOW() - INTERVAL 1240 MINUTE, 31, 1);
 
--- 5. Parâmetros de monitoramento (a tabela leitura exige esta chave composta)
-INSERT IGNORE INTO parametro (id, fkEquipamento, fkComponente, metrica)
-SELECT 1, e.id, c.id, 80
-FROM equipamento e
-JOIN (
-    SELECT MIN(c.id) AS id
-    FROM componente c
-    JOIN tipoComponente tc ON tc.id = c.fkTipo
-    WHERE tc.tipo IN ('Processador', 'Ram', 'Disco', 'Rede - Latência', 'Rede - Latencia')
-    GROUP BY tc.tipo
-) c;
+-- 8. Chamados (fkStatus: 1 = Aberto, 2 = Em Andamento, 3 = Finalizado, 4 = Cancelado)
+INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus) VALUES
+('C08MAGNASYNC', '1700000001.0001', NOW() - INTERVAL 15 MINUTE,   NOW() + INTERVAL 2 HOUR,    1,  1),
+('C08MAGNASYNC', '1700000002.0002', NOW() - INTERVAL 75 MINUTE,   NOW() + INTERVAL 2 HOUR,    2,  2),
+('C08MAGNASYNC', '1700000003.0003', NOW() - INTERVAL 145 MINUTE,  NOW() + INTERVAL 2 HOUR,    3,  1),
+('C08MAGNASYNC', '1700000004.0004', NOW() - INTERVAL 290 MINUTE,  NOW() - INTERVAL 245 MINUTE, 4,  3),
+('C08MAGNASYNC', '1700000005.0005', NOW() - INTERVAL 470 MINUTE,  NOW() - INTERVAL 402 MINUTE, 5,  3),
+('C08MAGNASYNC', '1700000006.0006', NOW() - INTERVAL 650 MINUTE,  NOW() - INTERVAL 625 MINUTE, 6,  3),
+('C08MAGNASYNC', '1700000008.0008', NOW() - INTERVAL 45 MINUTE,   NOW() + INTERVAL 2 HOUR,    8,  2),
+('C08MAGNASYNC', '1700000009.0009', NOW() - INTERVAL 230 MINUTE,  NOW() - INTERVAL 148 MINUTE, 9,  3),
+('C08MAGNASYNC', '1700000010.0010', NOW() - INTERVAL 410 MINUTE,  NOW() + INTERVAL 2 HOUR,    10, 1),
+('C08MAGNASYNC', '1700000011.0011', NOW() - INTERVAL 595 MINUTE,  NOW() - INTERVAL 561 MINUTE, 11, 3),
+('C08MAGNASYNC', '1700000012.0012', NOW() - INTERVAL 960 MINUTE,  NOW() - INTERVAL 945 MINUTE, 12, 4),
+('C08MAGNASYNC', '1700000013.0013', NOW() - INTERVAL 25 MINUTE,   NOW() + INTERVAL 2 HOUR,    13, 1),
+('C08MAGNASYNC', '1700000014.0014', NOW() - INTERVAL 185 MINUTE,  NOW() + INTERVAL 2 HOUR,    14, 2),
+('C08MAGNASYNC', '1700000015.0015', NOW() - INTERVAL 530 MINUTE,  NOW() - INTERVAL 476 MINUTE, 15, 3),
+('C08MAGNASYNC', '1700000017.0017', NOW() - INTERVAL 110 MINUTE,  NOW() + INTERVAL 2 HOUR,    17, 2),
+('C08MAGNASYNC', '1700000018.0018', NOW() - INTERVAL 350 MINUTE,  NOW() - INTERVAL 255 MINUTE, 18, 3),
+('C08MAGNASYNC', '1700000019.0019', NOW() - INTERVAL 775 MINUTE,  NOW() - INTERVAL 760 MINUTE, 19, 4),
+('C08MAGNASYNC', '1700000020.0020', NOW() - INTERVAL 710 MINUTE,  NOW() - INTERVAL 672 MINUTE, 20, 3),
+('C08MAGNASYNC', '1700000021.0021', NOW() - INTERVAL 900 MINUTE,  NOW() - INTERVAL 878 MINUTE, 21, 3),
+('C08MAGNASYNC', '1700000023.0023', NOW() - INTERVAL 1090 MINUTE, NOW() - INTERVAL 970 MINUTE, 23, 3);
 
--- 6. Leituras históricas de baseline (sem gerar alerta) para definir antiguidade real por hospital
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
+-- 9. Views para simplificar os SELECTs da Dashboard Executiva (Daniel)
+CREATE OR REPLACE VIEW vw_incidentes AS
 SELECT
-    e.id,
-    comp.id,
-    1,
-    42.0,
-    NOW() - INTERVAL base.dias DAY
-FROM (
-    SELECT '00:1B:44:77:9A:01' AS mac, 260 AS dias
-    UNION ALL SELECT '00:1B:44:66:8F:01', 240
-    UNION ALL SELECT '00:1B:44:55:7E:01', 195
-    UNION ALL SELECT '00:1B:44:33:5C:01', 150
-    UNION ALL SELECT '00:1B:44:11:3A:01', 115
-    UNION ALL SELECT '00:1B:44:22:4B:01', 70
-    UNION ALL SELECT '00:1B:44:44:6D:01', 28
-) base
-JOIN equipamento e ON e.mac_adress = base.mac
-JOIN (
-    SELECT MIN(c.id) AS id
-    FROM componente c
-    JOIN tipoComponente tc ON tc.id = c.fkTipo
-    WHERE tc.tipo = 'Processador'
-) comp
-JOIN parametro p ON p.fkEquipamento = e.id AND p.fkComponente = comp.id AND p.id = 1
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM leitura l
-    WHERE l.fkEquipamento = e.id
-      AND l.data_hora < NOW() - INTERVAL 10 DAY
-);
+    a.id AS alerta_id,
+    a.data_hora,
+    DATE_FORMAT(a.data_hora, '%d/%m/%Y %H:%i:%s') AS horario_alerta,
+    DATE_FORMAT(a.data_hora, '%Y-%m-%d %H:%i:%s') AS horario_alerta_iso,
+    h.id AS hospital_id,
+    h.nome AS nome_cliente,
+    e.id AS equipamento_id,
+    e.fabricante AS servidor_fabricante,
+    e.mac_adress,
+    tc.tipo AS componente,
+    ROUND(l.valor, 1) AS valor_leitura,
+    u.medida AS unidade_medida,
+    ca.classificacao AS severidade,
+    ch.id AS chamado_id,
+    IFNULL(sc.descricao, 'Sem Chamado') AS status_chamado,
+    IF(
+        sc.descricao = 'Finalizado' AND ch.data_fim >= ch.data_abertura,
+        TIMESTAMPDIFF(MINUTE, ch.data_abertura, ch.data_fim),
+        NULL
+    ) AS tempo_resolucao_min
+FROM alerta a
+JOIN categoria_alerta ca ON ca.id = a.categoria_alerta_id
+JOIN leitura l ON l.id = a.leitura_id
+JOIN equipamento e ON e.id = l.fkEquipamento
+JOIN hospital h ON h.id = e.hospital_id
+JOIN componente c ON c.id = l.fkComponente
+JOIN tipoComponente tc ON tc.id = c.fkTipo
+JOIN unidade u ON u.id = c.fkUnidade
+LEFT JOIN chamado ch ON ch.fkAlerta = a.id
+LEFT JOIN status_chamado sc ON sc.id = ch.fkStatus
+WHERE h.id <> 1;
 
--- 7. Eventos recentes de telemetria -> alertas -> chamados (somente se ainda não houver alertas)
-SET @precisa_seed = (SELECT COUNT(*) = 0 FROM alerta);
-SET @agora = NOW();
-
-DROP TEMPORARY TABLE IF EXISTS tmp_evento;
-CREATE TEMPORARY TABLE tmp_evento (
-    mac VARCHAR(17),
-    tipo VARCHAR(45),
-    valor DOUBLE,
-    sev_nome VARCHAR(45),
-    ch_status_nome VARCHAR(20),
-    duracao_min INT,
-    dt DATETIME
-);
-
-INSERT INTO tmp_evento (mac, tipo, valor, sev_nome, ch_status_nome, duracao_min, dt)
-SELECT t.mac, t.tipo, t.valor, t.sev_nome, t.ch_status_nome, t.duracao_min, @agora - INTERVAL t.min_atras MINUTE
-FROM (
-    -- Hospital Albert Einstein (7 alertas: mais problemático; gargalo Processador)
-    SELECT '00:1B:44:11:3A:01' AS mac, 'Processador' AS tipo, 99.1 AS valor, 'Bloqueio' AS sev_nome, 'Aberto' AS ch_status_nome, 120 AS duracao_min, 15 AS min_atras
-    UNION ALL SELECT '00:1B:44:11:3A:02', 'Disco',           98.4, 'Bloqueio', 'Em Andamento', 120, 75
-    UNION ALL SELECT '00:1B:44:11:3A:03', 'Processador',     95.6, 'Crítico',  'Aberto',       120, 145
-    UNION ALL SELECT '00:1B:44:11:3A:01', 'Processador',     94.2, 'Crítico',  'Finalizado',   45,  290
-    UNION ALL SELECT '00:1B:44:11:3A:04', 'Ram',             92.0, 'Crítico',  'Finalizado',   68,  470
-    UNION ALL SELECT '00:1B:44:11:3A:02', 'Processador',     84.5, 'Atenção',  'Finalizado',   25,  650
-    UNION ALL SELECT '00:1B:44:11:3A:03', 'Rede - Latência', 46.0, 'Atenção',  NULL,           0,   835
-
-    -- Hospital Sírio-Libanês (5 alertas: gargalo Disco)
-    UNION ALL SELECT '00:1B:44:22:4B:01', 'Disco',           97.8, 'Bloqueio', 'Em Andamento', 120, 45
-    UNION ALL SELECT '00:1B:44:22:4B:02', 'Disco',           94.5, 'Crítico',  'Finalizado',   82,  230
-    UNION ALL SELECT '00:1B:44:22:4B:03', 'Ram',             90.4, 'Crítico',  'Aberto',       120, 410
-    UNION ALL SELECT '00:1B:44:22:4B:01', 'Disco',           86.2, 'Atenção',  'Finalizado',   34,  595
-    UNION ALL SELECT '00:1B:44:22:4B:02', 'Rede - Latência', 39.5, 'Atenção',  'Cancelado',    15,  960
-
-    -- Hospital Santa Catarina (4 alertas: gargalo Rede - Latência)
-    UNION ALL SELECT '00:1B:44:33:5C:01', 'Rede - Latência', 185.0, 'Bloqueio', 'Aberto',       120, 25
-    UNION ALL SELECT '00:1B:44:33:5C:02', 'Rede - Latência', 128.0, 'Crítico',  'Em Andamento', 120, 185
-    UNION ALL SELECT '00:1B:44:33:5C:01', 'Rede - Latência', 62.0,  'Atenção',  'Finalizado',   54,  530
-    UNION ALL SELECT '00:1B:44:33:5C:03', 'Disco',           84.0,  'Atenção',  NULL,           0,   1020
-
-    -- Hospital São Luiz Rede DOr (3 alertas: cliente mais recente; gargalo Ram)
-    UNION ALL SELECT '00:1B:44:44:6D:01', 'Ram',             93.1, 'Crítico',  'Em Andamento', 120, 110
-    UNION ALL SELECT '00:1B:44:44:6D:02', 'Ram',             91.5, 'Crítico',  'Finalizado',   95,  350
-    UNION ALL SELECT '00:1B:44:44:6D:01', 'Processador',     83.8, 'Atenção',  'Cancelado',    15,  775
-
-    -- Hospital Oswaldo Cruz (3 alertas: sem críticos ativos; gargalo Processador)
-    UNION ALL SELECT '00:1B:44:55:7E:01', 'Processador',     91.2, 'Crítico',  'Finalizado',   38,  710
-    UNION ALL SELECT '00:1B:44:55:7E:02', 'Processador',     82.6, 'Atenção',  'Finalizado',   22,  900
-    UNION ALL SELECT '00:1B:44:55:7E:01', 'Disco',           81.9, 'Atenção',  NULL,           0,   1160
-
-    -- Hospital Das Dores (2 alertas: cliente mais antigo, estável; gargalo Disco)
-    UNION ALL SELECT '00:1B:44:66:8F:01', 'Disco',           80.5, 'Atenção',  'Finalizado',   120, 1090
-    UNION ALL SELECT '00:1B:44:66:8F:01', 'Ram',             78.4, 'Atenção',  NULL,           0,   1240
-) t
-WHERE @precisa_seed = 1;
-
-INSERT INTO leitura (fkEquipamento, fkComponente, fkMetrica, valor, data_hora)
-SELECT e.id, c.id, 1, t.valor, t.dt
-FROM tmp_evento t
-JOIN equipamento e ON e.mac_adress = t.mac
-JOIN (
-    SELECT MIN(c.id) AS id, tc.tipo
-    FROM componente c
-    JOIN tipoComponente tc ON tc.id = c.fkTipo
-    GROUP BY tc.tipo
-) c ON c.tipo = t.tipo
-JOIN parametro p ON p.fkEquipamento = e.id AND p.fkComponente = c.id AND p.id = 1;
-
-INSERT INTO alerta (data_hora, leitura_id, categoria_alerta_id)
-SELECT t.dt, l.id, ca.id
-FROM tmp_evento t
-JOIN equipamento e ON e.mac_adress = t.mac
-JOIN (
-    SELECT MIN(c.id) AS id, tc.tipo
-    FROM componente c
-    JOIN tipoComponente tc ON tc.id = c.fkTipo
-    GROUP BY tc.tipo
-) c ON c.tipo = t.tipo
-JOIN leitura l ON l.fkEquipamento = e.id AND l.fkComponente = c.id AND l.data_hora = t.dt AND l.valor = t.valor
-JOIN categoria_alerta ca ON ca.classificacao = t.sev_nome;
-
-INSERT INTO chamado (slack_canal_id, slack_mensagem_ts, data_abertura, data_fim, fkAlerta, fkStatus)
+CREATE OR REPLACE VIEW vw_hospitais_base AS
 SELECT
-    'C08MAGNASYNC',
-    CONCAT(UNIX_TIMESTAMP(t.dt), '.000', LPAD(a.id, 3, '0')),
-    t.dt,
-    CASE
-        WHEN t.ch_status_nome IN ('Finalizado', 'Cancelado') THEN t.dt + INTERVAL t.duracao_min MINUTE
-        ELSE t.dt + INTERVAL 2 HOUR
-    END,
-    a.id,
-    sc.id
-FROM tmp_evento t
-JOIN equipamento e ON e.mac_adress = t.mac
-JOIN (
-    SELECT MIN(c.id) AS id, tc.tipo
-    FROM componente c
-    JOIN tipoComponente tc ON tc.id = c.fkTipo
-    GROUP BY tc.tipo
-) c ON c.tipo = t.tipo
-JOIN leitura l ON l.fkEquipamento = e.id AND l.fkComponente = c.id AND l.data_hora = t.dt AND l.valor = t.valor
-JOIN alerta a ON a.leitura_id = l.id
-JOIN status_chamado sc ON sc.descricao = t.ch_status_nome
-WHERE t.ch_status_nome IS NOT NULL;
-
-DROP TEMPORARY TABLE IF EXISTS tmp_evento;
+    h.id AS hospital_id,
+    h.nome AS nome_cliente,
+    h.cnpj,
+    h.email,
+    COUNT(DISTINCT e.id) AS total_maquinas,
+    DATE_FORMAT(MIN(l.data_hora), '%d/%m/%Y') AS cliente_desde,
+    DATE_FORMAT(MIN(l.data_hora), '%Y-%m-%d %H:%i:%s') AS cliente_desde_iso,
+    DATEDIFF(NOW(), MIN(l.data_hora)) AS dias_casa
+FROM hospital h
+LEFT JOIN equipamento e ON e.hospital_id = h.id
+LEFT JOIN leitura l ON l.fkEquipamento = e.id
+WHERE h.id <> 1
+GROUP BY h.id, h.nome, h.cnpj, h.email;
