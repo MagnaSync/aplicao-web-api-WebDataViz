@@ -1,9 +1,9 @@
 /* ==========================================================================
    MagnaSync — Dashboard de Memória RAM (dashboardpedro)
 
-   Fluxo: login grava a sessão -> esta tela confere o cargo (Analista) ->
+   Fluxo: login grava a sessão -> esta tela confere se há login (qualquer cargo) ->
    busca os servidores do hospital -> busca os dados de RAM do servidor
-   escolhido a cada 5 s. O back confere o cargo de novo (não confia no front).
+   escolhido a cada 5 s. O back confere o login de novo (não confia no front).
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -17,11 +17,7 @@ const RAM_CONFIG = {
   // true = dados simulados, sem back (só para testar o visual)
   USAR_MOCK: false,
 
-  // Só o cargo abaixo vê a tela
-  VALIDAR_CARGO: true,
-  CARGO_PERMITIDO: 'Analista',
-
-  // Chaves do sessionStorage gravadas no login — CONFIRME com o login.js do grupo
+  // Chaves do sessionStorage gravadas no login (conferem com o login.html do projeto)
   CHAVE_ID: 'ID_USUARIO',
   CHAVE_NOME: 'NOME_USUARIO',
   CHAVE_CARGO: 'CARGO_USUARIO',
@@ -34,7 +30,7 @@ const RAM_CONFIG = {
 let limites = { atencao: 75, critico: 85, bloqueio: 90 };
 
 /* --------------------------------------------------------------------------
-   2. SESSÃO E ACESSO
+   2. SESSÃO
    -------------------------------------------------------------------------- */
 function normalizarTexto(texto) {
   return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
@@ -46,19 +42,13 @@ function obterSessao() {
     nome: sessionStorage.getItem(RAM_CONFIG.CHAVE_NOME),
     cargo: sessionStorage.getItem(RAM_CONFIG.CHAVE_CARGO)
   };
-  if (!sessao.id || !sessao.cargo) {
+  if (!sessao.id) {
     console.warn(
-      `[dashboardpedro] Sessão incompleta. Esperado no sessionStorage: ` +
-      `${RAM_CONFIG.CHAVE_ID}, ${RAM_CONFIG.CHAVE_CARGO}. Encontrado:`,
+      `[dashboardpedro] Sessão não encontrada. Esperado no sessionStorage: ${RAM_CONFIG.CHAVE_ID}. Encontrado:`,
       { ...sessionStorage }
     );
   }
   return sessao;
-}
-
-function usuarioTemAcesso(sessao) {
-  if (!RAM_CONFIG.VALIDAR_CARGO) return true;
-  return normalizarTexto(sessao.cargo) === normalizarTexto(RAM_CONFIG.CARGO_PERMITIDO);
 }
 
 function preencherSidebar(sessao) {
@@ -427,7 +417,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const sessao = obterSessao();
   preencherSidebar(sessao);
 
-  if (!usuarioTemAcesso(sessao)) {
+  // Sem login não há o que mostrar (no mock não precisa de sessão)
+  if (!sessao.id && !RAM_CONFIG.USAR_MOCK) {
     mostrarAcessoNegado();
     return;
   }
