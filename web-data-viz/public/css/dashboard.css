@@ -1263,3 +1263,122 @@ h4 {
     grid-row: auto;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Botão Abrir Chamado na Sidebar & Modal de Confirmação
+   -------------------------------------------------------------------------- */
+.button-chamado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(126, 168, 216, 0.35);
+  border-radius: 6px;
+  background-color: #1A4A87;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.button-chamado:hover {
+  background-color: #235ba0;
+  border-color: #7ea8d8;
+}
+
+.sidebar-footer {
+  padding-top: 14px;
+  gap: 10px;
+}
+
+/* Modal de Confirmação */
+.modal-chamado-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(11, 25, 44, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-chamado-overlay.ativo {
+  display: flex;
+}
+
+.modal-chamado-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(39, 62, 99, 0.2);
+  border-radius: 12px;
+  max-width: 400px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(11, 25, 44, 0.25);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: fadeInModal 0.18s ease-out;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-chamado-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0B192C;
+  margin: 0;
+}
+
+.modal-chamado-card p {
+  font-size: 14px;
+  color: #273E63;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modal-chamado-acoes {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.modal-chamado-acoes button {
+  flex: 1;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-chamado-nao {
+  background-color: #F2F7FC;
+  color: #273E63;
+  border: 1px solid rgba(39, 62, 99, 0.2);
+}
+
+.btn-chamado-nao:hover {
+  background-color: #E2E8F0;
+  color: #0B192C;
+}
+
+.btn-chamado-sim {
+  background-color: #1A4A87;
+  color: #ffffff;
+  border: 1px solid #1A4A87;
+}
+
+.btn-chamado-sim:hover {
+  background-color: #143d73;
+}

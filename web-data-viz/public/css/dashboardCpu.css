@@ -1,0 +1,114 @@
+/* ==========================================================================
+   MagnaSync — Tela "Visão CPU"
+   Arquivo: dashboardCpu.css
+   Depende de dashboard.css (reset, sidebar, topbar, kpi-card, dash-card,
+   chart-wrapper, kpi-badge). Aqui ficam apenas os estilos NOVOS da tela.
+   Paleta: #0B192C | #1A4A87 | #273E63 | #F2F7FC | #FFFFFF
+   ========================================================================== */
+
+/* Título da página (wireframe: "Monitoramento inteligente...") */
+.content-header h1 { font-size: 20px; }
+
+/* --------------------------------------------------------------------------
+   Grade principal: 2 colunas independentes (alturas diferentes, como no Figma)
+   Proporção ~1.6 : 1 (igual ao wireframe)
+   -------------------------------------------------------------------------- */
+.cpu-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 14px;
+  flex: 1;
+  min-height: 560px; /* abaixo disso a .dash-view passa a rolar */
+}
+
+.cpu-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Cada card divide a altura da coluna (valores seguem o wireframe) */
+.cpu-col:first-child > .dash-card:nth-child(1) { flex: 0.9; }  /* linhas */
+.cpu-col:first-child > .dash-card:nth-child(2) { flex: 1; }    /* histograma */
+.cpu-col:last-child  > .dash-card:nth-child(1) { flex: 1.1; }  /* ranking */
+.cpu-col:last-child  > .dash-card:nth-child(2) { flex: 0.9; }  /* barras */
+
+/* --------------------------------------------------------------------------
+   Ranking: período com maior sobrecarga
+   -------------------------------------------------------------------------- */
+.ranking-highlight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0 8px;
+}
+
+.ranking-highlight strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  color: #dc2626;
+}
+
+.ranking-highlight small {
+  font-size: 11.5px;
+  color: #8a9dbf;
+  margin-top: 4px;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background-color: #F2F7FC;
+  border: 1px solid rgba(39, 62, 99, 0.08);
+  border-radius: 6px;
+  font-size: 13px;
+  color: #273E63;
+}
+
+.ranking-item .pos {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #273E63;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ranking-item .periodo { flex: 1; font-weight: 600; }
+.ranking-item .valor   { font-weight: 700; color: #0B192C; }
+
+/* 1º lugar em destaque */
+.ranking-item:first-child { background-color: #1A4A87; border-color: #1A4A87; color: #ffffff; }
+.ranking-item:first-child .pos { background-color: #ffffff; color: #1A4A87; }
+.ranking-item:first-child .valor { color: #ffffff; }
+
+.ranking-vazio { text-align: center; font-size: 13px; color: #8a9dbf; padding: 12px 0; }
+
+/* --------------------------------------------------------------------------
+   Responsivo
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .cpu-grid { grid-template-columns: 1fr; }
+  .cpu-col > .dash-card { flex: none !important; min-height: 280px; }
+}

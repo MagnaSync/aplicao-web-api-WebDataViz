@@ -87,26 +87,144 @@ function listarCargos(req, res) {
 }
 
 function listarFuncionarios(req, res) {
-    usuarioModel.listarFuncionarios()
-        .then(
-            function (resultado) {
+    var idHospital = req.query.idHospital;
+    usuarioModel.listarFuncionarios(idHospital)
+        .then(function (resultado) {
+            res.json(resultado);
+        })
+        .catch(function (erro) {
+            console.log(erro);
+            res.status(500).json(erro.sqlMessage);
+        });
+}
+
+function editar(req, res) {
+    var id = req.params.id;
+    var nome = req.body.nomeServer;
+    var email = req.body.emailServer;
+    var cargo_id = req.body.cargoServer;
+    var senha = req.body.senhaServer;
+
+    if (!id || !nome || !email || !cargo_id || cargo_id == "null") {
+        res.status(400).send("Dados obrigatórios para edição estão faltando!");
+    } else {
+        usuarioModel.editar(id, nome, email, cargo_id, senha)
+            .then(function (resultado) {
                 res.json(resultado);
-            }
-        ).catch(
-            function (erro) {
+            })
+            .catch(function (erro) {
                 console.log(erro);
-                console.log(
-                    "\nHouve um erro ao buscar os funcionários! Erro: ",
-                    erro.sqlMessage
-                );
                 res.status(500).json(erro.sqlMessage);
-            }
-        );
+            });
+    }
+}
+
+function deletar(req, res) {
+    var id = req.params.id;
+
+    if (!id) {
+        res.status(400).send("O id do funcionário está undefined!");
+    } else {
+        usuarioModel.deletar(id)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
+}
+
+function cadastrarCargo(req, res) {
+    var funcao = req.body.funcaoServer;
+
+    if (funcao == undefined || funcao.trim() == "") {
+        res.status(400).send("A função do cargo está undefined!");
+    } else {
+        usuarioModel.cadastrarCargo(funcao)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
+}
+
+function editarCargo(req, res) {
+    var id = req.params.id;
+    var funcao = req.body.funcaoServer;
+
+    if (id == undefined) {
+        res.status(400).send("O id do cargo está undefined!");
+    } else if (funcao == undefined || funcao.trim() == "") {
+        res.status(400).send("A função do cargo está undefined!");
+    } else {
+        usuarioModel.editarCargo(id, funcao)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
+}
+
+function deletarCargo(req, res) {
+    var id = req.params.id;
+
+    if (id == undefined) {
+        res.status(400).send("O id do cargo está undefined!");
+    } else {
+        usuarioModel.deletarCargo(id)
+            .then(function (resultado) {
+                res.json(resultado);
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                if (erro.code === "ER_ROW_IS_REFERENCED_2") {
+                    res.status(409).send("Não é possível excluir um cargo com funcionários vinculados.");
+                } else {
+                    res.status(500).json(erro.sqlMessage);
+                }
+            });
+    }
+}
+
+function redefinirSenha(req, res) {
+    var email = req.body.emailServer;
+    var novaSenha = req.body.novaSenhaServer;
+
+    if (!email || !novaSenha) {
+        res.status(400).send("E-mail e nova senha são obrigatórios!");
+    } else {
+        usuarioModel.redefinirSenha(email, novaSenha)
+            .then(function (resultado) {
+                if (resultado.affectedRows === 0) {
+                    res.status(404).send("E-mail não encontrado no sistema.");
+                } else {
+                    res.json({ mensagem: "Senha redefinida com sucesso!" });
+                }
+            })
+            .catch(function (erro) {
+                console.log(erro);
+                res.status(500).json(erro.sqlMessage);
+            });
+    }
 }
 
 module.exports = {
     autenticar,
     listarCargos,
     listarFuncionarios,
-    cadastrar
+    editar,
+    deletar,
+    cadastrar,
+    cadastrarCargo,
+    editarCargo,
+    deletarCargo,
+    redefinirSenha
 };
