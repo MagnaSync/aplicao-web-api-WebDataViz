@@ -19,7 +19,7 @@ var indexRouter = require("./src/routes/index");
 var usuarioRouter = require("./src/routes/usuarios");
 var hospitalRouter = require("./src/routes/hospital");
 var cpuRouter = require("./src/routes/cpu");
-var visaoGeralRouter = require("./scr/routes/visaoGeral")
+// var visaoGeralRouter = require("./scr/routes/visaoGeral")
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -31,7 +31,7 @@ app.use("/", indexRouter);
 app.use("/usuarios", usuarioRouter);
 app.use("/hospital", hospitalRouter);
 app.use("/cpu", cpuRouter);
-app.use("/visaoGeral", visaoGeralRouter);
+// app.use("/visaoGeral", visaoGeralRouter);
 
 app.listen(PORTA_APP, function () {
     console.log(`
