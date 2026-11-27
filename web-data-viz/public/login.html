@@ -139,7 +139,10 @@
                         setTimeout(function () {
                             if (json.cargo === "Administração" && json.hospital == 1) {
                                 window.location = "./cadastroHospital.html";
-                            } else {
+                            } else if (json.cargo == "Analista") {
+                                window.location = "./dashboard/dashboardpedro.html";
+                            }
+                             else {
                                 window.location = "./dashboard/dashboard.html";
                             }
                         }, 1000);

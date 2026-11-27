@@ -186,13 +186,6 @@ INSERT INTO comandos (fkTipo, biblioteca, comando, descricao, fkUnidade) VALUES
 (3, 'psutil', 'cpu_freq',                 'Frequência atual',  7),
 (3, 'psutil', 'cpu_count',                'Núcleos lógicos',   5);
 
-
-INSERT INTO status_chamado (descricao) VALUES 
-('Aberto'),
-('Em Andamento'),
-('Finalizado'),
-('Cancelado');
-
 insert into cargo (funcao) values
  	("Gerente"), 
 	("Analista"),	
